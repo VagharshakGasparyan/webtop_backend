@@ -25,7 +25,6 @@ cron.schedule('0 0 * * *', async () => {//running every day at 0:00
         });
     }catch (e) {
         console.error(e);
-
     }
 
 });
