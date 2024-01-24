@@ -2,34 +2,37 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('products', {
+    await queryInterface.createTable('settings', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.BIGINT
       },
-      slug: {
+      key: {
         type: Sequelize.STRING
       },
       name: {
-        type: Sequelize.JSON
+        type: Sequelize.STRING
       },
       description: {
+        type: Sequelize.TEXT
+      },
+      value: {
+        type: Sequelize.JSON
+      },
+      type: {
         type: Sequelize.JSON
       },
       image: {
         type: Sequelize.STRING
       },
       images: {
-        type: Sequelize.STRING
+        type: Sequelize.JSON
       },
-      category_id: {
-        type: Sequelize.BIGINT
-      },
-      disable: {
+      active: {
         type: Sequelize.BOOLEAN,
-        defaultValue: false,
+        defaultValue: true,
         allowNull: false,
       },
       created_at: {
@@ -43,6 +46,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('products');
+    await queryInterface.dropTable('settings');
   }
 };

@@ -13,40 +13,30 @@ module.exports = {
          *   isBetaMember: false
          * }], {});
          */
-        await User.create({
-            first_name: 'Vagharshak',
-            last_name: 'Gasparyan',
-            email: 'vvagharshak@gmail.com',
-            email_verified_at: new Date(),
-            role: 'admin',
-            password: 'qwerty',
-        });
+        // await User.create({
+        //     first_name: 'Joe',
+        //     last_name: 'Doe',
+        //     email: 'joe@gmail.com',
+        //     email_verified_at: new Date(),
+        //     role: 'admin',
+        //     password: 'qwerty',
+        // });
         await queryInterface.bulkInsert('users', [
             {
-                first_name: 'Ara',
-                last_name: 'Aramyan',
-                email: 'ara@gmail.com',
-                password: bcrypt.hashSync('abcdefgh', 8),
-                email_verified_at: new Date(),
-                role: 'user',
-                created_at: new Date(),
-                updated_at: new Date(),
-            },
-            {
-                first_name: 'Abo',
-                last_name: 'Abrahamyan',
-                email: 'abo@gmail.com',
+                first_name: 'Root',
+                last_name: 'Root',
+                email: 'root@webtop.com',
                 password: bcrypt.hashSync('12345678', 8),
                 email_verified_at: new Date(),
-                role: 'user',
+                role: 'admin',
                 created_at: new Date(),
                 updated_at: new Date(),
             },
             {
-                first_name: 'Ani',
-                last_name: 'Ananyan',
-                email: 'ani@gmail.com',
-                password: bcrypt.hashSync('a1b2c3', 8),
+                first_name: 'User',
+                last_name: 'User',
+                email: 'user@webtop.com',
+                password: bcrypt.hashSync('12345678', 8),
                 email_verified_at: new Date(),
                 role: 'user',
                 created_at: new Date(),

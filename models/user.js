@@ -13,7 +13,6 @@ module.exports = (sequelize, DataTypes) => {
             // define association here
         }
         getFullName() {
-            // bcrypt.compareSync('qwerty', '$2b$08$anjueAN9I.ROPfygoSbF2uyqSvpFhwW/ZpIXXgqvG0fd4kTnGAMPa');
             return [this.first_name, this.last_name].join(' ');
         }
 
@@ -23,19 +22,20 @@ module.exports = (sequelize, DataTypes) => {
         first_name: DataTypes.STRING,
         last_name: DataTypes.STRING,
         email: DataTypes.STRING,
-        created_at: DataTypes.DATE,
-        updated_at: DataTypes.DATE,
+        photo: DataTypes.STRING,
         password: {
             type: DataTypes.STRING,
             set(value){
                 this.setDataValue('password', bcrypt.hashSync(value, 8));
             },
             get(){
-                // const rawValue = this.getDataValue('username');
-                // return rawValue ? rawValue.toUpperCase() : null;
                 return null;
             }
-        }
+        },
+        role: DataTypes.STRING,
+        created_at: DataTypes.DATE,
+        updated_at: DataTypes.DATE,
+
     }, {
         sequelize,
         modelName: 'User',
