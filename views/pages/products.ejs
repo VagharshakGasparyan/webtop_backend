@@ -1,0 +1,19 @@
+<%- contentFor('content') %>
+<section>
+    <h1>Products</h1>
+    <div><%= $fullUrl.protocol %></div>
+    <div><%= $fullUrl.host %></div>
+    <div><%= $fullUrl.path %></div>
+    <div><%= JSON.stringify($fullUrl.query) %></div>
+
+    <% (locals.products ?? []).forEach((product)=>{ %>
+        <div class="pr-id">id=<%= product.id %></div>
+        <div>slug=<%=product.slug %></div>
+        <div>name=<%=$tr(product.name)%></div>
+        <div>Description=<%=$tr(product.description) %></div>
+        <div>category id=<%= product.category_id %></div>
+        <div>image=<%= product.image %></div>
+        <img src="<%= '/' + product.image %>" alt="no image" style="max-width: 256px">
+        <hr>
+    <% }) %>
+</section>

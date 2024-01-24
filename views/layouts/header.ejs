@@ -1,0 +1,13 @@
+<header>
+    <div>Previous url: "<%= $prevUrl %>" </div>
+    <a class="menu-item <% if(defineContent('page') === 'home'){ %> selected <% } %>" href="/"><%=$tr("Home")%></a>
+    <a class="menu-item <% if(defineContent('page') === 'products'){ %> selected <% } %>" href="/products"><%=$tr("Products")%></a>
+    <a class="menu-item <% if(defineContent('page') === 'login'){ %> selected <% } %>" href="/login"><%=$tr("Login")%></a>
+    <a class="menu-item <% if(defineContent('page') === 'logout'){ %> selected <% } %>" href="/logout"><%=$tr("Logout")%></a>
+    <% if($auth.user){%>
+        <div style="font-family: sans-serif;font-size: 17px">User: <%=$auth.user.first_name%> <%=$auth.user.last_name%></div>
+    <%}%>
+    <% if($auth.admin){%>
+    <div style="font-family: sans-serif;font-size: 17px">Admin: <%=$auth.admin.first_name%> <%=$auth.admin.last_name%></div>
+    <%}%>
+</header>
