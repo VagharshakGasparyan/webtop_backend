@@ -11,7 +11,7 @@ let userNotification = async (email, subject = '', message = null, type = 'text'
         options.to = email;
         allIn ++;
     }
-    if(subject && typeof subject === 'string'){
+    if(typeof subject === 'string'){
         options.subject = subject;
         allIn ++;
     }
