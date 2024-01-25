@@ -23,7 +23,7 @@ let userNotification = async (email, subject = '', message = null, type = 'text'
         options[type] = message;
         allIn ++;
     }
-    if(allIn >= 3){
+    if(allIn >= 4){
         try {
             // const info = await transporter.sendMail(options);
             await transporter.sendMail(options);
