@@ -33,6 +33,7 @@ module.exports = (sequelize, DataTypes) => {
             }
         },
         role: DataTypes.STRING,
+        email_verified_at: DataTypes.DATE,
         created_at: DataTypes.DATE,
         updated_at: DataTypes.DATE,
 

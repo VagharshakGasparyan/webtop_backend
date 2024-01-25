@@ -17,9 +17,18 @@ const group = (callback) => {
     callback(router);
     return router;
 };
+
+router.post('/admin/login', new UserController().login);
 router.use('/admin', group((adminRouter)=>{
-    adminRouter.post('/login', new UserController().login);
+    adminRouter.use((req, res, next)=>{
+        if(!res.locals.$api_auth.admin){
+            res.status(401);
+            return res.send({status: 401, message: "Unauthorized"});
+        }
+        next();
+    });
     adminRouter.get('/logout', new UserController().logout);
+    adminRouter.post('/user/create', new UserController().create);
 }));
 
 /* GET users listing. */

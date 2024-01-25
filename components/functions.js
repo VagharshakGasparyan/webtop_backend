@@ -99,8 +99,17 @@ async function getWebAuth(req, res) {
     return authData;
 }
 
+function generateString(str_length = 8) {
+    let str = '';
+    let words = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$#@-+*=@!?<>';
+    for (let i = 0; i < str_length; i++) {
+        str += words[Math.floor(Math.random() * words.length)];
+    }
+    return str;
+}
+
 function generateToken(userId, role, tokenLength = 128) {
-    let words = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$#@.-+*&^%{}[]:|=()@!?<>';
+    let words = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$#@.-+*&^%{}[]:|=()!?<>';
     let token = userId + '\'' + role + '\'';
     let time = Date.now().toString();
     let k = words.length / 10;
@@ -200,4 +209,4 @@ function makeDirectoryIfNotExists(path) {
     }
 }
 
-module.exports = {loginUser, logoutUser, apiLogoutUser, saveAndGetUserToken, getApiAuth, getWebAuth, makeDirectoryIfNotExists};
+module.exports = {loginUser, logoutUser, apiLogoutUser, saveAndGetUserToken, getApiAuth, getWebAuth, makeDirectoryIfNotExists, generateString};
