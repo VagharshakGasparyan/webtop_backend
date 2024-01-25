@@ -3,7 +3,7 @@ const Joi = require("joi");
 const {User} = require("../../../models");
 const bcrypt = require("bcrypt");
 const {saveAndGetUserToken, apiLogoutUser, generateString} = require("../../../components/functions");
-
+const {userNotification} = require('../../notifications/userNotification');
 
 class UserController {
     async login(req, res, next) {
@@ -75,6 +75,11 @@ class UserController {
             role: req.body.role,
             password: req.body.password,
         });
+        let send = await userNotification(
+            req.body.email,
+            'User created',
+            '<div style="font-size: 35px;color: #077">Hello, You are registered in WebTop, your password: ' + req.body.password + '</div>',
+            'html');
         return res.send({user: newUser, message: message, generatedPassword});
     }
 

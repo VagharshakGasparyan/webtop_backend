@@ -24,6 +24,19 @@ const conf = {
         default: 'hy',
         all: {'hy': 'Հայերեն', 'en': 'English', 'ru': 'Русский'},
     },
+    mail: {
+        transporter: {
+            host: process.env.MAIL_HOST,
+            port: process.env.MAIL_PORT,
+            // secure: true,
+            secureConnection: false, // TLS requires secureConnection to be false
+            auth: {
+                user: process.env.MAIL_USERNAME,
+                pass: process.env.MAIL_PASSWORD,
+            },
+        },
+        from: process.env.MAIL_FROM_ADDRESS
+    }
 
 }
 
