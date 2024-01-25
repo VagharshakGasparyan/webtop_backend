@@ -10,14 +10,17 @@ module.exports = {
         type: Sequelize.BIGINT
       },
       first_name: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull: false,
         // allowNull defaults to true
       },
       last_name: {
         type: Sequelize.STRING
       },
       email: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        unique: true,
+        allowNull: false,
       },
       photo: {
         type: Sequelize.STRING

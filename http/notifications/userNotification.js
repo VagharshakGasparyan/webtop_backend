@@ -2,28 +2,14 @@ const nodemailer = require('nodemailer');
 const {conf} = require('../../config/app_config');
 
 const transporter = nodemailer.createTransport(conf.mail.transporter);
-let userNotification = async (email, subject = '', message = null, type = 'text') => {
-    let options = {
-        from: conf.mail.from //'webtop@info.com'
-    };
-    let allIn = 0;
-    if(email && typeof email === 'string'){
-        options.to = email;
-        allIn ++;
-    }
-    if(typeof subject === 'string'){
-        options.subject = subject;
-        allIn ++;
-    }
-    if(email && typeof email === 'string'){
-        options.to = email;
-        allIn ++;
-    }
-    if(message && typeof message === 'string' && (type === 'text' || type === 'html')){
-        options[type] = message;
-        allIn ++;
-    }
-    if(allIn >= 4){
+let userNotification = async (email, subject = '', message = '', type = 'text') => {
+    if(email && typeof email === 'string' && typeof subject === 'string' && typeof message === 'string' && (type === 'text' || type === 'html')){
+        let options = {
+            from: conf.mail.from, //'webtop@info.com'
+            to: email,
+            subject: subject,
+            [type]: message, //text or html: message
+        };
         try {
             // const info = await transporter.sendMail(options);
             await transporter.sendMail(options);
@@ -33,9 +19,8 @@ let userNotification = async (email, subject = '', message = null, type = 'text'
             return false;
         }
     }
-    console.error('Arguments for userNotification are less');
+    console.error('Not required arguments for userNotification.');
     return false;
-
 }
 
 module.exports = {userNotification};
