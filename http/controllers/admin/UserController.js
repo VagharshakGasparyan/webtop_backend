@@ -1,9 +1,12 @@
-const {api_validate} = require("../../../components/validate");
+const {api_validate, unique} = require("../../../components/validate");
 const Joi = require("joi");
 const {User} = require("../../../models");
 const bcrypt = require("bcrypt");
 const {saveAndGetUserToken, apiLogoutUser, generateString} = require("../../../components/functions");
 const {userNotification} = require('../../notifications/userNotification');
+const {conf} = require("../../../config/app_config");
+const db = require("../../../models");
+const queryInterface = db.sequelize.getQueryInterface();
 
 class UserController {
     async login(req, res, next) {
@@ -48,6 +51,11 @@ class UserController {
     }
 
     async create(req, res, next) {
+        let uniqueErr = await unique('users', 'email', req.body.email);
+        if(uniqueErr){
+            res.status(422);
+            return res.send({errors: {email: uniqueErr}});
+        }
         let valid_err = api_validate({
             email: Joi.string().email().required(),
             first_name: Joi.string().min(2).max(30).required(),
@@ -55,10 +63,12 @@ class UserController {
             role: Joi.string().min(2).max(30),
             password: Joi.string().min(6).max(30)
         }, req, res);
+        // return res.send({tmp: 'ok'});
         if (valid_err) {
             res.status(422);
             return res.send({errors: valid_err});
         }
+        // return res.send({tmp: 'no valid error'});
         let message = null, generatedPassword = null;
         if (!req.body.role) {
             req.body.role = 'admin';

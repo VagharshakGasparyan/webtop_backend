@@ -1,5 +1,7 @@
 const Joi = require('joi');
-
+const db = require("../models");
+const {conf} = require("../config/app_config");
+const queryInterface = db.sequelize.getQueryInterface();
 
 function validate(schema, req, res) {
     const schema_joi = Joi.object(schema);
@@ -15,11 +17,10 @@ function validate(schema, req, res) {
             req.session.errors[err_item.path[0]] = err_item.message;
         });
         return false;
-        // let backURL = req.header('Referer') || '/';
-        // return res.redirect(backURL);
     }
     return true;
 }
+
 function api_validate(schema, req, res) {
     let valid_err = {};
     const schema_joi = Joi.object(schema);
@@ -38,4 +39,13 @@ function api_validate(schema, req, res) {
     return null;
 }
 
-module.exports = {validate, api_validate};
+async function unique(table, columnName, columnValue) {
+    columnValue = columnValue || columnValue === null ? columnValue : '';
+    let exists = await queryInterface.select(null, table, {where: {[columnName]: columnValue}});
+    if (exists.length) {
+        return "The " + columnName + " is already in use";
+    }
+    return null;
+}
+
+module.exports = {validate, api_validate, unique};
