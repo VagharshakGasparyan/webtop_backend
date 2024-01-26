@@ -7,9 +7,14 @@ const {userNotification} = require('../../notifications/userNotification');
 const {conf} = require("../../../config/app_config");
 const db = require("../../../models");
 const queryInterface = db.sequelize.getQueryInterface();
+const {DB} = require('../../../components/db');
 
 class UserController {
     async login(req, res, next) {
+        // let users = await DB('users').get(['id', 'first_name', 'last_name', 'email']);
+        // console.log(users);
+        // return res.send({tmp: 'ok'});
+
         let valid_err = api_validate({
             email: Joi.string().email().required(),
             password: Joi.string().min(6).max(30).required()
