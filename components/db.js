@@ -31,6 +31,7 @@ class DBClass {
         this._conditions = [];
         this._orders = [];
         this._limit = null;
+        this._paginate = null;
     }
 
     where(column, condOrVal, val) {
@@ -93,6 +94,12 @@ class DBClass {
         }
         return this;
     }
+    paginate(page, perPage) {
+        if(page && perPage){
+            this._paginate = {page, perPage};
+        }
+        return this;
+    }
 
     get(columns = "*") {
         if (Array.isArray(columns)) {
@@ -110,6 +117,12 @@ class DBClass {
         }
         if (this._limit !== null) {
             qArr.push("LIMIT " + this._limit);
+        }
+        if(this._paginate !== null){
+            if (this._limit === null) {
+                qArr.push("LIMIT " + this._paginate.perPage);
+            }
+            qArr.push("OFFSET " + this._paginate.perPage * (this._paginate.page - 1));
         }
         console.log('q=', qArr.join(" "));
         return fDB(qArr.join(" "));

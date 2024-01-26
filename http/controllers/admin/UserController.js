@@ -11,9 +11,9 @@ const {DB} = require('../../../components/db');
 
 class UserController {
     async login(req, res, next) {
-        // let users = await DB('users').get(['id', 'first_name', 'last_name', 'email']);
+        // let users = await DB('users').paginate(1, 10).get(['id', 'first_name', 'last_name', 'email']);
         // console.log(users);
-        // return res.send({tmp: 'ok'});
+        // return res.send({tmp: users});
 
         let valid_err = api_validate({
             email: Joi.string().email().required(),
