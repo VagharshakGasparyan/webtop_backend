@@ -28,10 +28,14 @@ class DBClass {
     //"SELECT * FROM products WHERE disable = 0 LIMIT 10"
     constructor(table) {
         this._table = "`" + table + "`";
+        this._from = "FROM";
         this._conditions = [];
         this._orders = [];
         this._limit = null;
         this._paginate = null;
+        this._del_sel_upd = "SELECT";
+        this._columns = null;
+        this._set = null;
     }
 
     where(column, condOrVal, val) {
@@ -105,8 +109,50 @@ class DBClass {
         if (Array.isArray(columns)) {
             columns = columns.map(col => "`" + col + "`").join(', ');
         }
+        this._columns = columns;
+        return this._queryBuilder();
+    }
+
+    delete(){
+        this._columns = null;
+        this._del_sel_upd = "DELETE";
+        return this._queryBuilder();
+    }
+
+    update(obj = {}){
+        this._from = null;
+        this._set = "SET";
+        if(typeof obj === 'object' && obj !== null && Object.keys(obj).length > 0){
+            this._set = [];
+            this._del_sel_upd = "UPDATE";
+            for(let column in obj){
+                this._set.push("`" + column + "` = '" + obj[column] + "'");
+            }
+            this._set = this._set.join(", ");
+            this._set = "SET " + this._set;
+        }
+        return this._queryBuilder();
+    }
+
+    find(){
+
+    }
+
+    first(){
+
+    }
+
+    exists(){
+
+    }
+
+    _queryBuilder(){
         let qArr = [];
-        qArr.push("SELECT", columns, "FROM", this._table);
+        qArr.push(this._del_sel_upd);
+        this._columns ? qArr.push(this._columns) : null;
+        this._from ? qArr.push(this._from) : null;
+        qArr.push(this._table);
+        this._set ? qArr.push(this._set) : null;
         if (this._conditions.length > 0) {
             this._conditions[0] = "WHERE";
             qArr.push(...this._conditions);
