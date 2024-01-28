@@ -1,6 +1,5 @@
 const mysql = require('mysql');
 const mysql2 = require('mysql2');
-const {isNumeric} = require("validator");
 
 
 function _val(value) {
@@ -180,7 +179,7 @@ class DBClass {
         }
         this._r_table = "SELECT " + columns + " FROM";
         this._limit = 1;
-        if(id !== undefined && isNumeric(id.toString())){
+        if(arguments.length > 0 && id !== undefined && isFinite(id)){
             this._conditions.push("AND", _col('id'), "=", _val(id));
         }
         let answer = await this._queryBuilder();

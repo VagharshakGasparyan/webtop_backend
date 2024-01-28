@@ -21,17 +21,17 @@ WHERE condition;
 
 
 async function f() {
-    // let l = await DB('sessions').where('role', 'admin').get(['user_id', 'role']);
-    // console.log(l);
+    let l = await DB('sessions').where('role', 'admin').get(['user_id', 'role']);
+    console.log(l);
 
     // let f = await DB('sessions').where('user_id', '>',  1).first(['user_id', 'role', 'token']);
     // console.log(f);
 
-    // let fi = await DB('users').find(1);
+    // let fi = await DB('users').find("1");
     // console.log(fi);
 
-    let cn = await DB('sessions').where('user_id', '>', 1).count();
-    console.log(cn);
+    // let cn = await DB('sessions').where('user_id', '>', 1).count();
+    // console.log(cn);
 
     // let ex = await DB('sessions').where('user_id', '>', 1).exists();
     // console.log(ex);
