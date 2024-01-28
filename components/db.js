@@ -209,6 +209,21 @@ class DBClass {
         return answer[0][Object.keys(answer[0])[0]] !== 0;
     }
 
+    async sum(column){
+        this._r_table = "SELECT SUM(" + _col(column) + ") FROM";
+        let answer = await this._queryBuilder();
+        return answer[0][Object.keys(answer[0])[0]];
+    }
+
+    truncate(){
+        this._r_table = "TRUNCATE TABLE";
+        return this._queryBuilder();
+    }
+
+    whereHas(){
+
+    }
+
     _queryBuilder(){
         let qArr = [this._r_table, this._table];
         this._table_r !== null ? qArr.push(this._table_r): null;

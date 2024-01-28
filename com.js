@@ -21,8 +21,14 @@ WHERE condition;
 
 
 async function f() {
-    let l = await DB('sessions').where('role', 'admin').get(['user_id', 'role']);
-    console.log(l);
+    let sum = await DB('sessions').sum('user_id');
+    console.log(sum);
+
+    // let tr = await DB('sessions').truncate();
+    // console.log(tr);
+
+    // let l = await DB('sessions').where('role', 'admin').get(['user_id', 'role']);
+    // console.log(l);
 
     // let f = await DB('sessions').where('user_id', '>',  1).first(['user_id', 'role', 'token']);
     // console.log(f);
