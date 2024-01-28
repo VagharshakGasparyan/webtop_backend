@@ -1,5 +1,6 @@
 const mysql = require('mysql');
 const mysql2 = require('mysql2');
+const {isNumeric} = require("validator");
 
 
 function _val(value) {
@@ -176,16 +177,40 @@ class DBClass {
         return this._queryBuilder();
     }
 
-    find(){
-
+    async find(id, columns = "*"){
+        if (Array.isArray(columns)) {
+            columns = columns.map(col => _col(col)).join(', ');
+        }
+        this._r_table = "SELECT " + columns + " FROM";
+        this._limit = 1;
+        if(id !== undefined && isNumeric(id.toString())){
+            this._conditions.push("AND", _col('id'), "=", _val(id));
+        }
+        let answer = await this._queryBuilder();
+        return answer.length > 0 ? answer[0] : null;
     }
 
-    first(){
-
+    async first(columns = "*"){
+        if (Array.isArray(columns)) {
+            columns = columns.map(col => _col(col)).join(', ');
+        }
+        this._r_table = "SELECT " + columns + " FROM";
+        this._limit = 1;
+        let answer = await this._queryBuilder();
+        return answer.length > 0 ? answer[0] : null;
     }
 
-    exists(){
+    async count(){
+        this._r_table = "SELECT COUNT(*) FROM";
+        let answer = await this._queryBuilder();
+        return answer[0]['COUNT(*)'];
+    }
 
+    async exists(){
+        this._r_table = "SELECT COUNT(*) FROM";
+        this._limit = 1;
+        let answer = await this._queryBuilder();
+        return answer[0]['COUNT(*)'] > 0;
     }
 
     _queryBuilder(){

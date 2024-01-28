@@ -24,6 +24,18 @@ async function f() {
     // let l = await DB('sessions').where('role', 'admin').get(['user_id', 'role']);
     // console.log(l);
 
+    // let f = await DB('sessions').where('user_id', '>',  1).first(['user_id', 'role', 'token']);
+    // console.log(f);
+
+    // let fi = await DB('users').find(1);
+    // console.log(fi);
+
+    // let cn = await DB('sessions').where('user_id', '>', 1).count();
+    // console.log(cn);
+
+    let ex = await DB('sessions').where('user_id', '>', 1).exists();
+    console.log(ex);
+
     // let d = await DB('sessions').where('user_id', '>', 1).delete();
     // console.log(d);
 
@@ -44,33 +56,33 @@ async function f() {
     // });
     // console.log(c);
 
-    let ca = await DB('sessions').create(
-            [
-                {
-                    user_id: 1,
-                    role: 'admin',
-                    token: 'newToken1',
-                    refresh: moment().format('yyyy-MM-DD HH:mm:ss'),
-                    updated_at: moment().format('yyyy-MM-DD HH:mm:ss'),
-                },
-                {
-                    user_id: 2,
-                    role: 'admin',
-                    token: 'newToken2',
-                    refresh: moment().format('yyyy-MM-DD HH:mm:ss'),
-                    updated_at: moment().format('yyyy-MM-DD HH:mm:ss'),
-                },
-                {
-                    user_id: 3,
-                    role: 'admin',
-                    token: 'newToken3',
-                    refresh: moment().format('yyyy-MM-DD HH:mm:ss'),
-                    updated_at: moment().format('yyyy-MM-DD HH:mm:ss'),
-                },
-            ]
-        )
-    ;
-    console.log(ca);
+    // let ca = await DB('sessions').create(
+    //         [
+    //             {
+    //                 user_id: 1,
+    //                 role: 'admin',
+    //                 token: 'newToken1',
+    //                 refresh: moment().format('yyyy-MM-DD HH:mm:ss'),
+    //                 updated_at: moment().format('yyyy-MM-DD HH:mm:ss'),
+    //             },
+    //             {
+    //                 user_id: 2,
+    //                 role: 'admin',
+    //                 token: 'newToken2',
+    //                 refresh: moment().format('yyyy-MM-DD HH:mm:ss'),
+    //                 updated_at: moment().format('yyyy-MM-DD HH:mm:ss'),
+    //             },
+    //             {
+    //                 user_id: 3,
+    //                 role: 'admin',
+    //                 token: 'newToken3',
+    //                 refresh: moment().format('yyyy-MM-DD HH:mm:ss'),
+    //                 updated_at: moment().format('yyyy-MM-DD HH:mm:ss'),
+    //             },
+    //         ]
+    //     )
+    // ;
+    // console.log(ca);
 
 
     process.exit(1);
