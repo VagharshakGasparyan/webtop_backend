@@ -47,14 +47,11 @@ class DBClass {
         this._table = _col(table);
         this._r_table = null;
         this._table_r = null;
-        this._from = "FROM";
         this._conditions = [];
         this._orders = [];
         this._limit = null;
         this._paginate = null;
-        this._del_sel_upd = "SELECT";
-        this._columns = null;
-        this._set = null;
+        this._add_to_end = null;
     }
 
     where(column, condOrVal, val) {
@@ -203,14 +200,14 @@ class DBClass {
     async count(){
         this._r_table = "SELECT COUNT(*) FROM";
         let answer = await this._queryBuilder();
-        return answer[0]['COUNT(*)'];
+        return answer[0][Object.keys(answer[0])[0]];
     }
 
     async exists(){
-        this._r_table = "SELECT COUNT(*) FROM";
-        this._limit = 1;
+        this._r_table = "SELECT EXISTS (SELECT * FROM";
+        this._add_to_end = ")";
         let answer = await this._queryBuilder();
-        return answer[0]['COUNT(*)'] > 0;
+        return answer[0][Object.keys(answer[0])[0]] !== 0;
     }
 
     _queryBuilder(){
@@ -232,6 +229,7 @@ class DBClass {
         if(this._paginate !== null){
             qArr.push("OFFSET " + this._paginate.perPage * (this._paginate.page - 1));
         }
+        this._add_to_end !== null ? qArr.push(this._add_to_end): null;
         let q = qArr.join(" ");
         console.log('q=', q);
         return fDB(q);
