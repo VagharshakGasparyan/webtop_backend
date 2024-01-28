@@ -65,6 +65,10 @@ class DBClass {
         return this;
     }
 
+    whereNotNull(column){
+
+    }
+
     orWhere(column, condOrVal, val) {
         if (arguments.length < 2) {
             return this;
@@ -119,6 +123,15 @@ class DBClass {
             this._paginate = {page, perPage};
         }
         return this;
+    }
+
+    whereHas(relation, fn){
+        let query = this;
+        fn(query);
+    }
+
+    orWhereHas(){
+
     }
 
     get(columns = "*") {
@@ -218,10 +231,6 @@ class DBClass {
     truncate(){
         this._r_table = "TRUNCATE TABLE";
         return this._queryBuilder();
-    }
-
-    whereHas(){
-
     }
 
     _queryBuilder(){
