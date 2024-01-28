@@ -7,6 +7,8 @@ function _val(value) {
         return "NULL";
     }else if(typeof value === 'boolean'){
         return value ? 1 : 0;
+    }else if(value === undefined){
+        return '';
     }
     return "'" + value + "'";
 }
@@ -150,19 +152,26 @@ class DBClass {
 
     create(obj = {}){
         this._r_table = "INSERT INTO";
-        if(Array.isArray(obj)){
-            let columns = [], values = [];
+        if(Array.isArray(obj) && obj.length > 0){
+            let columns = [], all_values = [];
+            for(let column in obj[0]){
+                columns.push(column);
+            }
             obj.forEach((objItem)=>{
-
+                let values = [];
+                columns.forEach((column)=>{
+                    values.push(_val(objItem[column]));
+                });
+                all_values.push("(" + values.join(", ") + ")");
             });
-        }
-        if(typeof obj === 'object' && obj !== null && Object.keys(obj).length > 0){
+            this._table_r = "(" + columns.join(", ") + ") VALUES " + all_values.join(", ");
+        }else if(typeof obj === 'object' && obj !== null && Object.keys(obj).length > 0){
             let columns = [], values = [];
             for(let column in obj){
                 columns.push(_col(column));
                 values.push(_val(obj[column]));
             }
-            this._table_r = "(" + columns.join(", ") + ") VALUES (" + values.join(", ") + ")";
+            this._table_r = "(" + columns.map(column => _col(column)).join(", ") + ") VALUES (" + values.join(", ") + ")";
         }
         return this._queryBuilder();
     }

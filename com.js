@@ -35,14 +35,42 @@ async function f() {
     // console.log(u);
 
 
-    let c= await DB('sessions').create({
-        user_id: 3,
-        role: 'admin',
-        token: 'newToken123',
-        refresh: moment().format('yyyy-MM-DD HH:mm:ss'),
-        updated_at: moment().format('yyyy-MM-DD HH:mm:ss'),
-    });
-    console.log(c);
+    // let c= await DB('sessions').create({
+    //     user_id: 4,
+    //     role: 'admin',
+    //     token: 'newToken4',
+    //     // refresh: moment().format('yyyy-MM-DD HH:mm:ss'),
+    //     // updated_at: moment().format('yyyy-MM-DD HH:mm:ss'),
+    // });
+    // console.log(c);
+
+    let ca = await DB('sessions').create(
+            [
+                {
+                    user_id: 1,
+                    role: 'admin',
+                    token: 'newToken1',
+                    refresh: moment().format('yyyy-MM-DD HH:mm:ss'),
+                    updated_at: moment().format('yyyy-MM-DD HH:mm:ss'),
+                },
+                {
+                    user_id: 2,
+                    role: 'admin',
+                    token: 'newToken2',
+                    refresh: moment().format('yyyy-MM-DD HH:mm:ss'),
+                    updated_at: moment().format('yyyy-MM-DD HH:mm:ss'),
+                },
+                {
+                    user_id: 3,
+                    role: 'admin',
+                    token: 'newToken3',
+                    refresh: moment().format('yyyy-MM-DD HH:mm:ss'),
+                    updated_at: moment().format('yyyy-MM-DD HH:mm:ss'),
+                },
+            ]
+        )
+    ;
+    console.log(ca);
 
 
     process.exit(1);
