@@ -1,6 +1,20 @@
 const mysql = require('mysql');
 const mysql2 = require('mysql2');
 
+
+function _val(value) {
+    if(value === null){
+        return "NULL";
+    }else if(typeof value === 'boolean'){
+        return value ? 1 : 0;
+    }
+    return "'" + value + "'";
+}
+
+function _col(column) {
+    return "`" + column + "`";
+}
+
 function fDB(q) {
     return new Promise((resolve, reject) => {
         let con = mysql.createConnection({
@@ -27,7 +41,9 @@ function fDB(q) {
 class DBClass {
     //"SELECT * FROM products WHERE disable = 0 LIMIT 10"
     constructor(table) {
-        this._table = "`" + table + "`";
+        this._table = _col(table);
+        this._r_table = null;
+        this._table_r = null;
         this._from = "FROM";
         this._conditions = [];
         this._orders = [];
@@ -43,9 +59,9 @@ class DBClass {
             return this;
         }
         if (arguments.length < 3) {
-            this._conditions.push("AND", "`" + column + "`", "=", "'" + (typeof condOrVal === "boolean" ? (condOrVal ? 1 : 0) : condOrVal) + "'");
+            this._conditions.push("AND", _col(column), "=", _val(condOrVal));
         } else {
-            this._conditions.push("AND", "`" + column + "`", condOrVal, "'" + (typeof val === "boolean" ? (val ? 1 : 0) : val) + "'");
+            this._conditions.push("AND", _col(column), condOrVal,  _val(val));
         }
         return this;
     }
@@ -55,9 +71,9 @@ class DBClass {
             return this;
         }
         if (arguments.length < 3) {
-            this._conditions.push("OR", "`" + column + "`", "=", "'" + (typeof condOrVal === "boolean" ? (condOrVal ? 1 : 0) : condOrVal) + "'");
+            this._conditions.push("OR", _col(column), "=", _val(condOrVal));
         } else {
-            this._conditions.push("OR", "`" + column + "`", condOrVal, "'" + (typeof val === "boolean" ? (val ? 1 : 0) : val) + "'");
+            this._conditions.push("OR", _col(column), condOrVal,  _val(val));
         }
         return this;
     }
@@ -67,9 +83,9 @@ class DBClass {
             return this;
         }
         arr = arr.map((ar, i) => {
-            return "'" + ar + "'";
+            return _val(ar);
         });
-        this._conditions.push("AND", "`" + column + "`", "IN(", arr.join(", ") + ")");
+        this._conditions.push("AND", _col(column), "IN(", arr.join(", ") + ")");
         return this;
     }
 
@@ -78,9 +94,9 @@ class DBClass {
             return this;
         }
         arr = arr.map((ar, i) => {
-            return "'" + ar + "'";
+            return _val(ar);
         });
-        this._conditions.push("OR", "`" + column + "`", "IN(", arr.join(", ") + ")");
+        this._conditions.push("OR", _col(column), "IN(", arr.join(", ") + ")");
         return this;
     }
 
@@ -88,7 +104,7 @@ class DBClass {
         if(arguments.length < 2 || (ascOrDesc.toUpperCase() !== "ASC" && ascOrDesc.toUpperCase() !== "DESC")){
             return this;
         }
-        this._orders.push("`" + column + "` " + ascOrDesc.toUpperCase());
+        this._orders.push(_col(column)  + " " + ascOrDesc.toUpperCase());
         return this;
     }
 
@@ -98,6 +114,7 @@ class DBClass {
         }
         return this;
     }
+
     paginate(page, perPage) {
         if(page && perPage){
             this._paginate = {page, perPage};
@@ -107,29 +124,45 @@ class DBClass {
 
     get(columns = "*") {
         if (Array.isArray(columns)) {
-            columns = columns.map(col => "`" + col + "`").join(', ');
+            columns = columns.map(col => _col(col)).join(', ');
         }
-        this._columns = columns;
+        this._r_table = "SELECT " + columns + " FROM";
         return this._queryBuilder();
     }
 
     delete(){
-        this._columns = null;
-        this._del_sel_upd = "DELETE";
+        this._r_table = "DELETE FROM";
         return this._queryBuilder();
     }
 
     update(obj = {}){
-        this._from = null;
-        this._set = "SET";
+        this._r_table = "UPDATE";
+        this._table_r = "SET";
+        let set = [];
         if(typeof obj === 'object' && obj !== null && Object.keys(obj).length > 0){
-            this._set = [];
-            this._del_sel_upd = "UPDATE";
             for(let column in obj){
-                this._set.push("`" + column + "` = '" + obj[column] + "'");
+                set.push(_col(column) + " = " + _val(obj[column]));
             }
-            this._set = this._set.join(", ");
-            this._set = "SET " + this._set;
+            this._table_r = "SET " + set.join(", ");
+        }
+        return this._queryBuilder();
+    }
+
+    create(obj = {}){
+        this._r_table = "INSERT INTO";
+        if(Array.isArray(obj)){
+            let columns = [], values = [];
+            obj.forEach((objItem)=>{
+
+            });
+        }
+        if(typeof obj === 'object' && obj !== null && Object.keys(obj).length > 0){
+            let columns = [], values = [];
+            for(let column in obj){
+                columns.push(_col(column));
+                values.push(_val(obj[column]));
+            }
+            this._table_r = "(" + columns.join(", ") + ") VALUES (" + values.join(", ") + ")";
         }
         return this._queryBuilder();
     }
@@ -147,12 +180,8 @@ class DBClass {
     }
 
     _queryBuilder(){
-        let qArr = [];
-        qArr.push(this._del_sel_upd);
-        this._columns ? qArr.push(this._columns) : null;
-        this._from ? qArr.push(this._from) : null;
-        qArr.push(this._table);
-        this._set ? qArr.push(this._set) : null;
+        let qArr = [this._r_table, this._table];
+        this._table_r !== null ? qArr.push(this._table_r): null;
         if (this._conditions.length > 0) {
             this._conditions[0] = "WHERE";
             qArr.push(...this._conditions);
@@ -163,15 +192,15 @@ class DBClass {
         }
         if (this._limit !== null) {
             qArr.push("LIMIT " + this._limit);
+        }else if(this._paginate !== null){
+            qArr.push("LIMIT " + this._paginate.perPage);
         }
         if(this._paginate !== null){
-            if (this._limit === null) {
-                qArr.push("LIMIT " + this._paginate.perPage);
-            }
             qArr.push("OFFSET " + this._paginate.perPage * (this._paginate.page - 1));
         }
-        console.log('q=', qArr.join(" "));
-        return fDB(qArr.join(" "));
+        let q = qArr.join(" ");
+        console.log('q=', q);
+        return fDB(q);
     }
 }
 
