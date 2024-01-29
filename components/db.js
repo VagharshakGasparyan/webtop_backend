@@ -176,9 +176,12 @@ class DBClass {
         this._table_r = "INNER JOIN " + _col(relationTable) + " ON "
             + this._table + "." + _col(selfColumn) + " = " + _col(relationTable) + "." + _col(relationColumn);
         if(fn && typeof fn === 'function'){
-            let rel_q = fn(new DBClass(relationTable));
-            this._table_r += " " + rel_q._q();
-            // console.log('rel_q._q()=', rel_q._q());
+            let query = new DBClass(relationTable);
+            fn(query);
+            let rel_q = query._q();
+            if(rel_q){
+                this._table_r += " " + rel_q;
+            }
         }
         return this;
     }

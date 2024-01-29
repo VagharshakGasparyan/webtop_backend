@@ -28,7 +28,7 @@ async function f() {
     let page = 1;
     let perPage = 2;
     let answer = await DB('sessions').whereHas('users', 'user_id', 'id', function (query) {
-        return query.where('role', 'admin');
+        query.where('role', 'admin');
     }).get();
     console.log(answer);
 
