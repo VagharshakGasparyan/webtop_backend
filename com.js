@@ -27,7 +27,9 @@ async function f() {
 
     let page = 1;
     let perPage = 2;
-    let answer = await DB('sessions').whereNotIn('user_id', [2, 3]).get();
+    let answer = await DB('sessions').whereHas('users', 'user_id', 'id', function (query) {
+        return query.where('role', 'admin');
+    }).get();
     console.log(answer);
 
     // let nn = await DB('sessions').whereNotNull('refresh').get();
@@ -48,7 +50,7 @@ async function f() {
     // let fi = await DB('users').find("1");
     // console.log(fi);
 
-    // let cn = await DB('sessions').where('user_id', '>', 1).count();
+    // let cn = await DB('sessions').where('user_id', '>', 1).get();
     // console.log(cn);
 
     // let ex = await DB('sessions').where('user_id', '>', 1).exists();

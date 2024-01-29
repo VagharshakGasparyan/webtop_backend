@@ -55,9 +55,9 @@ class DBClass {
             return this;
         }
         if (arguments.length < 3) {
-            this._conditions.push("AND", _col(column), "=", _val(condOrVal));
+            this._conditions.push("AND", this._table + "." + _col(column), "=", _val(condOrVal));
         } else {
-            this._conditions.push("AND", _col(column), condOrVal,  _val(val));
+            this._conditions.push("AND", this._table + "." + _col(column), condOrVal,  _val(val));
         }
         return this;
     }
@@ -67,9 +67,9 @@ class DBClass {
             return this;
         }
         if (arguments.length < 3) {
-            this._conditions.push("OR", _col(column), "=", _val(condOrVal));
+            this._conditions.push("OR", this._table + "." + _col(column), "=", _val(condOrVal));
         } else {
-            this._conditions.push("OR", _col(column), condOrVal,  _val(val));
+            this._conditions.push("OR", this._table + "." + _col(column), condOrVal,  _val(val));
         }
         return this;
     }
@@ -78,7 +78,7 @@ class DBClass {
         if (arguments.length < 1) {
             return this;
         }
-        this._conditions.push("AND", _col(column), "IS NOT NULL");
+        this._conditions.push("AND", this._table + "." + _col(column), "IS NOT NULL");
         return this;
     }
 
@@ -86,7 +86,7 @@ class DBClass {
         if (arguments.length < 1) {
             return this;
         }
-        this._conditions.push("OR", _col(column), "IS NOT NULL");
+        this._conditions.push("OR", this._table + "." + _col(column), "IS NOT NULL");
         return this;
     }
 
@@ -94,7 +94,7 @@ class DBClass {
         if (arguments.length < 1) {
             return this;
         }
-        this._conditions.push("AND", _col(column), "IS NULL");
+        this._conditions.push("AND", this._table + "." + _col(column), "IS NULL");
         return this;
     }
 
@@ -102,7 +102,7 @@ class DBClass {
         if (arguments.length < 1) {
             return this;
         }
-        this._conditions.push("OR", _col(column), "IS NULL");
+        this._conditions.push("OR", this._table + "." + _col(column), "IS NULL");
         return this;
     }
 
@@ -113,7 +113,7 @@ class DBClass {
         arr = arr.map((ar, i) => {
             return _val(ar);
         });
-        this._conditions.push("AND", _col(column), "IN(", arr.join(", ") + ")");
+        this._conditions.push("AND", this._table + "." + _col(column), "IN(", arr.join(", ") + ")");
         return this;
     }
 
@@ -124,7 +124,7 @@ class DBClass {
         arr = arr.map((ar, i) => {
             return _val(ar);
         });
-        this._conditions.push("AND", _col(column), "NOT IN(", arr.join(", ") + ")");
+        this._conditions.push("AND", this._table + "." + _col(column), "NOT IN(", arr.join(", ") + ")");
         return this;
     }
 
@@ -135,7 +135,7 @@ class DBClass {
         arr = arr.map((ar, i) => {
             return _val(ar);
         });
-        this._conditions.push("OR", _col(column), "IN(", arr.join(", ") + ")");
+        this._conditions.push("OR", this._table + "." + _col(column), "IN(", arr.join(", ") + ")");
         return this;
     }
 
@@ -146,7 +146,7 @@ class DBClass {
         arr = arr.map((ar, i) => {
             return _val(ar);
         });
-        this._conditions.push("OR", _col(column), "NOT IN(", arr.join(", ") + ")");
+        this._conditions.push("OR", this._table + "." + _col(column), "NOT IN(", arr.join(", ") + ")");
         return this;
     }
 
@@ -154,7 +154,7 @@ class DBClass {
         if(arguments.length < 2 || (ascOrDesc.toUpperCase() !== "ASC" && ascOrDesc.toUpperCase() !== "DESC")){
             return this;
         }
-        this._orders.push(_col(column)  + " " + ascOrDesc.toUpperCase());
+        this._orders.push(this._table + "." + _col(column)  + " " + ascOrDesc.toUpperCase());
         return this;
     }
 
@@ -172,18 +172,24 @@ class DBClass {
         return this;
     }
 
-    whereHas(relation, fn){
-        let query = this;
-        fn(query);
+    whereHas(relationTable, selfColumn, relationColumn, fn = null){
+        this._table_r = "INNER JOIN " + _col(relationTable) + " ON "
+            + this._table + "." + _col(selfColumn) + " = " + _col(relationTable) + "." + _col(relationColumn);
+        if(fn && typeof fn === 'function'){
+            let rel_q = fn(new DBClass(relationTable));
+            this._table_r += " " + rel_q._q();
+            // console.log('rel_q._q()=', rel_q._q());
+        }
+        return this;
     }
 
     orWhereHas(){
 
     }
 
-    get(columns = "*") {
+    get(columns = this._table + "." + "*") {
         if (Array.isArray(columns)) {
-            columns = columns.map(col => _col(col)).join(', ');
+            columns = columns.map(col => this._table + "." + _col(col)).join(', ');
         }
         this._r_table = "SELECT " + columns + " FROM";
         return this._queryBuilder();
@@ -233,9 +239,9 @@ class DBClass {
         return this._queryBuilder();
     }
 
-    async find(id, columns = "*"){
+    async find(id, columns = this._table + "." + "*"){
         if (Array.isArray(columns)) {
-            columns = columns.map(col => _col(col)).join(', ');
+            columns = columns.map(col => this._table + "." + _col(col)).join(', ');
         }
         this._r_table = "SELECT " + columns + " FROM";
         this._limit = 1;
@@ -246,9 +252,9 @@ class DBClass {
         return answer.length > 0 ? answer[0] : null;
     }
 
-    async first(columns = "*"){
+    async first(columns = this._table + "." + "*"){
         if (Array.isArray(columns)) {
-            columns = columns.map(col => _col(col)).join(', ');
+            columns = columns.map(col => this._table + "." + _col(col)).join(', ');
         }
         this._r_table = "SELECT " + columns + " FROM";
         this._limit = 1;
@@ -263,14 +269,14 @@ class DBClass {
     }
 
     async exists(){
-        this._r_table = "SELECT EXISTS (SELECT * FROM";
+        this._r_table = "SELECT EXISTS (SELECT " + this._table + ".* FROM";
         this._add_to_end = ")";
         let answer = await this._queryBuilder();
         return answer[0][Object.keys(answer[0])[0]] !== 0;
     }
 
     async sum(column){
-        this._r_table = "SELECT SUM(" + _col(column) + ") FROM";
+        this._r_table = "SELECT SUM(" + this._table + "." + _col(column) + ") FROM";
         let answer = await this._queryBuilder();
         return answer[0][Object.keys(answer[0])[0]];
     }
@@ -281,7 +287,14 @@ class DBClass {
     }
 
     _queryBuilder(){
-        let qArr = [this._r_table, this._table];
+        let pre_q = [this._r_table, this._table].join(" ") + " ";
+        let all_q = pre_q + this._q();
+        console.log('all_q=', all_q);
+        return fDB(all_q);
+    }
+
+    _q(){
+        let qArr = [];
         this._table_r !== null ? qArr.push(this._table_r): null;
         if (this._conditions.length > 0) {
             this._conditions[0] = "WHERE";
@@ -301,8 +314,8 @@ class DBClass {
         }
         this._add_to_end !== null ? qArr.push(this._add_to_end): null;
         let q = qArr.join(" ");
-        console.log('q=', q);
-        return fDB(q);
+        // console.log('q=', q);
+        return q;
     }
 }
 
