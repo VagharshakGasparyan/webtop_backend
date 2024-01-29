@@ -203,10 +203,10 @@ class DBClass {
         let exists = "EXISTS (SELECT * FROM";
         let query = new DBClass(relationTable);
         query._conditions.push("AND", this._table + "." + _col(selfColumn), "=", query._table + "." + _col(relationColumn));
-        query._where_open = "(";
+        // query._where_open = "(";
         if(fn && typeof fn === 'function'){
             fn(query);
-            query._where_close = ")";
+            // query._where_close = ")";
             let rel_q = query._all_q();
             if(rel_q){
                 exists += rel_q;
