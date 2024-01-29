@@ -62,10 +62,6 @@ class DBClass {
         return this;
     }
 
-    whereNotNull(column){
-
-    }
-
     orWhere(column, condOrVal, val) {
         if (arguments.length < 2) {
             return this;
@@ -75,6 +71,38 @@ class DBClass {
         } else {
             this._conditions.push("OR", _col(column), condOrVal,  _val(val));
         }
+        return this;
+    }
+
+    whereNotNull(column){
+        if (arguments.length < 1) {
+            return this;
+        }
+        this._conditions.push("AND", _col(column), "IS NOT NULL");
+        return this;
+    }
+
+    orWhereNotNull(column){
+        if (arguments.length < 1) {
+            return this;
+        }
+        this._conditions.push("OR", _col(column), "IS NOT NULL");
+        return this;
+    }
+
+    whereNull(column){
+        if (arguments.length < 1) {
+            return this;
+        }
+        this._conditions.push("AND", _col(column), "IS NULL");
+        return this;
+    }
+
+    orWhereNull(column){
+        if (arguments.length < 1) {
+            return this;
+        }
+        this._conditions.push("OR", _col(column), "IS NULL");
         return this;
     }
 
@@ -89,6 +117,17 @@ class DBClass {
         return this;
     }
 
+    whereNotIn(column, arr) {
+        if (arguments.length < 2 || !Array.isArray(arr)) {
+            return this;
+        }
+        arr = arr.map((ar, i) => {
+            return _val(ar);
+        });
+        this._conditions.push("AND", _col(column), "NOT IN(", arr.join(", ") + ")");
+        return this;
+    }
+
     orWhereIn(column, arr) {
         if (arguments.length < 2 || !Array.isArray(arr)) {
             return this;
@@ -97,6 +136,17 @@ class DBClass {
             return _val(ar);
         });
         this._conditions.push("OR", _col(column), "IN(", arr.join(", ") + ")");
+        return this;
+    }
+
+    orWhereNotIn(column, arr) {
+        if (arguments.length < 2 || !Array.isArray(arr)) {
+            return this;
+        }
+        arr = arr.map((ar, i) => {
+            return _val(ar);
+        });
+        this._conditions.push("OR", _col(column), "NOT IN(", arr.join(", ") + ")");
         return this;
     }
 

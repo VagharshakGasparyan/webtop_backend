@@ -21,8 +21,20 @@ WHERE condition;
 
 
 async function f() {
-    let sum = await DB('sessions').sum('user_id');
-    console.log(sum);
+    //node com --app=init map=init    esiminch=true
+    // let args = process.argv.slice(2);
+    // console.log(args);//['--app=init', 'map=init', 'esiminch=true']
+
+    let page = 1;
+    let perPage = 2;
+    let answer = await DB('sessions').whereNotIn('user_id', [2, 3]).get();
+    console.log(answer);
+
+    // let nn = await DB('sessions').whereNotNull('refresh').get();
+    // console.log(nn);
+
+    // let sum = await DB('sessions').sum('user_id');
+    // console.log(sum);
 
     // let tr = await DB('sessions').truncate();
     // console.log(tr);
