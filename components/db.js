@@ -48,12 +48,23 @@ class DBClass {
         this._limit = null;
         this._paginate = null;
         this._add_to_end = null;
+        // this._where_open = null;// "("
+        // this._where_close = null;// ")"
     }
 
     where(column, condOrVal, val) {
         if (arguments.length < 2) {
             return this;
         }
+        // let open = "AND", close = "";
+        // if(this._where_open){
+        //     open = this._where_open;
+        //     this._where_open = null;
+        // }
+        // if(this._where_close){
+        //     close = this._where_close;
+        //     this._where_close = null;
+        // }
         if (arguments.length < 3) {
             this._conditions.push("AND", this._table + "." + _col(column), "=", _val(condOrVal));
         } else {
@@ -172,18 +183,36 @@ class DBClass {
         return this;
     }
 
+    // whereHas(relationTable, selfColumn, relationColumn, fn = null){
+    //     this._table_r = "INNER JOIN " + _col(relationTable) + " ON "
+    //         + this._table + "." + _col(selfColumn) + " = " + _col(relationTable) + "." + _col(relationColumn);
+    //     if(fn && typeof fn === 'function'){
+    //         let query = new DBClass(relationTable);
+    //         fn(query);
+    //         this._conditions.push(...query._conditions);
+    //         // let rel_q = query._q();
+    //         // if(rel_q){
+    //         //     this._table_r += " " + rel_q;
+    //         // }
+    //     }
+    //     return this;
+    // }
+
     whereHas(relationTable, selfColumn, relationColumn, fn = null){
-        this._table_r = "INNER JOIN " + _col(relationTable) + " ON "
-            + this._table + "." + _col(selfColumn) + " = " + _col(relationTable) + "." + _col(relationColumn);
+        this._conditions.push("AND");
+        let exists = "EXISTS (SELECT * FROM";
+        let query = new DBClass(relationTable);
+        query._conditions.push("AND", this._table + "." + _col(selfColumn), "=", query._table + "." + _col(relationColumn));
+        query._where_open = "(";
         if(fn && typeof fn === 'function'){
-            let query = new DBClass(relationTable);
             fn(query);
-            this._conditions.push(...query._conditions);
-            // let rel_q = query._q();
-            // if(rel_q){
-            //     this._table_r += " " + rel_q;
-            // }
+            query._where_close = ")";
+            let rel_q = query._all_q();
+            if(rel_q){
+                exists += rel_q;
+            }
         }
+        this._conditions.push(exists + ")");
         return this;
     }
 
@@ -291,10 +320,14 @@ class DBClass {
     }
 
     _queryBuilder(){
+        return fDB(this._all_q());
+    }
+
+    _all_q(){
         let pre_q = [this._r_table, this._table].join(" ") + " ";
         let all_q = pre_q + this._q();
         console.log('all_q=', all_q);
-        return fDB(all_q);
+        return all_q;
     }
 
     _q(){

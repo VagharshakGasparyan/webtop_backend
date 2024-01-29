@@ -30,9 +30,9 @@ async function f() {
     let answer = await DB('sessions')
         .where('role', 'admin')
         .whereHas('users', 'user_id', 'id', function (query) {
-        query.where('role', 'admin');
-        query.orWhere('role', 'user');
-    }).get();
+            query.where('role', 'admin');
+            query.orWhere('role', 'user');
+        }).get();
     console.log(answer);
 
     // let nn = await DB('sessions').whereNotNull('refresh').get();
