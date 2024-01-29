@@ -1,6 +1,7 @@
 const mysql = require('mysql');
 const mysql2 = require('mysql2');
-
+require('dotenv').config();
+const {conf} = require("../config/app_config");
 
 function _val(value) {
     if(value === null){
@@ -18,14 +19,10 @@ function _col(column) {
 }
 
 function fDB(q) {
+    let mode = process.env.NODE_ENV ?? "production";
+    let config = conf.database[mode];
     return new Promise((resolve, reject) => {
-        let con = mysql.createConnection({
-            host: "localhost",
-            user: "root",
-            port: 3306,
-            password: "",
-            database: "webtop_db"
-        });
+        let con = mysql.createConnection(config);
         con.connect(function (err) {
             if (err) {
                 reject(err);
