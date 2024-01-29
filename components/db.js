@@ -18,6 +18,28 @@ function _col(column) {
     return "`" + column + "`";
 }
 
+function _whereHas(_this, and_or, relationTable, selfColumn, relationColumn, fn = null) {
+    _this._conditions.push(and_or);
+    let exists = "EXISTS (SELECT * FROM";
+    let query = new DBClass(relationTable);
+    if(fn && typeof fn === 'function'){
+        fn(query);
+        if(query._conditions.length > 0){
+            query._conditions[0] = "AND (";
+            query._conditions.push(")");
+        }
+        query._conditions.unshift(and_or, _this._table + "." + _col(selfColumn), "=", query._table + "." + _col(relationColumn));
+        let rel_q = query._all_q();
+        if(rel_q){
+            exists += rel_q;
+        }
+    }else{
+        query._conditions.push(and_or, _this._table + "." + _col(selfColumn), "=", query._table + "." + _col(relationColumn));
+    }
+    _this._conditions.push(exists + ")");
+    return _this;
+}
+
 function fDB(q) {
     let mode = process.env.NODE_ENV ?? "production";
     let config = conf.database[mode];
@@ -48,23 +70,12 @@ class DBClass {
         this._limit = null;
         this._paginate = null;
         this._add_to_end = null;
-        // this._where_open = null;// "("
-        // this._where_close = null;// ")"
     }
 
     where(column, condOrVal, val) {
         if (arguments.length < 2) {
             return this;
         }
-        // let open = "AND", close = "";
-        // if(this._where_open){
-        //     open = this._where_open;
-        //     this._where_open = null;
-        // }
-        // if(this._where_close){
-        //     close = this._where_close;
-        //     this._where_close = null;
-        // }
         if (arguments.length < 3) {
             this._conditions.push("AND", this._table + "." + _col(column), "=", _val(condOrVal));
         } else {
@@ -199,25 +210,13 @@ class DBClass {
     // }
 
     whereHas(relationTable, selfColumn, relationColumn, fn = null){
-        this._conditions.push("AND");
-        let exists = "EXISTS (SELECT * FROM";
-        let query = new DBClass(relationTable);
-        query._conditions.push("AND", this._table + "." + _col(selfColumn), "=", query._table + "." + _col(relationColumn));
-        // query._where_open = "(";
-        if(fn && typeof fn === 'function'){
-            fn(query);
-            // query._where_close = ")";
-            let rel_q = query._all_q();
-            if(rel_q){
-                exists += rel_q;
-            }
-        }
-        this._conditions.push(exists + ")");
-        return this;
+        let and_or = "AND";
+        return _whereHas(this, and_or, relationTable, selfColumn, relationColumn, fn);
     }
 
-    orWhereHas(){
-
+    orWhereHas(relationTable, selfColumn, relationColumn, fn = null){
+        let and_or = "OR";
+        return _whereHas(this, and_or, relationTable, selfColumn, relationColumn, fn);
     }
 
     get(columns = this._table + "." + "*") {
