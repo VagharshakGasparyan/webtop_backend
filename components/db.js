@@ -178,10 +178,11 @@ class DBClass {
         if(fn && typeof fn === 'function'){
             let query = new DBClass(relationTable);
             fn(query);
-            let rel_q = query._q();
-            if(rel_q){
-                this._table_r += " " + rel_q;
-            }
+            this._conditions.push(...query._conditions);
+            // let rel_q = query._q();
+            // if(rel_q){
+            //     this._table_r += " " + rel_q;
+            // }
         }
         return this;
     }
