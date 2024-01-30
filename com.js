@@ -21,9 +21,18 @@ WHERE condition;
 
 
 async function f() {
-
-    let answer = await DB("users").where("role", "admin").orWhereBetween("id", 1, 10).get();
-    console.log(answer);
+    let a = DB.dataTypes().a3;
+    console.log(a);
+    // let createTable = await DB("persons").createTable({
+    //     // id: DB.dataTypes().a1().a2().a3,
+    //     person_id: "bigint NOT NULL",
+    //     last_name: "varchar(255)",
+    //     address: "varchar(255)",
+    //     city: "varchar(255)"
+    // });
+    // console.log(createTable);
+    // let answer = await DB("users").where("role", "admin").orWhereBetween("id", 1, 10).get();
+    // console.log(answer);
 
     // let answer = await DB("users").where("role", "admin").where(function (query) {
     //     query.where('last_name', 'Root').orWhere('last_name', 'User');

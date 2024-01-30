@@ -231,21 +231,6 @@ class DBClass {
         return this;
     }
 
-    // whereHas(relationTable, selfColumn, relationColumn, fn = null){
-    //     this._table_r = "INNER JOIN " + _col(relationTable) + " ON "
-    //         + this._table + "." + _col(selfColumn) + " = " + _col(relationTable) + "." + _col(relationColumn);
-    //     if(fn && typeof fn === 'function'){
-    //         let query = new DBClass(relationTable);
-    //         fn(query);
-    //         this._conditions.push(...query._conditions);
-    //         // let rel_q = query._q();
-    //         // if(rel_q){
-    //         //     this._table_r += " " + rel_q;
-    //         // }
-    //     }
-    //     return this;
-    // }
-
     whereHas(relationTable, selfColumn, relationColumn, fn = null){
         let and_or = "AND";
         return _whereHas(this, and_or, relationTable, selfColumn, relationColumn, fn);
@@ -355,6 +340,30 @@ class DBClass {
         return this._queryBuilder();
     }
 
+    createTable(obj){
+        if(!obj || typeof obj !== "object"){
+            return null;
+        }
+        this._r_table = "CREATE TABLE";
+        this._table_r = "(";
+        let table_r_arr = [];
+        for(let column in obj){
+            table_r_arr.push(_col(column) + " " + obj[column]);
+        }
+        // this._table_r += "PersonID int, LastName varchar(255), Address varchar(255), City varchar(255)";
+        this._table_r += table_r_arr.join(", ");
+        this._table_r += ")";
+        return this._queryBuilder();
+    }
+
+    static dataTypes = ()=>{
+        return {
+            // a1: ()=>{return this.dataTypes()},
+            // a2: ()=>{return this.dataTypes()},
+            "a3": ">>>>>>>>>a3",
+        };
+    }
+
     _queryBuilder(){
         return fDB(this._all_q());
     }
@@ -395,6 +404,13 @@ class DBClass {
 function DB(table) {
     return new DBClass(table);
 }
+
+Object.getOwnPropertyNames(DBClass)
+    .filter(prop => typeof DBClass[prop] === "function")
+    .forEach((staticMethod) => {
+        DB[staticMethod] = DBClass[staticMethod];
+    });
+
 
 // exports.fDB=fDB;
 module.exports = {fDB, DB};
