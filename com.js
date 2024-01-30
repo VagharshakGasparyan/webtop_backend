@@ -21,10 +21,14 @@ WHERE condition;
 
 
 async function f() {
-    let answer = await DB("users").where("role", "admin").where(function (query) {
-        query.where('last_name', 'Root').orWhere('last_name', 'User');
-    }).get();
+
+    let answer = await DB("users").where("role", "admin").orWhereBetween("id", 1, 10).get();
     console.log(answer);
+
+    // let answer = await DB("users").where("role", "admin").where(function (query) {
+    //     query.where('last_name', 'Root').orWhere('last_name', 'User');
+    // }).get();
+    // console.log(answer);
     //node com --app=init map=init    esiminch=true
     // let args = process.argv.slice(2);
     // console.log(args);//['--app=init', 'map=init', 'esiminch=true']

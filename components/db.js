@@ -101,6 +101,38 @@ class DBClass {
         return _where(this, and_or, ...arguments);
     }
 
+    whereBetween(column, value1, value2){
+        if (arguments.length < 3) {
+            return this;
+        }
+        this._conditions.push("AND", this._table + "." + _col(column), "BETWEEN", _val(value1), "AND", _val(value2));
+        return this;
+    }
+
+    orWhereBetween(column, value1, value2){
+        if (arguments.length < 3) {
+            return this;
+        }
+        this._conditions.push("OR", this._table + "." + _col(column), "BETWEEN", _val(value1), "AND", _val(value2));
+        return this;
+    }
+
+    whereNotBetween(column, value1, value2){
+        if (arguments.length < 3) {
+            return this;
+        }
+        this._conditions.push("AND", this._table + "." + _col(column), "NOT BETWEEN", _val(value1), "AND", _val(value2));
+        return this;
+    }
+
+    orWhereNotBetween(column, value1, value2){
+        if (arguments.length < 3) {
+            return this;
+        }
+        this._conditions.push("OR", this._table + "." + _col(column), "NOT BETWEEN", _val(value1), "AND", _val(value2));
+        return this;
+    }
+
     whereNotNull(column){
         if (arguments.length < 1) {
             return this;
