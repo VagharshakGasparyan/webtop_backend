@@ -356,12 +356,52 @@ class DBClass {
         return this._queryBuilder();
     }
 
-    static dataTypes = ()=>{
-        return {
-            // a1: ()=>{return this.dataTypes()},
-            // a2: ()=>{return this.dataTypes()},
-            "a3": ">>>>>>>>>a3",
+
+    static dataTypes() {
+        let _dataTypes = ['bigint', 'binary', 'bit', 'blob', 'char', 'date', 'datetime', 'decimal', 'double', 'enum',
+            'float', 'geometry', 'geometrycollection', 'int', 'integer', 'json', 'linestring', 'longblob', 'longtext',
+            'mediumblob', 'mediumint', 'mediumtext', 'multilinestring', 'multipoint', 'multipolygon', 'numeric', 'point',
+            'polygon', 'real', 'set', 'smallint', 'text', 'time', 'timestamp', 'tinyblob', 'tinyint', 'tinytext',
+            'varbinary', 'varchar', 'year'];
+        let q_str = '';
+        let secondHandle = {
+            nullable: function () {
+                q_str += " DEFAULT NULL";
+                return q_str;
+            },
+            default: function (def) {
+                q_str += " DEFAULT " + _val(def);
+                return q_str;
+            },
+            ablab: "qwerty",
+            tblab: "asdfgh",
         };
+        let firstHandle = {};
+        _dataTypes.forEach((dataType)=>{
+            firstHandle[dataType] = function (){
+                // console.log('arguments=', [...arguments]);
+                // console.log(a, b);
+                // console.log([...arguments]);
+                q_str += dataType + '(' + [...arguments].join(', ') + ')';
+                return secondHandle;
+            };
+        });
+        return firstHandle;
+        // return {
+        //     bigint: ()=>{
+        //
+        //     },
+        //     varchar: (n) => {
+        //         this.s += n;
+        //         return this.dataTypes();
+        //     },
+        //     text: () => {
+        //         return this.dataTypes();
+        //     },
+        //     a3: () => {
+        //         return this.s;
+        //     }
+        // };
     }
 
     _queryBuilder(){
@@ -406,7 +446,7 @@ function DB(table) {
 }
 
 Object.getOwnPropertyNames(DBClass)
-    .filter(prop => typeof DBClass[prop] === "function")
+    // .filter(prop => typeof DBClass[prop] === "function")
     .forEach((staticMethod) => {
         DB[staticMethod] = DBClass[staticMethod];
     });

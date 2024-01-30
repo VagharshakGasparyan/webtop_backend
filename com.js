@@ -21,7 +21,7 @@ WHERE condition;
 
 
 async function f() {
-    let a = DB.dataTypes().a3;
+    let a = DB.dataTypes().varchar(255).default('tambrdam');
     console.log(a);
     // let createTable = await DB("persons").createTable({
     //     // id: DB.dataTypes().a1().a2().a3,
@@ -42,8 +42,8 @@ async function f() {
     // let args = process.argv.slice(2);
     // console.log(args);//['--app=init', 'map=init', 'esiminch=true']
 
-    let page = 1;
-    let perPage = 2;
+    // let page = 1;
+    // let perPage = 2;
     // let answer = await DB('sessions')
     //     .where('role', 'admin')
     //     .whereHas('users', 'user_id', 'id', function (query) {
