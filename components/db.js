@@ -386,22 +386,18 @@ class DBClass {
                 return secondHandle;
             };
         });
-        return firstHandle;
-        // return {
-        //     bigint: ()=>{
-        //
-        //     },
-        //     varchar: (n) => {
-        //         this.s += n;
-        //         return this.dataTypes();
-        //     },
-        //     text: () => {
-        //         return this.dataTypes();
-        //     },
-        //     a3: () => {
-        //         return this.s;
-        //     }
-        // };
+        // return firstHandle;
+        return {
+            bigint: f, binary: f, bit: f, blob: f, char: f, date: f, datetime: f, decimal: f, double: f, enum: f,
+            float: f, geometry: f, geometrycollection: f, int: f, integer: f, json: f, linestring: f, longblob: f,
+            longtext: f, mediumblob: f, mediumint: f, mediumtext: f, multilinestring: f, multipoint: f,
+            multipolygon: f, numeric: f, point: f, polygon: f, real: f, set: f, smallint: f, text: f, time: f,
+            timestamp: f, tinyblob: f, tinyint: f, tinytext: f, varbinary: f, varchar: f, year: f
+        };
+        function f(){
+            q_str += 'dataType' + '(' + [...arguments].join(', ') + ')';
+            return secondHandle;
+        }
     }
 
     _queryBuilder(){

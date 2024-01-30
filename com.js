@@ -21,6 +21,7 @@ WHERE condition;
 
 
 async function f() {
+    // DB.dataTypes().bigint();
     let a = DB.dataTypes().varchar(255).default('tambrdam');
     console.log(a);
     // let createTable = await DB("persons").createTable({
