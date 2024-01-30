@@ -40,6 +40,24 @@ function _whereHas(_this, and_or, relationTable, selfColumn, relationColumn, fn 
     return _this;
 }
 
+function _where(_this, and_or, columnOrFn, condOrVal, val) {
+    let argLen = arguments.length - 2;
+    if(argLen === 1 && typeof columnOrFn === 'function'){
+        let query = new DBClass(_this._tableName);
+        columnOrFn(query);
+        if(query._conditions.length > 0){
+            query._conditions[0] = ("(");
+            query._conditions.push(")");
+            _this._conditions.push(and_or, ...query._conditions);
+        }
+    }else if (argLen === 2) {
+        _this._conditions.push(and_or, _this._table + "." + _col(columnOrFn), "=", _val(condOrVal));
+    } else if(argLen > 2) {
+        _this._conditions.push(and_or, _this._table + "." + _col(columnOrFn), condOrVal,  _val(val));
+    }
+    return _this;
+}
+
 function fDB(q) {
     let mode = process.env.NODE_ENV ?? "production";
     let config = conf.database[mode];
@@ -62,6 +80,7 @@ function fDB(q) {
 class DBClass {
     //"SELECT * FROM products WHERE disable = 0 LIMIT 10"
     constructor(table) {
+        this._tableName = table;
         this._table = _col(table);
         this._r_table = null;
         this._table_r = null;
@@ -72,28 +91,14 @@ class DBClass {
         this._add_to_end = null;
     }
 
-    where(column, condOrVal, val) {
-        if (arguments.length < 2) {
-            return this;
-        }
-        if (arguments.length < 3) {
-            this._conditions.push("AND", this._table + "." + _col(column), "=", _val(condOrVal));
-        } else {
-            this._conditions.push("AND", this._table + "." + _col(column), condOrVal,  _val(val));
-        }
-        return this;
+    where(columnOrFn, condOrVal, val) {
+        let and_or = "AND";
+        return _where(this, and_or, ...arguments);
     }
 
     orWhere(column, condOrVal, val) {
-        if (arguments.length < 2) {
-            return this;
-        }
-        if (arguments.length < 3) {
-            this._conditions.push("OR", this._table + "." + _col(column), "=", _val(condOrVal));
-        } else {
-            this._conditions.push("OR", this._table + "." + _col(column), condOrVal,  _val(val));
-        }
-        return this;
+        let and_or = "OR";
+        return _where(this, and_or, ...arguments);
     }
 
     whereNotNull(column){
