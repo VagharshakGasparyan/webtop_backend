@@ -368,16 +368,60 @@ class DBClass {
 
 
     static column(_column) {
-        this.column.q_str = '';
         let q_str = '';
-        let q_arr = [];
+        let q_obj = {not_null: "NOT NULL"};
         let secondary = {
+            raw: function (rawValue) {
+                q_obj.raw = rawValue;
+                return secondary;
+            },
+            check: function (condition, value) {
+                q_str += ", CHECK (" + _col(_column) + condition + value + ")";
+                q_obj.check = "CHECK (" + _col(_column) + condition + value + ")";
+                return secondary;
+            },
+            from: function (startingValue) {
+                // q_str += " ";
+                return secondary;
+            },
+            charset: function (ch) {
+                // q_str += " ";
+                return secondary;
+            },
+            collation: function (coll) {
+                // q_str += " ";
+                return secondary;
+            },
+            after: function (col) {
+                // q_str += " ";
+                return secondary;
+            },
+            change: function () {
+                // q_str += " ";
+                return secondary;
+            },
+            unsigned: function () {
+                q_str += " UNSIGNED";
+                q_obj.unsigned = "UNSIGNED";
+                return secondary;
+            },
+            primary: function () {
+                q_str += ", PRIMARY KEY (" + _column + ")";
+                q_obj.primary = "PRIMARY KEY (" + _column + ")";
+                return secondary;
+            },
+            unique: function () {
+                q_str += " UNIQUE";
+                q_obj.unique = "UNIQUE";
+                return secondary;
+            },
             nullable: function () {
-                q_str += " DEFAULT NULL";
+                delete q_obj.not_null;
                 return secondary;
             },
             default: function (def) {
                 q_str += " DEFAULT " + _val(def);
+                q_obj.default = "DEFAULT " + _val(def);
                 return secondary;
             },
             __s: function () {
