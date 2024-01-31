@@ -399,7 +399,7 @@ class DBClass {
             };
         }
         primary.id = function () {
-            return _col(_column) + ' ' + "BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, PRIMARY KEY (id)";
+            return _col(_column) + ' ' + "BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, PRIMARY KEY (" + _column + ")";
         }
         return primary;
     }
