@@ -341,30 +341,28 @@ class DBClass {
     }
 
     createTable(obj){
-        if(!obj || typeof obj !== "object"){
+        if(!obj || !Array.isArray(obj)){
             return null;
         }
         this._r_table = "CREATE TABLE";
         this._table_r = "(";
-        let table_r_arr = [];
-        for(let column in obj){
-            table_r_arr.push(_col(column) + " " + obj[column]);
-        }
+        // let table_r_arr = [];
+        // for(let column in obj){
+        //     table_r_arr.push(_col(column) + " " + obj[column]);
+        // }
         // this._table_r += "PersonID int, LastName varchar(255), Address varchar(255), City varchar(255)";
-        this._table_r += table_r_arr.join(", ");
+        // this._table_r += table_r_arr.join(", ");
+        this._table_r += obj.join(", ");
         this._table_r += ")";
         return this._queryBuilder();
     }
 
 
-    static dataTypes() {
-        let _dataTypes = ['bigint', 'binary', 'bit', 'blob', 'char', 'date', 'datetime', 'decimal', 'double', 'enum',
-            'float', 'geometry', 'geometrycollection', 'int', 'integer', 'json', 'linestring', 'longblob', 'longtext',
-            'mediumblob', 'mediumint', 'mediumtext', 'multilinestring', 'multipoint', 'multipolygon', 'numeric', 'point',
-            'polygon', 'real', 'set', 'smallint', 'text', 'time', 'timestamp', 'tinyblob', 'tinyint', 'tinytext',
-            'varbinary', 'varchar', 'year'];
+    static column(_column) {
+        this.column.q_str = '';
         let q_str = '';
-        let secondHandle = {
+        let q_arr = [];
+        let secondary = {
             nullable: function () {
                 q_str += " DEFAULT NULL";
                 return q_str;
@@ -373,31 +371,26 @@ class DBClass {
                 q_str += " DEFAULT " + _val(def);
                 return q_str;
             },
-            ablab: "qwerty",
-            tblab: "asdfgh",
         };
-        let firstHandle = {};
-        _dataTypes.forEach((dataType)=>{
-            firstHandle[dataType] = function (){
-                // console.log('arguments=', [...arguments]);
-                // console.log(a, b);
-                // console.log([...arguments]);
-                q_str += dataType + '(' + [...arguments].join(', ') + ')';
-                return secondHandle;
-            };
-        });
         // return firstHandle;
-        return {
+        function f() {return secondary; }
+        let primary = {
             bigint: f, binary: f, bit: f, blob: f, char: f, date: f, datetime: f, decimal: f, double: f, enum: f,
             float: f, geometry: f, geometrycollection: f, int: f, integer: f, json: f, linestring: f, longblob: f,
             longtext: f, mediumblob: f, mediumint: f, mediumtext: f, multilinestring: f, multipoint: f,
             multipolygon: f, numeric: f, point: f, polygon: f, real: f, set: f, smallint: f, text: f, time: f,
             timestamp: f, tinyblob: f, tinyint: f, tinytext: f, varbinary: f, varchar: f, year: f
-        };
-        function f(){
-            q_str += 'dataType' + '(' + [...arguments].join(', ') + ')';
-            return secondHandle;
         }
+        for(let key in primary){
+            primary[key] = function () {
+                q_str += _col(_column) + ' ' + key.toUpperCase() + '(' + [...arguments].join(', ') + ')';
+                return secondary;
+            };
+        }
+        primary.id = function () {
+            return "BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, PRIMARY KEY (id)";
+        }
+        return primary;
     }
 
     _queryBuilder(){
@@ -447,6 +440,6 @@ Object.getOwnPropertyNames(DBClass)
         DB[staticMethod] = DBClass[staticMethod];
     });
 
-
+// console.log(Object.getOwnPropertyNames(DBClass));
 // exports.fDB=fDB;
 module.exports = {fDB, DB};
