@@ -374,17 +374,16 @@ class DBClass {
         let secondary = {
             nullable: function () {
                 q_str += " DEFAULT NULL";
-                return q_str;
+                return secondary;
             },
             default: function (def) {
                 q_str += " DEFAULT " + _val(def);
-                return q_str;
+                return secondary;
             },
             __s: function () {
                 return q_str;
             }
         };
-        // return firstHandle;
         function f() {return secondary; }
         let primary = {
             bigint: f, binary: f, bit: f, blob: f, char: f, date: f, datetime: f, decimal: f, double: f, enum: f,
