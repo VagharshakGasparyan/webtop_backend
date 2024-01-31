@@ -344,6 +344,15 @@ class DBClass {
         if(!obj || !Array.isArray(obj)){
             return null;
         }
+        obj.forEach((objItem, i)=>{
+            if(objItem && typeof objItem === 'object' && "__s" in objItem){
+                obj[i] = objItem.__s();
+                // console.log(objItem.__s());
+            }
+
+        });
+
+        // return 0;
         this._r_table = "CREATE TABLE";
         this._table_r = "(";
         // let table_r_arr = [];
@@ -371,6 +380,9 @@ class DBClass {
                 q_str += " DEFAULT " + _val(def);
                 return q_str;
             },
+            __s: function () {
+                return q_str;
+            }
         };
         // return firstHandle;
         function f() {return secondary; }
@@ -383,12 +395,12 @@ class DBClass {
         }
         for(let key in primary){
             primary[key] = function () {
-                q_str += _col(_column) + ' ' + key.toUpperCase() + '(' + [...arguments].join(', ') + ')';
+                q_str += _col(_column) + ' ' + key.toUpperCase() + (arguments.length > 0 ? '(' + [...arguments].join(', ') + ')' : '');
                 return secondary;
             };
         }
         primary.id = function () {
-            return "BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, PRIMARY KEY (id)";
+            return _col(_column) + ' ' + "BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, PRIMARY KEY (id)";
         }
         return primary;
     }
