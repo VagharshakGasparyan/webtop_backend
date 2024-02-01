@@ -353,7 +353,7 @@ class DBClass {
         }
         arr.forEach((arrItem, i)=>{
             if(arrItem && typeof arrItem === 'object' && "__s" in arrItem){
-                arr[i] = arrItem.__s();
+                arr[i] = arrItem.__s(this._tableName, 'createTable');
             }
         });
         this._r_table = "CREATE TABLE";
@@ -380,7 +380,7 @@ class DBClass {
         }
         arr.forEach((arrItem, i)=>{
             if(arrItem && typeof arrItem === 'object' && "__s" in arrItem){
-                arr[i] = arrItem.__s();
+                arr[i] = arrItem.__s(this._tableName, 'addColumns');
             }
         });
         this._r_table = "ALTER TABLE";
@@ -395,7 +395,7 @@ class DBClass {
             return null;
         }
         if(obj && typeof obj === 'object' && "__s" in obj){
-            obj = obj.__s('changeColumn');
+            obj = obj.__s(this._tableName, 'changeColumn');
         }
         this._r_table = "ALTER TABLE";
         this._table_r = "MODIFY COLUMN ";
@@ -444,10 +444,11 @@ class DBClass {
                 return secondary;
             },
             foreign: function (referenceTable, referencePrimaryKey) {
-                //changeColumn
-                // q_obj.foreign = "ADD FOREIGN KEY (" + _col(_column) + ") REFERENCES " + _col(referenceTable) + "(" + _col(referencePrimaryKey) + ")";
-
-                q_obj.foreign = "FOREIGN KEY (" + _col(_column) + ") REFERENCES " + _col(referenceTable) + "(" + _col(referencePrimaryKey) + ")";
+                q_obj.foreign = [referenceTable, referencePrimaryKey];
+                return secondary;
+            },
+            dropForeign: function (referenceTable) {
+                q_obj.dropForeign = referenceTable;
                 return secondary;
             },
             unique: function () {
@@ -466,7 +467,7 @@ class DBClass {
                 q_obj.autoIncrement = "AUTO_INCREMENT";
                 return secondary;
             },
-            __s: function () {
+            __s: function (tableName = '', fromMethod = '') {
                 //_col(_column) + ' ' + "BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, PRIMARY KEY (" + _column + ")";
                 if(q_obj.raw){
                     return _col(_column) + ' ' + q_obj.raw;
@@ -489,8 +490,13 @@ class DBClass {
                     q_arr.push(", " + q_obj.primary);
                 }
                 if(q_obj.foreign){
-                    let prefix = arguments[0] === 'changeColumn' ? "ADD " : "";
-                    q_arr.push(", " + prefix + q_obj.foreign);
+                    let prefix = fromMethod === 'changeColumn' ? "ADD " : "";
+                    let [referenceTable, referencePrimaryKey] = q_obj.foreign;
+                    q_arr.push(", " + prefix + "CONSTRAINT " + _col("FK_" + tableName + "__" + referenceTable)
+                        + " FOREIGN KEY (" + _col(_column) + ") REFERENCES " + _col(referenceTable) + "(" + _col(referencePrimaryKey) + ")");
+                }
+                if(q_obj.dropForeign){
+                    q_arr.push(", DROP FOREIGN KEY " + _col("FK_" + tableName + "__" + q_obj.dropForeign));
                 }
                 if(q_obj.check){
                     q_arr.push(", " + q_obj.check);

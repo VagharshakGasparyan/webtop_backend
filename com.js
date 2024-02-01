@@ -27,7 +27,7 @@ async function f() {
     // console.log(a);
     // let createTable = await DB("persons").createTable([
     //     DB.column("id").id(),
-    //     DB.column("user_id").bigint(),//.foreign('users', 'id'),
+    //     DB.column("user_id").bigint().foreign('users', 'id'),
     //     DB.column("first_name").varchar(255).default('Valod'),
     //     DB.column("address").varchar(255).nullable(),
     //     DB.column("city").varchar(255),
@@ -36,7 +36,7 @@ async function f() {
     // ]);
     // console.log(createTable);
     let changeColumn = await DB("persons").changeColumn(
-        DB.column("user_id").bigint().foreign('users', 'id')
+        DB.column("user_id").bigint().dropForeign('users')
     );
     console.log(changeColumn);
 
