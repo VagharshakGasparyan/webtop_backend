@@ -33,8 +33,10 @@ async function f() {
         DB.column("created_at").timestamp(),
         DB.column("updated_at").timestamp(),
     ]);
-    // console.log(createTable);
-    // let answer = await DB("users").where("role", "admin").orWhereBetween("id", 1, 10).get();
+    console.log(createTable);
+    // let answer = await DB("users").where("role", "admin")
+    //     // .orWhereBetween("id", 1, 10)
+    //     .get();
     // console.log(answer);
 
     // let answer = await DB("users").where("role", "admin").where(function (query) {

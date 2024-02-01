@@ -351,16 +351,8 @@ class DBClass {
             }
 
         });
-
-        // return 0;
         this._r_table = "CREATE TABLE";
         this._table_r = "(";
-        // let table_r_arr = [];
-        // for(let column in obj){
-        //     table_r_arr.push(_col(column) + " " + obj[column]);
-        // }
-        // this._table_r += "PersonID int, LastName varchar(255), Address varchar(255), City varchar(255)";
-        // this._table_r += table_r_arr.join(", ");
         this._table_r += obj.join(", ");
         this._table_r += ")";
         return this._queryBuilder();
@@ -368,15 +360,14 @@ class DBClass {
 
 
     static column(_column) {
-        let q_str = '';
-        let q_obj = {not_null: "NOT NULL"};
+        let q_str = '', q_arr = [];
+        let q_obj = {notNull: "NOT NULL"};
         let secondary = {
             raw: function (rawValue) {
                 q_obj.raw = rawValue;
                 return secondary;
             },
             check: function (condition, value) {
-                q_str += ", CHECK (" + _col(_column) + condition + value + ")";
                 q_obj.check = "CHECK (" + _col(_column) + condition + value + ")";
                 return secondary;
             },
@@ -401,31 +392,55 @@ class DBClass {
                 return secondary;
             },
             unsigned: function () {
-                q_str += " UNSIGNED";
                 q_obj.unsigned = "UNSIGNED";
                 return secondary;
             },
             primary: function () {
-                q_str += ", PRIMARY KEY (" + _column + ")";
-                q_obj.primary = "PRIMARY KEY (" + _column + ")";
+                q_obj.primary = "PRIMARY KEY (" + _col(_column) + ")";
                 return secondary;
             },
             unique: function () {
-                q_str += " UNIQUE";
                 q_obj.unique = "UNIQUE";
                 return secondary;
             },
             nullable: function () {
-                delete q_obj.not_null;
+                delete q_obj.notNull;
                 return secondary;
             },
             default: function (def) {
-                q_str += " DEFAULT " + _val(def);
                 q_obj.default = "DEFAULT " + _val(def);
                 return secondary;
             },
+            autoIncrement: function (def) {
+                q_obj.autoIncrement = "AUTO_INCREMENT";
+                return secondary;
+            },
             __s: function () {
-                return q_str;
+                //_col(_column) + ' ' + "BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, PRIMARY KEY (" + _column + ")";
+                if(q_obj.raw){
+                    return _col(_column) + ' ' + q_obj.raw;
+                }
+                if(q_obj.dataType){
+                    q_arr.push(_col(_column));
+                    if(q_obj.arguments){
+                        q_arr.push(q_obj.dataType + q_obj.arguments);
+                    }else{
+                        q_arr.push(q_obj.dataType);
+                    }
+                }
+                let keySequence = ["unsigned", "notNull", "autoIncrement", "default"];
+                keySequence.forEach((key)=>{
+                    if(q_obj[key]){
+                        q_arr.push(q_obj[key]);
+                    }
+                })
+                if(q_obj.primary){
+                    q_arr.push(", " + q_obj.primary);
+                }
+                if(q_obj.check){
+                    q_arr.push(", " + q_obj.check);
+                }
+                return q_arr.join(" ");
             }
         };
         function f() {return secondary; }
@@ -438,7 +453,10 @@ class DBClass {
         }
         for(let key in primary){
             primary[key] = function () {
-                q_str += _col(_column) + ' ' + key.toUpperCase() + (arguments.length > 0 ? '(' + [...arguments].join(', ') + ')' : '');
+                q_obj.dataType = key.toUpperCase();
+                if(arguments.length > 0){
+                    q_obj.arguments = '(' + [...arguments].join(', ') + ')';
+                }
                 return secondary;
             };
         }
