@@ -21,19 +21,29 @@ WHERE condition;
 
 
 async function f() {
-    let delTable = await DB("persons").deleteTable();
+    // let delTable = await DB("persons").deleteTable();
     // DB.dataTypes().bigint();
     // let a = DB.dataTypes().varchar(255).default('qwerty');
     // console.log(a);
     // let createTable = await DB("persons").createTable([
     //     DB.column("id").id(),
-    //     DB.column("last_name").varchar(255).default('Valod'),
+    //     DB.column("first_name").varchar(255).default('Valod'),
     //     DB.column("address").varchar(255).nullable(),
     //     DB.column("city").varchar(255),
     //     DB.column("created_at").timestamp(),
     //     DB.column("updated_at").timestamp(),
     // ]);
     // console.log(createTable);
+    let changeColumn = await DB("persons").changeColumn(
+        DB.column("valod").int().default(5).nullable()
+    );
+    console.log(changeColumn);
+
+    // let addColumns = await DB("persons").addColumns([
+    //     DB.column("valod").varchar(255).nullable(),
+    //     DB.column("vartush").varchar(255).default("manush"),
+    // ]);
+    // console.log(addColumns);
     // let a = 5;
     // let answer = await DB("users")
     //     .when(a < 10, function (query) {

@@ -368,6 +368,40 @@ class DBClass {
         return this._queryBuilder();
     }
 
+    deleteColumn(columnName){
+        this._r_table = "ALTER TABLE";
+        this._table_r = "DROP COLUMN " + _col(columnName);
+        return this._queryBuilder();
+    }
+
+    addColumns(arr){
+        if(!arr || !Array.isArray(arr)){
+            return null;
+        }
+        arr.forEach((arrItem, i)=>{
+            if(arrItem && typeof arrItem === 'object' && "__s" in arrItem){
+                arr[i] = arrItem.__s();
+            }
+        });
+        this._r_table = "ALTER TABLE";
+        this._table_r = "ADD (";
+        this._table_r += arr.join(", ");
+        this._table_r += ")";
+        return this._queryBuilder();
+    }
+
+    changeColumn(obj){
+        if(arguments.length < 1){
+            return null;
+        }
+        if(obj && typeof obj === 'object' && "__s" in obj){
+            obj = obj.__s();
+        }
+        this._r_table = "ALTER TABLE";
+        this._table_r = "MODIFY COLUMN ";
+        this._table_r += obj;
+        return this._queryBuilder();
+    }
 
     static column(_column) {
         let q_str = '', q_arr = [];
