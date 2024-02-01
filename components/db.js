@@ -363,6 +363,11 @@ class DBClass {
         return this._queryBuilder();
     }
 
+    deleteTable(){
+        this._r_table = "DROP TABLE";
+        return this._queryBuilder();
+    }
+
 
     static column(_column) {
         let q_str = '', q_arr = [];

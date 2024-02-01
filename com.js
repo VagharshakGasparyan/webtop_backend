@@ -21,7 +21,7 @@ WHERE condition;
 
 
 async function f() {
-
+    let delTable = await DB("persons").deleteTable();
     // DB.dataTypes().bigint();
     // let a = DB.dataTypes().varchar(255).default('qwerty');
     // console.log(a);
@@ -34,16 +34,16 @@ async function f() {
     //     DB.column("updated_at").timestamp(),
     // ]);
     // console.log(createTable);
-    let a = 5;
-    let answer = await DB("users")
-        .when(a < 10, function (query) {
-            query.where("role", "admin");
-            query.limit(1);
-        })
-        // .where("role", "admin")
-        // .orWhereBetween("id", 1, 10)
-        .get();
-    console.log(answer);
+    // let a = 5;
+    // let answer = await DB("users")
+    //     .when(a < 10, function (query) {
+    //         query.where("role", "admin");
+    //         query.limit(1);
+    //     })
+    //     // .where("role", "admin")
+    //     // .orWhereBetween("id", 1, 10)
+    //     .get();
+    // console.log(answer);
 
     // let answer = await DB("users").where("role", "admin").where(function (query) {
     //     query.where('last_name', 'Root').orWhere('last_name', 'User');
