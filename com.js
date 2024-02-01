@@ -25,19 +25,25 @@ async function f() {
     // DB.dataTypes().bigint();
     // let a = DB.dataTypes().varchar(255).default('qwerty');
     // console.log(a);
-    let createTable = await DB("persons").createTable([
-        DB.column("id").id(),
-        DB.column("last_name").varchar(255).default('Valod'),
-        DB.column("address").varchar(255).nullable(),
-        DB.column("city").varchar(255),
-        DB.column("created_at").timestamp(),
-        DB.column("updated_at").timestamp(),
-    ]);
-    console.log(createTable);
-    // let answer = await DB("users").where("role", "admin")
-    //     // .orWhereBetween("id", 1, 10)
-    //     .get();
-    // console.log(answer);
+    // let createTable = await DB("persons").createTable([
+    //     DB.column("id").id(),
+    //     DB.column("last_name").varchar(255).default('Valod'),
+    //     DB.column("address").varchar(255).nullable(),
+    //     DB.column("city").varchar(255),
+    //     DB.column("created_at").timestamp(),
+    //     DB.column("updated_at").timestamp(),
+    // ]);
+    // console.log(createTable);
+    let a = 5;
+    let answer = await DB("users")
+        .when(a < 10, function (query) {
+            query.where("role", "admin");
+            query.limit(1);
+        })
+        // .where("role", "admin")
+        // .orWhereBetween("id", 1, 10)
+        .get();
+    console.log(answer);
 
     // let answer = await DB("users").where("role", "admin").where(function (query) {
     //     query.where('last_name', 'Root').orWhere('last_name', 'User');

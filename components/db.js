@@ -241,6 +241,13 @@ class DBClass {
         return _whereHas(this, and_or, relationTable, selfColumn, relationColumn, fn);
     }
 
+    when(condition, fn){
+        if(arguments.length > 1 && Boolean(condition) && typeof fn === "function"){
+            fn(this);
+        }
+        return this;
+    }
+
     get(columns = this._table + "." + "*") {
         if (Array.isArray(columns)) {
             columns = columns.map(col => this._table + "." + _col(col)).join(', ');
@@ -340,20 +347,18 @@ class DBClass {
         return this._queryBuilder();
     }
 
-    createTable(obj){
-        if(!obj || !Array.isArray(obj)){
+    createTable(arr){
+        if(!arr || !Array.isArray(arr)){
             return null;
         }
-        obj.forEach((objItem, i)=>{
-            if(objItem && typeof objItem === 'object' && "__s" in objItem){
-                obj[i] = objItem.__s();
-                // console.log(objItem.__s());
+        arr.forEach((arrItem, i)=>{
+            if(arrItem && typeof arrItem === 'object' && "__s" in arrItem){
+                arr[i] = arrItem.__s();
             }
-
         });
         this._r_table = "CREATE TABLE";
         this._table_r = "(";
-        this._table_r += obj.join(", ");
+        this._table_r += arr.join(", ");
         this._table_r += ")";
         return this._queryBuilder();
     }
