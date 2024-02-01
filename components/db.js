@@ -443,6 +443,13 @@ class DBClass {
                 q_obj.primary = "PRIMARY KEY (" + _col(_column) + ")";
                 return secondary;
             },
+            foreign: function (referenceTable, referencePrimaryKey) {
+                //changeColumn
+                // q_obj.foreign = "ADD FOREIGN KEY (" + _col(_column) + ") REFERENCES " + _col(referenceTable) + "(" + _col(referencePrimaryKey) + ")";
+
+                q_obj.foreign = "FOREIGN KEY (" + _col(_column) + ") REFERENCES " + _col(referenceTable) + "(" + _col(referencePrimaryKey) + ")";
+                return secondary;
+            },
             unique: function () {
                 q_obj.unique = "UNIQUE";
                 return secondary;
@@ -480,6 +487,9 @@ class DBClass {
                 })
                 if(q_obj.primary){
                     q_arr.push(", " + q_obj.primary);
+                }
+                if(q_obj.foreign){
+                    q_arr.push(", " + q_obj.foreign);
                 }
                 if(q_obj.check){
                     q_arr.push(", " + q_obj.check);

@@ -27,6 +27,7 @@ async function f() {
     // console.log(a);
     // let createTable = await DB("persons").createTable([
     //     DB.column("id").id(),
+    //     DB.column("user_id").bigint(),//.foreign('users', 'id'),
     //     DB.column("first_name").varchar(255).default('Valod'),
     //     DB.column("address").varchar(255).nullable(),
     //     DB.column("city").varchar(255),
@@ -34,14 +35,13 @@ async function f() {
     //     DB.column("updated_at").timestamp(),
     // ]);
     // console.log(createTable);
-    let changeColumn = await DB("persons").changeColumn(
-        DB.column("valod").int().default(5).nullable()
+    let changeColumn = await DB("persons").changeColumn(//foreign chi ashxatum
+        DB.column("user_id").bigint().foreign('users', 'id')
     );
     console.log(changeColumn);
 
     // let addColumns = await DB("persons").addColumns([
-    //     DB.column("valod").varchar(255).nullable(),
-    //     DB.column("vartush").varchar(255).default("manush"),
+    //     DB.column("user_id").bigint().foreign('users', 'id'),
     // ]);
     // console.log(addColumns);
     // let a = 5;
