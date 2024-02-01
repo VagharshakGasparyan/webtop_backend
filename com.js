@@ -35,7 +35,7 @@ async function f() {
     //     DB.column("updated_at").timestamp(),
     // ]);
     // console.log(createTable);
-    let changeColumn = await DB("persons").changeColumn(//foreign chi ashxatum
+    let changeColumn = await DB("persons").changeColumn(
         DB.column("user_id").bigint().foreign('users', 'id')
     );
     console.log(changeColumn);

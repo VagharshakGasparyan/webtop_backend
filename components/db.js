@@ -395,7 +395,7 @@ class DBClass {
             return null;
         }
         if(obj && typeof obj === 'object' && "__s" in obj){
-            obj = obj.__s();
+            obj = obj.__s('changeColumn');
         }
         this._r_table = "ALTER TABLE";
         this._table_r = "MODIFY COLUMN ";
@@ -489,7 +489,8 @@ class DBClass {
                     q_arr.push(", " + q_obj.primary);
                 }
                 if(q_obj.foreign){
-                    q_arr.push(", " + q_obj.foreign);
+                    let prefix = arguments[0] === 'changeColumn' ? "ADD " : "";
+                    q_arr.push(", " + prefix + q_obj.foreign);
                 }
                 if(q_obj.check){
                     q_arr.push(", " + q_obj.check);
