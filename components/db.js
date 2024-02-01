@@ -356,7 +356,7 @@ class DBClass {
                 arr[i] = arrItem.__s(this._tableName, 'createTable');
             }
         });
-        this._r_table = "CREATE TABLE";
+        this._r_table = "CREATE TABLE" + " IF NOT EXISTS";
         this._table_r = "(";
         this._table_r += arr.join(", ");
         this._table_r += ")";

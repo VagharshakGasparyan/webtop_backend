@@ -21,6 +21,20 @@ WHERE condition;
 
 
 async function f() {
+    let args = process.argv.slice(2);
+    console.log(args);//['--app=init', 'map=init', 'esiminch=true']
+    if(args.length > 0){
+        if(args[0] === "migrate"){
+            let tables = [];
+            for(let i = 1; i < args.length; i++){
+                tables.push(args[i]);
+            }
+            console.log(tables);
+        }
+
+
+    }
+
     // let delTable = await DB("persons").deleteTable();
     // DB.dataTypes().bigint();
     // let a = DB.dataTypes().varchar(255).default('qwerty');
@@ -35,10 +49,10 @@ async function f() {
     //     DB.column("updated_at").timestamp(),
     // ]);
     // console.log(createTable);
-    let changeColumn = await DB("persons").changeColumn(
-        DB.column("user_id").bigint().dropForeign('users')
-    );
-    console.log(changeColumn);
+    // let changeColumn = await DB("persons").changeColumn(
+    //     DB.column("user_id").bigint().dropForeign('users')
+    // );
+    // console.log(changeColumn);
 
     // let addColumns = await DB("persons").addColumns([
     //     DB.column("user_id").bigint().foreign('users', 'id'),
