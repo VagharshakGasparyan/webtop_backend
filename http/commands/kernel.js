@@ -82,18 +82,41 @@ class Kernel {
         for (let i = 1; i < this.args.length; i++) {
             tables.push(this.args[i]);
         }
-        /*
-        if(!fs.existsSync(addPath) || !fs.statSync(addPath).isDirectory()){
-                fs.mkdirSync(addPath);
-            }
-        */
         let filesOrDirs = fs.readdirSync(this.migrationPath);
         let files = filesOrDirs.filter((fileOrDir)=>{
             return fs.statSync(this.migrationPath + "/" + fileOrDir).isFile() && fileOrDir.endsWith(".js");
         });
-        const {ProductsMigration} = require("../../migrations/20240202141954142-products");
-        await new ProductsMigration().up();
-        console.log(files);
+        let filesObj = files.map((file)=>{
+            let time = '', name = '';
+            let newFile = file.slice(0, -3);
+            let index = file.indexOf("-");
+            if(index > -1){
+                time = newFile.slice(0, index);
+                name = newFile.slice(index + 1);
+            }
+            return {time, name};
+        });
+        for(let fileObj of filesObj){
+            if(
+                tables.includes(fileObj.name)
+                || tables.includes(fileObj.time + '-' + fileObj.name)
+                || tables.includes(fileObj.time + '-' + fileObj.name + '.js')
+                || tables.length < 1
+            ){
+                try {
+                    let tableClass = fileObj.name;
+                    tableClass = tableClass[0].toUpperCase() + tableClass.slice(1);
+                    tableClass += "Migration";
+                    const {[tableClass]: MyTableClass} = require("../../migrations/" + fileObj.time + '-' + fileObj.name);
+                    await new MyTableClass().up();
+                }catch (e) {
+                    console.error(e);
+                }
+            }
+        }
+        // const {ProductsMigration} = require("../../migrations/20240202141954142-products");
+        // await new ProductsMigration().up();
+        console.log(filesObj);
         for (const table of tables) {
 
         }
