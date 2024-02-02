@@ -78,17 +78,19 @@ class Kernel {
     }
 
     async migrate() {
+        let message = [];
+        let fileExt = ".js";
         let tables = [];
         for (let i = 1; i < this.args.length; i++) {
             tables.push(this.args[i]);
         }
         let filesOrDirs = fs.readdirSync(this.migrationPath);
         let files = filesOrDirs.filter((fileOrDir)=>{
-            return fs.statSync(this.migrationPath + "/" + fileOrDir).isFile() && fileOrDir.endsWith(".js");
+            return fs.statSync(this.migrationPath + "/" + fileOrDir).isFile() && fileOrDir.endsWith(fileExt);
         });
         let filesObj = files.map((file)=>{
             let time = '', name = '';
-            let newFile = file.slice(0, -3);
+            let newFile = file.slice(0, -fileExt.length);
             let index = file.indexOf("-");
             if(index > -1){
                 time = newFile.slice(0, index);
@@ -96,34 +98,47 @@ class Kernel {
             }
             return {time, name};
         });
-        for(let fileObj of filesObj){
-            if(
-                tables.includes(fileObj.name)
-                || tables.includes(fileObj.time + '-' + fileObj.name)
-                || tables.includes(fileObj.time + '-' + fileObj.name + '.js')
-                || tables.length < 1
-            ){
-                try {
-                    let tableClass = fileObj.name;
-                    tableClass = tableClass[0].toUpperCase() + tableClass.slice(1);
-                    tableClass += "Migration";
-                    const {[tableClass]: MyTableClass} = require("../../migrations/" + fileObj.time + '-' + fileObj.name);
-                    await new MyTableClass().up();
-                }catch (e) {
-                    console.error(e);
+        filesObj.sort((a, b)=>{
+            return a.time - b.time;
+        });
+        let filesObjToBeUp = [];
+        if(tables.length){
+            for(let fileObj of filesObj){
+                if(
+                    tables.includes(fileObj.name)
+                    || tables.includes(fileObj.time + '-' + fileObj.name)
+                    || tables.includes(fileObj.time + '-' + fileObj.name + fileExt)
+                ){
+                    filesObjToBeUp.push(fileObj);
                 }
             }
+        }else{
+            filesObjToBeUp.push(...filesObj);
         }
-        // const {ProductsMigration} = require("../../migrations/20240202141954142-products");
-        // await new ProductsMigration().up();
-        console.log(filesObj);
-        for (const table of tables) {
 
+        for(let fileObj of filesObjToBeUp){
+            try {
+                let tableClass = fileObj.name;
+                tableClass = tableClass[0].toUpperCase() + tableClass.slice(1);
+                tableClass += "Migration";
+                const MyTableClass = require("../../migrations/" + fileObj.time + '-' + fileObj.name);
+                await new MyTableClass().up();
+                message.push(fileObj.time + '-' + fileObj.name + fileExt);
+            }catch (e) {
+                console.error(e);
+            }
         }
-        console.log(tables);
+        if(message.length){
+            message.unshift("Migrating files:");
+        }else{
+            message.push("Noting to migrate.");
+        }
+        return message.join(" ");
     }
 
     async makeMigration() {
+        let message = [];
+        let fileExt = ".js";
         let tables = [];
         for (let i = 1; i < this.args.length; i++) {
             tables.push(this.args[i]);
@@ -136,17 +151,24 @@ class Kernel {
                 let mf = fs.readFileSync(__dirname + '/kernel/migration.js', 'utf8');
                 let mfArr = mf.split('/*migration-separator*/');
                 mfArr[0] = "const {DB} = require(\"../components/db\");\n" +
-                    "const table = \"" + table + "\";\nclass " + tableClass;
-                mfArr.push("module.exports = {" + tableClass + "}");
+                    "const table = \"" + table + "\";//change as you see fit․\nclass " + tableClass;
+                mfArr.push("module.exports = " + tableClass + ";");
                 mf = mfArr.join("");
                 makeDirectoryIfNotExists(this.migrationPath);
-                let fileName = moment().format('yyyyMMDDHHmmssSSS') + '-' + table + '.js';
+                let fileName = moment().format('yyyyMMDDHHmmssSSS') + '-' + table + fileExt;
                 fs.writeFileSync(this.migrationPath + '/' + fileName, mf);
+                message.push(fileName);
             }catch (e) {
                 console.error(e);
             }
             await sleep(50);
         }
+        if(message.length){
+            message.unshift("Making migration files:");
+        }else{
+            message.push("Noting to make.");
+        }
+        return message.join(" ");
     }
     async seed() {
 

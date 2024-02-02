@@ -1,7 +1,6 @@
-const {DB} = require("../../../components/db");
-const table = "users";//change as you see fit
-
-class Migration/*migration-separator*/ {
+const {DB} = require("../components/db");
+const table = "persons";//change as you see fit․
+class PersonsMigration {
     constructor() {
         //
     }
@@ -28,4 +27,4 @@ class Migration/*migration-separator*/ {
     async down() {
         await DB(table).deleteTable();
     }
-}
+}module.exports = PersonsMigration;

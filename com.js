@@ -13,7 +13,7 @@ async function f() {
     // node com make:seeder users sessions
     let args = process.argv.slice(2);
     let com_answer = await new Kernel(args, __dirname).distributor();
-    // console.log('com_answer=', com_answer);
+    console.log(com_answer);
     // let delTable = await DB("persons").deleteTable();
     // DB.dataTypes().bigint();
     // let a = DB.dataTypes().varchar(255).default('qwerty');
