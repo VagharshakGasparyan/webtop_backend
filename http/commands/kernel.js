@@ -49,6 +49,7 @@ class Kernel {
         this.root = root;
         global.__basedir = root;
         this.migrationPath = root + "/migrations";
+        this.seederPath = root + "/seeders";
     }
 
     async help() {
@@ -174,7 +175,39 @@ class Kernel {
 
     }
     async makeSeeder() {
-
+        let message = [];
+        let fileExt = ".js";
+        let tables = [];
+        for (let i = 1; i < this.args.length; i++) {
+            tables.push(this.args[i]);
+        }
+        for (const table of tables) {
+            try {
+                let tableClass = table;
+                tableClass = tableClass[0].toUpperCase() + tableClass.slice(1);
+                tableClass += "Seeder";
+                let mf = fs.readFileSync(__dirname + '/kernel/seeder.js', 'utf8');
+                let mfArr = mf.split('/*seeder-separator*/');
+                mfArr[0] = "const {DB} = require(\"../components/db\");\n" +
+                    "const bcrypt = require(\"bcrypt\");\n" +
+                    "const table = \"" + table + "\";//change as you see fit․\nclass " + tableClass;
+                mfArr.push("module.exports = " + tableClass + ";");
+                mf = mfArr.join("");
+                makeDirectoryIfNotExists(this.seederPath);
+                let fileName = moment().format('yyyyMMDDHHmmssSSS') + '-' + table + fileExt;
+                fs.writeFileSync(this.seederPath + '/' + fileName, mf);
+                message.push(fileName);
+            }catch (e) {
+                console.error(e);
+            }
+            await sleep(50);
+        }
+        if(message.length){
+            message.unshift("Making migration files:");
+        }else{
+            message.push("Noting to make.");
+        }
+        return message.join(" ");
     }
 
     async distributor() {
