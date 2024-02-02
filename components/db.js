@@ -364,7 +364,7 @@ class DBClass {
     }
 
     deleteTable(){
-        this._r_table = "DROP TABLE";
+        this._r_table = "DROP TABLE" + " IF EXISTS";
         return this._queryBuilder();
     }
 

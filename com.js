@@ -1,40 +1,19 @@
 const moment = require("moment/moment");
 const {DB} = require("./components/db");
 
-/*
-SELECT column1, column2, ... FROM
-table_name;
-
-INSERT INTO table_name (column1, column2, column3, ...)
-VALUES (value1, value2, value3, ...);
-
-DELETE FROM table_name WHERE condition;
-
-UPDATE table_name
-SET column1 = value1, column2 = value2, ...
-WHERE condition;
-
-
-*/
-
-
-
+const {Kernel} = require("./http/commands/kernel");
 
 async function f() {
+    // node com help
+    // node com migrate
+    // node com migrate users sessions
+    // node com make:migration teams products
+    // node com seed
+    // node com seed users sessions
+    // node com make:seeder users sessions
     let args = process.argv.slice(2);
-    console.log(args);//['--app=init', 'map=init', 'esiminch=true']
-    if(args.length > 0){
-        if(args[0] === "migrate"){
-            let tables = [];
-            for(let i = 1; i < args.length; i++){
-                tables.push(args[i]);
-            }
-            console.log(tables);
-        }
-
-
-    }
-
+    let com_answer = await new Kernel(args, __dirname).distributor();
+    // console.log('com_answer=', com_answer);
     // let delTable = await DB("persons").deleteTable();
     // DB.dataTypes().bigint();
     // let a = DB.dataTypes().varchar(255).default('qwerty');
