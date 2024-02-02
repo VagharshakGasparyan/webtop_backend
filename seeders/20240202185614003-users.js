@@ -1,5 +1,6 @@
 const {DB} = require("../components/db");
 const bcrypt = require("bcrypt");
+const moment = require("moment");
 const table = "users";//change as you see fit․
 class UsersSeeder {
     constructor() {
@@ -13,22 +14,20 @@ class UsersSeeder {
                 last_name: 'Root',
                 email: 'root@webtop.com',
                 password: bcrypt.hashSync('12345678', 8),
-                email_verified_at: new Date(),
+                email_verified_at: moment().format('yyyy-MM-DD HH:mm:ss'),
                 role: 'admin',
-                created_at: new Date(),
-                updated_at: new Date(),
-                // refresh: moment().format('yyyy-MM-DD HH:mm:ss'),
-                // updated_at: moment().format('yyyy-MM-DD HH:mm:ss'),
+                created_at: moment().format('yyyy-MM-DD HH:mm:ss'),
+                updated_at: moment().format('yyyy-MM-DD HH:mm:ss'),
             },
             {
                 first_name: 'User',
                 last_name: 'User',
                 email: 'user@webtop.com',
                 password: bcrypt.hashSync('12345678', 8),
-                email_verified_at: new Date(),
+                email_verified_at: moment().format('yyyy-MM-DD HH:mm:ss'),
                 role: 'user',
-                created_at: new Date(),
-                updated_at: new Date(),
+                created_at: moment().format('yyyy-MM-DD HH:mm:ss'),
+                updated_at: moment().format('yyyy-MM-DD HH:mm:ss'),
             }
         ]);
         /*Or can create*/
@@ -45,6 +44,6 @@ class UsersSeeder {
     }
 
     async down() {
-        await DB(table).deleteTable();
+        await DB(table).truncate();
     }
 }module.exports = UsersSeeder;

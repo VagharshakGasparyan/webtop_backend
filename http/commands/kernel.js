@@ -119,9 +119,6 @@ class Kernel {
 
         for(let fileObj of filesObjToBeUp){
             try {
-                let tableClass = fileObj.name;
-                tableClass = tableClass[0].toUpperCase() + tableClass.slice(1);
-                tableClass += "Migration";
                 const MyTableClass = require("../../migrations/" + fileObj.time + '-' + fileObj.name);
                 await new MyTableClass().up();
                 message.push(fileObj.time + '-' + fileObj.name + fileExt);
@@ -171,9 +168,63 @@ class Kernel {
         }
         return message.join(" ");
     }
-    async seed() {
 
+    async seed() {
+        let message = [];
+        let fileExt = ".js";
+        let tables = [];
+        for (let i = 1; i < this.args.length; i++) {
+            tables.push(this.args[i]);
+        }
+        let filesOrDirs = fs.readdirSync(this.seederPath);
+        let files = filesOrDirs.filter((fileOrDir)=>{
+            return fs.statSync(this.seederPath + "/" + fileOrDir).isFile() && fileOrDir.endsWith(fileExt);
+        });
+        let filesObj = files.map((file)=>{
+            let time = '', name = '';
+            let newFile = file.slice(0, -fileExt.length);
+            let index = file.indexOf("-");
+            if(index > -1){
+                time = newFile.slice(0, index);
+                name = newFile.slice(index + 1);
+            }
+            return {time, name};
+        });
+        filesObj.sort((a, b)=>{
+            return a.time - b.time;
+        });
+        let filesObjToBeUp = [];
+        if(tables.length){
+            for(let fileObj of filesObj){
+                if(
+                    tables.includes(fileObj.name)
+                    || tables.includes(fileObj.time + '-' + fileObj.name)
+                    || tables.includes(fileObj.time + '-' + fileObj.name + fileExt)
+                ){
+                    filesObjToBeUp.push(fileObj);
+                }
+            }
+        }else{
+            filesObjToBeUp.push(...filesObj);
+        }
+
+        for(let fileObj of filesObjToBeUp){
+            try {
+                const MyTableClass = require("../../seeders/" + fileObj.time + '-' + fileObj.name);
+                await new MyTableClass().up();
+                message.push(fileObj.time + '-' + fileObj.name + fileExt);
+            }catch (e) {
+                console.error(e);
+            }
+        }
+        if(message.length){
+            message.unshift("Seeding files:");
+        }else{
+            message.push("Noting to seed.");
+        }
+        return message.join(" ");
     }
+
     async makeSeeder() {
         let message = [];
         let fileExt = ".js";
@@ -190,6 +241,7 @@ class Kernel {
                 let mfArr = mf.split('/*seeder-separator*/');
                 mfArr[0] = "const {DB} = require(\"../components/db\");\n" +
                     "const bcrypt = require(\"bcrypt\");\n" +
+                    "const moment = require(\"moment/moment\");\n" +
                     "const table = \"" + table + "\";//change as you see fit․\nclass " + tableClass;
                 mfArr.push("module.exports = " + tableClass + ";");
                 mf = mfArr.join("");
@@ -203,7 +255,7 @@ class Kernel {
             await sleep(50);
         }
         if(message.length){
-            message.unshift("Making migration files:");
+            message.unshift("Making seeder files:");
         }else{
             message.push("Noting to make.");
         }

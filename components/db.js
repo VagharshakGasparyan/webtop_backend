@@ -295,7 +295,7 @@ class DBClass {
                 columns.push(_col(column));
                 values.push(_val(obj[column]));
             }
-            this._table_r = "(" + columns.map(column => _col(column)).join(", ") + ") VALUES (" + values.join(", ") + ")";
+            this._table_r = "(" + columns.join(", ") + ") VALUES (" + values.join(", ") + ")";
         }
         return this._queryBuilder();
     }
