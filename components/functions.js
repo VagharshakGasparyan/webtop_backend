@@ -209,4 +209,25 @@ function makeDirectoryIfNotExists(path) {
     }
 }
 
-module.exports = {loginUser, logoutUser, apiLogoutUser, saveAndGetUserToken, getApiAuth, getWebAuth, makeDirectoryIfNotExists, generateString};
+function getAllFilesAndDirs(startPath) {
+    let deltaPath = arguments.length > 1 ? startPath : '';
+    startPath = arguments.length > 1 ? arguments[1] : startPath;
+    let slash = deltaPath ? '/' : '';
+    let fullPath = startPath + slash + deltaPath;
+    let files = [], dirs = [];
+    let filesOrDirs = fs.readdirSync(fullPath);
+    for(let fileOrDir of filesOrDirs){
+        let newPath = fullPath + "/" + fileOrDir;
+        if(fs.statSync(newPath).isFile()){
+            files.push({path: fullPath, file: fileOrDir, relativePath: deltaPath});
+        }else if(fs.statSync(newPath).isDirectory()){
+            let incoming = getAllFilesAndDirs(deltaPath + slash + fileOrDir, startPath);
+            files.push(...incoming.files);
+            dirs.push({path: fullPath, dir: fileOrDir, relativePath: deltaPath}, ...incoming.dirs);
+        }
+    }
+    return {files, dirs};
+}
+
+module.exports = {loginUser, logoutUser, apiLogoutUser, saveAndGetUserToken, getApiAuth, getWebAuth,
+    makeDirectoryIfNotExists, generateString, getAllFilesAndDirs};

@@ -1,7 +1,7 @@
 const fs = require('node:fs');
 const moment = require("moment/moment");
 const {DB} = require('../../components/db');
-const {makeDirectoryIfNotExists} = require("../../components/functions");
+const {makeDirectoryIfNotExists, getAllFilesAndDirs} = require("../../components/functions");
 
 const com_colours = {
     reset: "\x1b[0m",
@@ -51,7 +51,7 @@ class Kernel {
         this.migrationPath = root + "/migrations";
         this.seederPath = root + "/seeders";
         this.controllerPath = root + '/http/controllers';
-        this.commandPath = root + '/http/commands';
+        this.commandPath = root + '/http/console/commands';
     }
 
     async help() {
@@ -71,6 +71,10 @@ class Kernel {
             {
                 command: "node com make:controller controller1 controller2 ...",
                 description: "Make a controller(s) skeleton file(s)."
+            },
+            {
+                command: "node com make:command command1 command2 ...",
+                description: "Make a command(s) skeleton file(s)."
             },
         ];
         let comMaxLen = 0;
@@ -339,12 +343,12 @@ class Kernel {
                 commandClass += "Command";
                 let mf = fs.readFileSync(__dirname + '/kernel/command.js', 'utf8');
                 let mfArr = mf.split('/*command-separator*/');
-                mfArr[0] = "const {DB} = require(\"../../components/db\");\n" +
+                mfArr[0] = "const {DB} = require(\"../../../components/db\");\n" +
                     "const bcrypt = require(\"bcrypt\");\n" +
                     "const moment = require(\"moment/moment\");\n" +
                     "class " + commandClass;
                 mfArr[2] = "\"" + command + "\"";
-                mfArr.push("module.exports = {" + commandClass + "};");
+                mfArr.push("module.exports = " + commandClass + ";");
                 mf = mfArr.join("");
                 makeDirectoryIfNotExists(this.commandPath + sl_additionalPath);
                 fs.writeFileSync(this.commandPath + sl_additionalPath + '/' + fileName, mf);
@@ -359,6 +363,28 @@ class Kernel {
             message.push("Noting to make.");
         }
         return message.join(" ");
+    }
+
+    async launchCommand(){
+        let command = this.args[0];
+        if(!command){
+            return "No command.";
+        }
+        let commandLaunched = false;
+        let files = getAllFilesAndDirs(this.commandPath).files;
+        // console.log(files);
+        for(let file of files){
+            try {
+                let slash = file.relativePath ? "/" : "";
+                const MyCommandClass = require("./commands/" + file.relativePath + slash + file.file);
+                if(MyCommandClass.command !== command){
+                    continue;
+                }
+                await new MyCommandClass(this.args).handle();
+                commandLaunched = true;
+            }catch (e) {}
+        }
+        return commandLaunched ? "" : "Command not found or not launched.";
     }
 
     async distributor() {
@@ -378,6 +404,7 @@ class Kernel {
                     return await this.makeController();
                 case "make:command":
                     return await this.makeCommand();
+                default: return await this.launchCommand();
             }
         } else {
             return "No arguments.";

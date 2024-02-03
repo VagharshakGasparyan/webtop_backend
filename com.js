@@ -1,16 +1,9 @@
 const moment = require("moment/moment");
 const {DB} = require("./components/db");
 
-const {Kernel} = require("./http/commands/kernel");
+const {Kernel} = require("./http/console/kernel");
 
 async function f() {
-    // node com help
-    // node com migrate
-    // node com migrate users sessions
-    // node com make:migration teams products
-    // node com seed
-    // node com seed users sessions
-    // node com make:seeder users sessions
     let args = process.argv.slice(2);
     let com_answer = await new Kernel(args, __dirname).distributor();
     console.log(com_answer);

@@ -1,4 +1,4 @@
-const {DB} = require("../../components/db");
+const {DB} = require("../../../components/db");
 const bcrypt = require("bcrypt");
 const moment = require("moment/moment");
 class TestCommand {
@@ -8,8 +8,8 @@ class TestCommand {
     static command = "test";
     async handle()
     {
-        console.log(this.args);
+        console.log(this.args, "TEST");
     }
 }
 
-module.exports = {TestCommand};
+module.exports = TestCommand;
