@@ -330,8 +330,8 @@ class Kernel {
                 let sl_additionalPath = additionalPath ? "/" + additionalPath : "";
                 let additionalPath_sl = additionalPath ? additionalPath + "/" : "";
                 command = commandClass;
-                let fileName = command + "Controller" + fileExt;
-                if(fs.existsSync(this.controllerPath + sl_additionalPath + '/' + fileName)){
+                let fileName = command + "Command" + fileExt;
+                if(fs.existsSync(this.commandPath + sl_additionalPath + '/' + fileName)){
                     message.push("(Can not create already exists file " + fileName +")");
                     continue;
                 }
@@ -343,6 +343,7 @@ class Kernel {
                     "const bcrypt = require(\"bcrypt\");\n" +
                     "const moment = require(\"moment/moment\");\n" +
                     "class " + commandClass;
+                mfArr[2] = "\"" + command + "\"";
                 mfArr.push("module.exports = {" + commandClass + "};");
                 mf = mfArr.join("");
                 makeDirectoryIfNotExists(this.commandPath + sl_additionalPath);
