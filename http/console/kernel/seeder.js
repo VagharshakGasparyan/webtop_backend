@@ -40,10 +40,10 @@ class Seeder/*seeder-separator*/ {
                 last_name: 'Root',
                 email: 'root@mail.com',
                 password: bcrypt.hashSync('12345678', 8),
-                email_verified_at: new Date(),
+                email_verified_at: moment().format('yyyy-MM-DD HH:mm:ss'),
                 role: 'admin',
-                created_at: new Date(),
-                updated_at: new Date(),
+                created_at: moment().format('yyyy-MM-DD HH:mm:ss'),
+                updated_at: moment().format('yyyy-MM-DD HH:mm:ss'),
             },
         );
         */
