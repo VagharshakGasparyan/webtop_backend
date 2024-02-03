@@ -51,6 +51,7 @@ class Kernel {
         this.migrationPath = root + "/migrations";
         this.seederPath = root + "/seeders";
         this.controllerPath = root + '/http/controllers';
+        this.commandPath = root + '/http/commands';
     }
 
     async help() {
@@ -277,12 +278,18 @@ class Kernel {
         }
         for (let table of tables) {
             try {
+
                 let ii = table.lastIndexOf('/');
                 let tableClass = ii > -1 ? table.slice(ii + 1) : table;
                 let additionalPath = ii > -1 ? table.slice(0, ii) : '';
                 let sl_additionalPath = additionalPath ? "/" + additionalPath : "";
                 let additionalPath_sl = additionalPath ? additionalPath + "/" : "";
                 table = tableClass;
+                let fileName = table + "Controller" + fileExt;
+                if(fs.existsSync(this.controllerPath + sl_additionalPath + '/' + fileName)){
+                    message.push("(Can not create already exists file " + fileName +")");
+                    continue;
+                }
                 tableClass = tableClass[0].toUpperCase() + tableClass.slice(1);
                 tableClass += "Controller";
                 let mf = fs.readFileSync(__dirname + '/kernel/controller.js', 'utf8');
@@ -294,7 +301,6 @@ class Kernel {
                 mfArr.push("module.exports = {" + tableClass + "};");
                 mf = mfArr.join("");
                 makeDirectoryIfNotExists(this.controllerPath + sl_additionalPath);
-                let fileName = table + "Controller" + fileExt;
                 fs.writeFileSync(this.controllerPath + sl_additionalPath + '/' + fileName, mf);
                 message.push(additionalPath_sl + fileName);
             }catch (e) {
@@ -303,6 +309,51 @@ class Kernel {
         }
         if(message.length){
             message.unshift("Making controller files:");
+        }else{
+            message.push("Noting to make.");
+        }
+        return message.join(" ");
+    }
+
+    async makeCommand(){
+        let message = [];
+        let fileExt = ".js";
+        let commands = [];
+        for (let i = 1; i < this.args.length; i++) {
+            commands.push(this.args[i]);
+        }
+        for (let command of commands) {
+            try {
+                let ii = command.lastIndexOf('/');
+                let commandClass = ii > -1 ? command.slice(ii + 1) : command;
+                let additionalPath = ii > -1 ? command.slice(0, ii) : '';
+                let sl_additionalPath = additionalPath ? "/" + additionalPath : "";
+                let additionalPath_sl = additionalPath ? additionalPath + "/" : "";
+                command = commandClass;
+                let fileName = command + "Controller" + fileExt;
+                if(fs.existsSync(this.controllerPath + sl_additionalPath + '/' + fileName)){
+                    message.push("(Can not create already exists file " + fileName +")");
+                    continue;
+                }
+                commandClass = commandClass[0].toUpperCase() + commandClass.slice(1);
+                commandClass += "Command";
+                let mf = fs.readFileSync(__dirname + '/kernel/command.js', 'utf8');
+                let mfArr = mf.split('/*command-separator*/');
+                mfArr[0] = "const {DB} = require(\"../../components/db\");\n" +
+                    "const bcrypt = require(\"bcrypt\");\n" +
+                    "const moment = require(\"moment/moment\");\n" +
+                    "class " + commandClass;
+                mfArr.push("module.exports = {" + commandClass + "};");
+                mf = mfArr.join("");
+                makeDirectoryIfNotExists(this.commandPath + sl_additionalPath);
+                fs.writeFileSync(this.commandPath + sl_additionalPath + '/' + fileName, mf);
+                message.push(additionalPath_sl + fileName);
+            }catch (e) {
+                console.error(e);
+            }
+        }
+        if(message.length){
+            message.unshift("Making command files:");
         }else{
             message.push("Noting to make.");
         }
@@ -324,6 +375,8 @@ class Kernel {
                     return await this.help();
                 case "make:controller":
                     return await this.makeController();
+                case "make:command":
+                    return await this.makeCommand();
             }
         } else {
             return "No arguments.";
