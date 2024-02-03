@@ -50,6 +50,7 @@ class Kernel {
         global.__basedir = root;
         this.migrationPath = root + "/migrations";
         this.seederPath = root + "/seeders";
+        this.controllerPath = root + '/http/controllers';
     }
 
     async help() {
@@ -66,6 +67,10 @@ class Kernel {
                 command: "node com make:seeder table1 table2 ...",
                 description: "Make a table1, table2 ... seeder(s) skeleton file(s)."
             },
+            {
+                command: "node com make:controller controller1 controller2 ...",
+                description: "Make a controller(s) skeleton file(s)."
+            },
         ];
         let comMaxLen = 0;
         help.forEach((h) => {
@@ -75,7 +80,8 @@ class Kernel {
             let ws = " ".repeat(comMaxLen - h.command.length);
             return com_colours.fg.green + h.command + ws + com_colours.fg.yellow + " " + h.description;
         }).join("\n") + com_colours.reset;
-        console.log(helpText);
+        // console.log(helpText);
+        return helpText;
     }
 
     async migrate() {
@@ -262,6 +268,47 @@ class Kernel {
         return message.join(" ");
     }
 
+    async makeController(){
+        let message = [];
+        let fileExt = ".js";
+        let tables = [];
+        for (let i = 1; i < this.args.length; i++) {
+            tables.push(this.args[i]);
+        }
+        for (let table of tables) {
+            try {
+                let ii = table.lastIndexOf('/');
+                let tableClass = ii > -1 ? table.slice(ii + 1) : table;
+                let additionalPath = ii > -1 ? table.slice(0, ii) : '';
+                let sl_additionalPath = additionalPath ? "/" + additionalPath : "";
+                let additionalPath_sl = additionalPath ? additionalPath + "/" : "";
+                table = tableClass;
+                tableClass = tableClass[0].toUpperCase() + tableClass.slice(1);
+                tableClass += "Controller";
+                let mf = fs.readFileSync(__dirname + '/kernel/controller.js', 'utf8');
+                let mfArr = mf.split('/*controller-separator*/');
+                mfArr[0] = "const {DB} = require(\"../../components/db\");\n" +
+                    "const bcrypt = require(\"bcrypt\");\n" +
+                    "const moment = require(\"moment/moment\");\n" +
+                    "class " + tableClass;
+                mfArr.push("module.exports = {" + tableClass + "};");
+                mf = mfArr.join("");
+                makeDirectoryIfNotExists(this.controllerPath + sl_additionalPath);
+                let fileName = table + "Controller" + fileExt;
+                fs.writeFileSync(this.controllerPath + sl_additionalPath + '/' + fileName, mf);
+                message.push(additionalPath_sl + fileName);
+            }catch (e) {
+                console.error(e);
+            }
+        }
+        if(message.length){
+            message.unshift("Making controller files:");
+        }else{
+            message.push("Noting to make.");
+        }
+        return message.join(" ");
+    }
+
     async distributor() {
         if (this.args.length > 0) {
             switch (this.args[0]) {
@@ -275,6 +322,8 @@ class Kernel {
                     return await this.seed();
                 case "help":
                     return await this.help();
+                case "make:controller":
+                    return await this.makeController();
             }
         } else {
             return "No arguments.";
