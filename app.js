@@ -3,11 +3,15 @@ const app = express();
 const path = require('node:path');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
-const cron = require('node-cron');
+// const cron = require('node-cron');
 require('dotenv').config();
 // require("./components/logger");
-const fs = require("node:fs");
+// const fs = require("node:fs");
+const {exec, spawn} = require("node:child_process");
 const fileUpload = require("express-fileupload");
+//---------------------------------------------------------------------------------
+console.log(">>>>>>>>>>started");
+// qwerty
 //-------------------------------global functions----------------------------------
 require("./components/globalFunctions")(__dirname);
 //---------------------cron jobs-begin---------------------------------------------

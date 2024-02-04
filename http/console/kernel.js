@@ -1,4 +1,5 @@
 const fs = require('node:fs');
+const path = require('node:path');
 const moment = require("moment/moment");
 const {DB} = require('../../components/db');
 const {makeDirectoryIfNotExists, getAllFilesAndDirs} = require("../../components/functions");
@@ -46,12 +47,11 @@ function sleep(t) {
 class Kernel {
     constructor(args, root) {
         this.args = args;
-        this.root = root;
-        global.__basedir = root;
-        this.migrationPath = root + "/migrations";
-        this.seederPath = root + "/seeders";
-        this.controllerPath = root + '/http/controllers';
-        this.commandPath = root + '/http/console/commands';
+        this.root = root ?? path.normalize(__dirname + '/../..');
+        this.migrationPath = this.root + "/migrations";
+        this.seederPath = this.root + "/seeders";
+        this.controllerPath = this.root + '/http/controllers';
+        this.commandPath = this.root + '/http/console/commands';
     }
 
     async help() {
@@ -346,6 +346,7 @@ class Kernel {
                 mfArr[0] = "const {DB} = require(\"../../../components/db\");\n" +
                     "const bcrypt = require(\"bcrypt\");\n" +
                     "const moment = require(\"moment/moment\");\n" +
+                    "const {nodeCommand} = require(\"../kernel\");\n" +
                     "class " + commandClass;
                 mfArr[2] = "\"" + command + "\"";
                 mfArr.push("module.exports = " + commandClass + ";");
@@ -380,7 +381,7 @@ class Kernel {
                 if(MyCommandClass.command !== command){
                     continue;
                 }
-                await new MyCommandClass(this.args).handle();
+                await new MyCommandClass(this.args.slice(1)).handle();
                 commandLaunched = true;
             }catch (e) {}
         }
@@ -410,8 +411,11 @@ class Kernel {
             return "No arguments.";
         }
     }
-
-
 }
 
-module.exports = {Kernel};
+async function nodeCommand(command) {
+    let args = command.split(/\s+/ig);
+    return await new Kernel(args).distributor();
+}
+
+module.exports = {Kernel, nodeCommand};
