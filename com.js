@@ -1,12 +1,30 @@
 const moment = require("moment/moment");
 const {DB} = require("./components/db");
-
+const { exec, spawn } = require("node:child_process");
 const {Kernel} = require("./http/console/kernel");
+
+function sleep(t) {
+    return new Promise((resolve)=>{
+        setTimeout(resolve, t);
+    });
+}
 
 async function f() {
     let args = process.argv.slice(2);
     let com_answer = await new Kernel(args, __dirname).distributor();
     console.log(com_answer);
+    // exec("nodemon start", (error, stdout, stderr) => {
+    //     if (error) {
+    //         console.log(`error: ${error.message}`);
+    //         return;
+    //     }
+    //     if (stderr) {
+    //         console.log(`stderr: ${stderr}`);
+    //         return;
+    //     }
+    //     console.log(`stdout: ${stdout}`);
+    // });
+    // await sleep(10000);
     // let delTable = await DB("persons").deleteTable();
     // DB.dataTypes().bigint();
     // let a = DB.dataTypes().varchar(255).default('qwerty');

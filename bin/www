@@ -1,56 +1,39 @@
 #!/usr/bin/env node
-
-/**
- * Module dependencies.
- */
+const http = require('node:http');
+const debug = require('debug')('sample-nodejs:server');
 const { exec, spawn } = require("node:child_process");
 require('dotenv').config();
 const moment = require("moment/moment");
 require("../components/logger");
+
 try{
     const app = require('../app');
-    const debug = require('debug')('sample-nodejs:server');
-    const http = require('node:http');
-    /**
-     * Get port from environment and store in Express.
-     */
+    /*Get port from environment and store in Express.*/
     const port = normalizePort(process.env.PORT || '3000');
     app.set('port', port);
-    /**
-     * Create HTTP server.
-     */
+    /*Create HTTP server.*/
     const server = http.createServer(app);
-    /**
-     * Listen on provided port, on all network interfaces.
-     */
+    /*Listen on provided port, on all network interfaces.*/
     server.listen(port);
     server.on('error', onError);
     server.on('listening', onListening);
-    /**
-     * Normalize a port into a number, string, or false.
-     */
+    /*Normalize a port into a number, string, or false.*/
     function normalizePort(val) {
         const port = parseInt(val, 10);
         if (isNaN(port)) {
-            // named pipe
-            return val;
+            return val;// named pipe
         }
         if (port >= 0) {
-            // port number
-            return port;
+            return port;// port number
         }
         return false;
     }
-    /**
-     * Event listener for HTTP server "error" event.
-     */
+    /*Event listener for HTTP server "error" event.*/
     function onError(error) {
         if (error.syscall !== 'listen') {
             throw error;
         }
-        let bind = typeof port === 'string'
-            ? 'Pipe ' + port
-            : 'Port ' + port;
+        let bind = typeof port === 'string' ? 'Pipe ' + port : 'Port ' + port;
         // handle specific listen errors with friendly messages
         switch (error.code) {
             case 'EACCES':
@@ -65,56 +48,23 @@ try{
                 throw error;
         }
     }
-    /**
-     * Event listener for HTTP server "listening" event.
-     */
+    /*Event listener for HTTP server "listening" event.*/
     function onListening() {
         let addr = server.address();
-        let bind = typeof addr === 'string'
-            ? 'pipe ' + addr
-            : 'port ' + addr.port;
+        let bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port;
         debug('Listening on ' + bind);
     }
 }catch (e) {
-    // console.log(e);
-    // log.error(moment().format('yyyy_MM_DD-HH:mm:ss') + '\n' + e.stack + '\n\n');
     console.error(e);
     setTimeout(()=>{
-        // process.exit(1);
-        spawn(process.argv[0], process.argv.slice(1), {
-            env: { process_restarting: 1 },
-            stdio: 'ignore',
-        }).unref();
-    }, 5000);
+        process.exit(1);
+        // spawn(process.argv[0], process.argv.slice(1), {
+        //     env: { process_restarting: 1 },
+        //     stdio: 'ignore',
+        // }).unref();
+    }, 1000);
 
 
 }
 
-
-/*
-let commands = [
-    'pm2 start index.js',
-    'npm cache clean --force',
-    'pm2 start server.js',
-    'pm2 list',
-    'pm2 stop server.js',
-    'pm2 stop all',
-    'pm2 delete server.js',
-    'pm2 delete all',
-    'pm2 restart server.js',
-    'pm2 restart all',
-    'pm2 reload all',
-];
-exec(commands[1], (error, stdout, stderr) => {
-    if (error) {
-        console.log(`error: ${error.message}`);
-        return;
-    }
-    if (stderr) {
-        console.log(`stderr: ${stderr}`);
-        return;
-    }
-    console.log(`stdout: ${stdout}`);
-});
-*/
 
