@@ -11,32 +11,24 @@ try{
     const app = require('../app');
     const debug = require('debug')('sample-nodejs:server');
     const http = require('node:http');
-
     /**
      * Get port from environment and store in Express.
      */
-
     const port = normalizePort(process.env.PORT || '3000');
     app.set('port', port);
-
     /**
      * Create HTTP server.
      */
-
     const server = http.createServer(app);
-
     /**
      * Listen on provided port, on all network interfaces.
      */
-
     server.listen(port);
     server.on('error', onError);
     server.on('listening', onListening);
-
     /**
      * Normalize a port into a number, string, or false.
      */
-
     function normalizePort(val) {
         const port = parseInt(val, 10);
         if (isNaN(port)) {
@@ -88,11 +80,11 @@ try{
     // log.error(moment().format('yyyy_MM_DD-HH:mm:ss') + '\n' + e.stack + '\n\n');
     console.error(e);
     setTimeout(()=>{
-        process.exit(1);
-        // spawn(process.argv[0], process.argv.slice(1), {
-        //     env: { process_restarting: 1 },
-        //     stdio: 'ignore',
-        // }).unref();
+        // process.exit(1);
+        spawn(process.argv[0], process.argv.slice(1), {
+            env: { process_restarting: 1 },
+            stdio: 'ignore',
+        }).unref();
     }, 5000);
 
 
