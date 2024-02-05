@@ -52,6 +52,7 @@ class Kernel {
         this.seederPath = this.root + "/seeders";
         this.controllerPath = this.root + '/http/controllers';
         this.commandPath = this.root + '/http/console/commands';
+        this.resourcePath = this.root + '/http/resources';
     }
 
     async help() {
@@ -75,6 +76,14 @@ class Kernel {
             {
                 command: "node com make:command command1 command2 ...",
                 description: "Make a command(s) skeleton file(s)."
+            },
+            {
+                command: "node com make:resource resource1 resource2 ...",
+                description: "Make a resource(s) skeleton file(s)."
+            },
+            {
+                command: "node com make:notification notification1 notification2 ...",
+                description: "Make a notification(s) skeleton file(s)."
             },
         ];
         let comMaxLen = 0;
@@ -239,10 +248,7 @@ class Kernel {
     async makeSeeder() {
         let message = [];
         let fileExt = ".js";
-        let tables = [];
-        for (let i = 1; i < this.args.length; i++) {
-            tables.push(this.args[i]);
-        }
+        let tables = this.args.slice(1);
         for (const table of tables) {
             try {
                 let tableClass = table;
@@ -274,96 +280,14 @@ class Kernel {
     }
 
     async makeController(){
-        let message = [];
-        let fileExt = ".js";
-        let tables = [];
-        for (let i = 1; i < this.args.length; i++) {
-            tables.push(this.args[i]);
-        }
-        for (let table of tables) {
-            try {
-
-                let ii = table.lastIndexOf('/');
-                let tableClass = ii > -1 ? table.slice(ii + 1) : table;
-                let additionalPath = ii > -1 ? table.slice(0, ii) : '';
-                let sl_additionalPath = additionalPath ? "/" + additionalPath : "";
-                let additionalPath_sl = additionalPath ? additionalPath + "/" : "";
-                table = tableClass;
-                let fileName = table + "Controller" + fileExt;
-                if(fs.existsSync(this.controllerPath + sl_additionalPath + '/' + fileName)){
-                    message.push("(Can not create already exists file " + fileName +")");
-                    continue;
-                }
-                tableClass = tableClass[0].toUpperCase() + tableClass.slice(1);
-                tableClass += "Controller";
-                let mf = fs.readFileSync(__dirname + '/kernel/controller.js', 'utf8');
-                let mfArr = mf.split('/*controller-separator*/');
-                mfArr[0] = "const {DB} = require(\"../../components/db\");\n" +
-                    "const bcrypt = require(\"bcrypt\");\n" +
-                    "const moment = require(\"moment/moment\");\n" +
-                    "class " + tableClass;
-                mfArr.push("module.exports = {" + tableClass + "};");
-                mf = mfArr.join("");
-                makeDirectoryIfNotExists(this.controllerPath + sl_additionalPath);
-                fs.writeFileSync(this.controllerPath + sl_additionalPath + '/' + fileName, mf);
-                message.push(additionalPath_sl + fileName);
-            }catch (e) {
-                console.error(e);
-            }
-        }
-        if(message.length){
-            message.unshift("Making controller files:");
-        }else{
-            message.push("Noting to make.");
-        }
-        return message.join(" ");
+        return await this._makeAny(this.controllerPath, ".js", "controller", "Controller");
     }
 
     async makeCommand(){
-        let message = [];
-        let fileExt = ".js";
-        let commands = [];
-        for (let i = 1; i < this.args.length; i++) {
-            commands.push(this.args[i]);
-        }
-        for (let command of commands) {
-            try {
-                let ii = command.lastIndexOf('/');
-                let commandClass = ii > -1 ? command.slice(ii + 1) : command;
-                let additionalPath = ii > -1 ? command.slice(0, ii) : '';
-                let sl_additionalPath = additionalPath ? "/" + additionalPath : "";
-                let additionalPath_sl = additionalPath ? additionalPath + "/" : "";
-                command = commandClass;
-                let fileName = command + "Command" + fileExt;
-                if(fs.existsSync(this.commandPath + sl_additionalPath + '/' + fileName)){
-                    message.push("(Can not create already exists file " + fileName +")");
-                    continue;
-                }
-                commandClass = commandClass[0].toUpperCase() + commandClass.slice(1);
-                commandClass += "Command";
-                let mf = fs.readFileSync(__dirname + '/kernel/command.js', 'utf8');
-                let mfArr = mf.split('/*command-separator*/');
-                mfArr[0] = "const {DB} = require(\"../../../components/db\");\n" +
-                    "const bcrypt = require(\"bcrypt\");\n" +
-                    "const moment = require(\"moment/moment\");\n" +
-                    "const {nodeCommand} = require(\"../kernel\");\n" +
-                    "class " + commandClass;
-                mfArr[2] = "\"" + command + "\"";
-                mfArr.push("module.exports = " + commandClass + ";");
-                mf = mfArr.join("");
-                makeDirectoryIfNotExists(this.commandPath + sl_additionalPath);
-                fs.writeFileSync(this.commandPath + sl_additionalPath + '/' + fileName, mf);
-                message.push(additionalPath_sl + fileName);
-            }catch (e) {
-                console.error(e);
-            }
-        }
-        if(message.length){
-            message.unshift("Making command files:");
-        }else{
-            message.push("Noting to make.");
-        }
-        return message.join(" ");
+        return await this._makeAny(this.commandPath, ".js", "command", "Command",
+            {2: (arg, dirLessArg, className, fileName) => {
+                    return "\"" + dirLessArg + "\"";
+                }});
     }
 
     async launchCommand(){
@@ -383,9 +307,58 @@ class Kernel {
                 }
                 await new MyCommandClass(this.args.slice(1)).handle();
                 commandLaunched = true;
-            }catch (e) {}
+            }catch (e) {
+                console.error(e);
+            }
         }
         return commandLaunched ? "" : "Command not found or not launched.";
+    }
+
+    async makeResource(){
+        return await this._makeAny(this.resourcePath, ".js", "resource", "Resource");
+    }
+
+    async _makeAny(itemPath = this.root, fileExt = ".js", kernelResource = "resource", classSuffix = "", replacements = {}){
+        let message = [];
+        let argItems = this.args.slice(1);
+        for (let arg of argItems) {
+            try {
+                let ii = arg.lastIndexOf('/');
+                let className = ii > -1 ? arg.slice(ii + 1) : arg;
+                let additionalPath = ii > -1 ? arg.slice(0, ii) : '';
+                let dirLessArg = className;
+                let fileName = className + classSuffix + fileExt;
+                if(fs.existsSync(path.join(itemPath, additionalPath, fileName))){
+                    message.push("(Can not create already exists file " + fileName +")");
+                    continue;
+                }
+                className = className[0].toUpperCase() + className.slice(1) + classSuffix;
+                let mf = fs.readFileSync(__dirname + '/kernel/' + kernelResource + '.js', 'utf8');
+                let mfArr = mf.split('/*' + kernelResource + '-separator*/');
+                let relPath = path.relative(path.join(itemPath, additionalPath), this.root + "/components/db")
+                    .replace(/\\/ig, "/");
+                mfArr[0] = "const {DB} = require(\"" + relPath + "\");\n" +
+                    "const bcrypt = require(\"bcrypt\");\n" +
+                    "const moment = require(\"moment/moment\");\n" +
+                    "class " + className;
+                for (let repl in replacements){
+                    mfArr[repl] = typeof replacements[repl] === 'function' ? replacements[repl](arg, dirLessArg, className, fileName) : replacements[repl];
+                }
+                mfArr.push("module.exports = " + className + ";");
+                mf = mfArr.join("");
+                makeDirectoryIfNotExists(path.join(itemPath, additionalPath));
+                fs.writeFileSync(path.join(itemPath, additionalPath, fileName), mf);
+                message.push(path.join(additionalPath, fileName));
+            }catch (e) {
+                console.error(e);
+            }
+        }
+        if(message.length){
+            message.unshift("Making " + kernelResource + " files:");
+        }else{
+            message.push("Noting to make.");
+        }
+        return message.join(" ");
     }
 
     async distributor() {
@@ -405,6 +378,8 @@ class Kernel {
                     return await this.makeController();
                 case "make:command":
                     return await this.makeCommand();
+                case "make:resource":
+                    return await this.makeResource();
                 default: return await this.launchCommand();
             }
         } else {

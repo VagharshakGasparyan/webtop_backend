@@ -42,4 +42,4 @@ class TeamsController {
 
 }
 
-module.exports = {TeamsController};
+module.exports = TeamsController;
