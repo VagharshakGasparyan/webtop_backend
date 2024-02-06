@@ -22,7 +22,6 @@ module.exports = (dirname) => {
     global.tr = (w, lang) => {
         let ld = conf.lang.default ?? null;
         let l = lang ?? conf.lang.default ?? null;
-        console.log("ld-l>>>>>>>>>>>>>>>>>", ld, l);
         try {
             if(w && typeof w === 'string' && l && typeof l === 'string' && w in translations){
                 if(l in translations[w]){
