@@ -5,7 +5,7 @@ const {translations} = require("./translations");
 
 module.exports = (dirname) => {
     global.__basedir = dirname;
-    global.saveFileContent = (path, fileName, fileData) => {
+    global.saveFileContentToPublic = (path, fileName, fileData) => {
         try {
             let fullPath = __basedir + '/public/' + path;
             makeDirectoryIfNotExists(fullPath);
@@ -16,8 +16,32 @@ module.exports = (dirname) => {
             return false;
         }
     };
+    // global.tr = (w, lang) => {
+    //     return w in translations && lang in translations[w] ? translations[w][lang] : w;
+    // }
     global.tr = (w, lang) => {
-        return w in translations && lang in translations[w] ? translations[w][lang] : w;
-    }
+        let ld = conf.lang.default ?? null;
+        let l = lang ?? conf.lang.default ?? null;
+        console.log("ld-l>>>>>>>>>>>>>>>>>", ld, l);
+        try {
+            if(w && typeof w === 'string' && l && typeof l === 'string' && w in translations){
+                if(l in translations[w]){
+                    return translations[w][l];
+                }else if(ld && typeof ld === 'string' && ld in translations[w]){
+                    return translations[w][ld];
+                }
+            }
+            if(w && typeof w === 'object' && l && typeof l === 'string'){
+                if(l in w){
+                    return w[l];
+                }else if(ld && typeof ld === 'string' && ld in w){
+                    return w[ld];
+                }
+            }
+            return w;
+        }catch (e) {
+            return w;
+        }
+    };
 }
 

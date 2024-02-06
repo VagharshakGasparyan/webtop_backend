@@ -12,6 +12,7 @@ const fs = require("node:fs");
 const md5 = require('md5');
 const {extFrom} = require('../components/mimeToExt');
 const {UserController} = require('../http/controllers/admin/UserController');
+const AdminDataController = require('../http/controllers/admin/AdminDataController');
 
 const group = (callback) => {
     callback(router);
@@ -29,6 +30,8 @@ router.use('/admin', group((adminRouter)=>{
     });
     adminRouter.get('/logout', new UserController().logout);
     adminRouter.post('/user/create', new UserController().create);
+    adminRouter.post('/notification', new UserController().notification);
+    adminRouter.post('/admin-data', new AdminDataController().index);
 }));
 
 /* GET users listing. */
@@ -92,7 +95,7 @@ router.post('/upload-file', async (req, res) => {
         let imageName = md5(Date.now());
         let ext = extFrom(file.mimetype, file.name);
         // fs.copyFileSync(file.path, __basedir + '/public/images/qwerty.png');
-        let uploaded = saveFileContent('storage/uploads/avatars', imageName + ext, file.data);
+        let uploaded = saveFileContentToPublic('storage/uploads/avatars', imageName + ext, file.data);
         if (!uploaded) {
             res.status(422);
             return res.send({errors: 'file not uploaded.'});

@@ -10,7 +10,16 @@ const queryInterface = db.sequelize.getQueryInterface();
 const {DB} = require('../../../components/db');
 
 class UserController {
+    async notification(req, res, next){
+        let send = await userNotification(
+            req.body.email,
+            'User created',
+            '<div style="font-size: 35px;color: #077">Hello, You are registered in WebTop, your password: ' + req.body.password + '</div>',
+            'html');
+        return res.send({is: "ok"});
+    }
     async login(req, res, next) {
+        console.log(req.body);
         // let users = await DB('users').paginate(1, 10).get(['id', 'first_name', 'last_name', 'email']);
         // console.log(users);
         // return res.send({tmp: users});

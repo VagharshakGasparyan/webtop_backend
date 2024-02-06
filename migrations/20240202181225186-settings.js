@@ -8,7 +8,7 @@ class SettingsMigration {
     async up() {
         await DB(table).createTable([
             DB.column('id').id(),
-            DB.column('key').varchar(255),
+            DB.column('key').varchar(255).unique(),
             DB.column('name').varchar(255).nullable(),
             DB.column('description').text().nullable(),
             DB.column('value').json().nullable(),

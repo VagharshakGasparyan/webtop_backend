@@ -1,6 +1,7 @@
 const Joi = require('joi');
 const db = require("../models");
 const {conf} = require("../config/app_config");
+const {DB} = require('./db');
 const queryInterface = db.sequelize.getQueryInterface();
 
 function validate(schema, req, res) {
@@ -48,4 +49,27 @@ async function unique(table, columnName, columnValue) {
     return null;
 }
 
-module.exports = {validate, api_validate, unique};
+class ValidateClass {
+    constructor(req, fn) {
+        this._req = req;
+        this._body = req.body;
+        this._files = req.files;
+        let answ = fn(this);
+
+        return answ;
+    }
+    number(){
+        return this;
+    }
+    integer(){
+
+    }
+    string(){
+
+    }
+    required(){
+
+    }
+}
+
+module.exports = {validate, api_validate, unique, ValidateClass};

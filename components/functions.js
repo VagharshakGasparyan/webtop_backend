@@ -5,6 +5,7 @@ const db = require('../models');
 const {Op} = require("sequelize");
 const {boolean} = require("joi");
 const fs = require("node:fs");
+const path = require('node:path');
 const queryInterface = db.sequelize.getQueryInterface();
 
 async function getTokenData(userId, role, token){
@@ -209,6 +210,21 @@ function makeDirectoryIfNotExists(path) {
     }
 }
 
+function saveFileContent(pathFileName, fileData) {
+    try {
+        let dir = path.dirname(pathFileName);
+        makeDirectoryIfNotExists(dir);
+        fs.writeFileSync(pathFileName, fileData);
+        return true;
+    }catch (e) {
+        console.error(e);
+        return false;
+    }
+}
+
+const __root = path.normalize(__dirname + '/..');
+const __public = path.normalize(__dirname + '/../public');
+
 function getAllFilesAndDirs(startPath) {
     let deltaPath = arguments.length > 1 ? startPath : '';
     startPath = arguments.length > 1 ? arguments[1] : startPath;
@@ -230,4 +246,4 @@ function getAllFilesAndDirs(startPath) {
 }
 
 module.exports = {loginUser, logoutUser, apiLogoutUser, saveAndGetUserToken, getApiAuth, getWebAuth,
-    makeDirectoryIfNotExists, generateString, getAllFilesAndDirs};
+    makeDirectoryIfNotExists, generateString, getAllFilesAndDirs, saveFileContent, __root, __public};
