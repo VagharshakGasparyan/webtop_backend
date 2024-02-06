@@ -288,7 +288,7 @@ class DBClass {
                 });
                 all_values.push("(" + values.join(", ") + ")");
             });
-            this._table_r = "(" + columns.join(", ") + ") VALUES " + all_values.join(", ");
+            this._table_r = "(" + columns.map(c => _col(c)).join(", ") + ") VALUES " + all_values.join(", ");
         }else if(typeof obj === 'object' && obj !== null && Object.keys(obj).length > 0){
             let columns = [], values = [];
             for(let column in obj){

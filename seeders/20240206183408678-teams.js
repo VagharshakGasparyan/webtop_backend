@@ -14,61 +14,73 @@ class TeamsSeeder {
                 last_name: "Poghosyan",
                 image: null,
                 images: null,
-                rank: '{"hy": "React-ի մասնագետ", "en": "React developer", "ru": "Разработчик React"}',
-                // title: JSON.stringify({
-                //     "hy": "Main React developer",
-                //     "en": "Main React developer",
-                //     "ru": "Main React developer",
-                // }),
-                // description: JSON.stringify({
-                //     "hy": "Good working.",
-                //     "en": "Good working.",
-                //     "ru": "Good working.",
-                // }),
+                rank: JSON.stringify({
+                    "hy": "React-ի մասնագետ",
+                    "en": "React developer",
+                    "ru": "Разработчик React"
+                }),
+                title: JSON.stringify({
+                    "hy": "Main React developer",
+                    "en": "Main React developer",
+                    "ru": "Main React developer",
+                }),
+                description: JSON.stringify({
+                    "hy": "Good working.",
+                    "en": "Good working.",
+                    "ru": "Good working.",
+                }),
                 active: 1,
                 created_at: moment().format('yyyy-MM-DD HH:mm:ss'),
                 updated_at: moment().format('yyyy-MM-DD HH:mm:ss'),
             },
-            // {
-            //     first_name: "Petros",
-            //     last_name: "Petrosyan",
-            //     image: null,
-            //     images: null,
-            //     rank: '\"{"hy": "Laravel developer", "en": "Laravel developer", "ru": "Laravel developer"}\"',
-            //     // title: JSON.stringify({
-            //     //     "hy": "Main Laravel developer",
-            //     //     "en": "Main Laravel developer",
-            //     //     "ru": "Main Laravel developer",
-            //     // }),
-            //     // description: JSON.stringify({
-            //     //     "hy": "Good working.",
-            //     //     "en": "Good working.",
-            //     //     "ru": "Good working.",
-            //     // }),
-            //     active: 1,
-            //     created_at: moment().format('yyyy-MM-DD HH:mm:ss'),
-            //     updated_at: moment().format('yyyy-MM-DD HH:mm:ss'),
-            // },
-            // {
-            //     first_name: "Martiros",
-            //     last_name: "Martirosyan",
-            //     image: null,
-            //     images: null,
-            //     rank: '{"hy": "HTML, CSS, JS developer", "en": "HTML, CSS, JS developer", "ru": "HTML, CSS, JS developer"}',
-            //     // title: JSON.stringify({
-            //     //     "hy": "Main HTML, CSS, JS developer",
-            //     //     "en": "Main HTML, CSS, JS developer",
-            //     //     "ru": "Main HTML, CSS, JS developer",
-            //     // }),
-            //     // description: JSON.stringify({
-            //     //     "hy": "Good working too.",
-            //     //     "en": "Good working too.",
-            //     //     "ru": "Good working too.",
-            //     // }),
-            //     active: 1,
-            //     created_at: moment().format('yyyy-MM-DD HH:mm:ss'),
-            //     updated_at: moment().format('yyyy-MM-DD HH:mm:ss'),
-            // }
+            {
+                first_name: "Petros",
+                last_name: "Petrosyan",
+                image: null,
+                images: null,
+                rank: JSON.stringify({
+                    "hy": "Laravel developer",
+                    "en": "Laravel developer",
+                    "ru": "Laravel developer"
+                }),
+                title: JSON.stringify({
+                    "hy": "Main Laravel developer",
+                    "en": "Main Laravel developer",
+                    "ru": "Main Laravel developer",
+                }),
+                description: JSON.stringify({
+                    "hy": "Good working.",
+                    "en": "Good working.",
+                    "ru": "Good working.",
+                }),
+                active: 1,
+                created_at: moment().format('yyyy-MM-DD HH:mm:ss'),
+                updated_at: moment().format('yyyy-MM-DD HH:mm:ss'),
+            },
+            {
+                first_name: "Martiros",
+                last_name: "Martirosyan",
+                image: null,
+                images: null,
+                rank: JSON.stringify({
+                    "hy": "HTML, CSS, JS developer",
+                    "en": "HTML, CSS, JS developer",
+                    "ru": "HTML, CSS, JS developer"
+                }),
+                title: JSON.stringify({
+                    "hy": "Main HTML, CSS, JS developer",
+                    "en": "Main HTML, CSS, JS developer",
+                    "ru": "Main HTML, CSS, JS developer",
+                }),
+                description: JSON.stringify({
+                    "hy": "Good working too.",
+                    "en": "Good working too.",
+                    "ru": "Good working too.",
+                }),
+                active: 1,
+                created_at: moment().format('yyyy-MM-DD HH:mm:ss'),
+                updated_at: moment().format('yyyy-MM-DD HH:mm:ss'),
+            }
         ]);
         /*Or can create*/
         /*
@@ -86,6 +98,13 @@ class TeamsSeeder {
             },
         );
         */
+        //all_q= INSERT INTO `teams`
+        // (`first_name`, `last_name`, `image`, `images`, `rank`, `active`, `created_at`, `updated_at`)
+        // VALUES ('Poghos', 'Poghosyan', NULL, NULL, '{"hy": "React", "en": "React developer", "ru": "Разработчик React"}', '1', '2024-02-06 19:51:16', '2024-02-06 19:51:16')
+
+        //all_q= INSERT INTO `teams`
+        // (first_name, last_name, image, images, rank, active, created_at, updated_at)
+        // VALUES ('Poghos', 'Poghosyan', NULL, NULL, '{"hy": "React", "en": "React developer", "ru": "Разработчик React"}', '1', '2024-02-06 19:55:15', '2024-02-06 19:55:15')
     }
 
     async down() {
