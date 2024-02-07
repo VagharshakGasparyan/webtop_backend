@@ -13,6 +13,7 @@ const md5 = require('md5');
 const {extFrom} = require('../components/mimeToExt');
 const {UserController} = require('../http/controllers/admin/UserController');
 const AdminDataController = require('../http/controllers/admin/AdminDataController');
+const TeamsController = require('../http/controllers/TeamsController');
 
 const group = (callback) => {
     callback(router);
@@ -34,7 +35,10 @@ router.use('/admin', group((adminRouter)=>{
     adminRouter.post('/user/create', new UserController().create);
     adminRouter.post('/user/update/:user_id', new UserController().update);
     adminRouter.delete('/user/delete/:user_id', new UserController().destroy);
-
+    //--------------------admin team---------------------------------
+    adminRouter.post('/team/create', new TeamsController().create);
+    adminRouter.post('/team/update/:user_id', new TeamsController().update);
+    adminRouter.delete('/team/delete/:user_id', new TeamsController().destroy);
     // adminRouter.post('/notification', new UserController().notification);
     adminRouter.post('/admin-data', new AdminDataController().index);
 }));

@@ -240,10 +240,6 @@ class UserController {
             return res.send({errors: 'User not updated.'});
         }
 
-
-
-
-
         return res.send({message: "User data updated successfully."});
     }
     async destroy(req, res, next) {
