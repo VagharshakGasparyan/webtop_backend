@@ -8,6 +8,9 @@ const {conf} = require("../../../config/app_config");
 const db = require("../../../models");
 const queryInterface = db.sequelize.getQueryInterface();
 const {DB} = require('../../../components/db');
+const md5 = require("md5");
+const {extFrom} = require("../../../components/mimeToExt");
+const moment = require("moment/moment");
 
 class UserController {
     async notification(req, res, next){
@@ -91,20 +94,57 @@ class UserController {
             generatedPassword = req.body.password = generateString(10);
             message = 'User password generated automatically, it send to email.';
         }
-        let newUser = await User.create({
+
+        let userPhoto = req.files ? req.files.photo : null;
+        let photo = null;
+        if (userPhoto) {
+            let imageName = md5(Date.now()) + generateString(4);
+            let ext = extFrom(userPhoto.mimetype, userPhoto.name);
+            if(ext.toLowerCase() !== ".png" && ext.toLowerCase() !== ".jpg"){
+                res.status(422);
+                return res.send({errors: 'file not a jpg or png.'});
+            }
+            // fs.copyFileSync(file.path, __basedir + '/public/images/qwerty.png');
+            let uploaded = saveFileContentToPublic('storage/uploads/users', imageName + ext, userPhoto.data);
+            if (!uploaded) {
+                res.status(422);
+                return res.send({errors: 'file not uploaded.'});
+            }
+            photo = 'storage/uploads/users/' + imageName + ext;
+            console.log(uploaded);
+            // fs.writeFileSync(__basedir + '/public/images/' + imageName + ext, file.data );
+        }
+        let newUserData = {
             first_name: req.body.first_name,
             last_name: req.body.last_name,
             email: req.body.email,
-            email_verified_at: new Date(),
+            email_verified_at: moment().format('yyyy-MM-DD HH:mm:ss'),
             role: req.body.role,
-            password: req.body.password,
-        });
+            photo: photo,
+            password: bcrypt.hashSync(req.body.password, 8),
+            created_at: moment().format('yyyy-MM-DD HH:mm:ss'),
+            updated_at: moment().format('yyyy-MM-DD HH:mm:ss'),
+        }
+
+        try {
+            await DB('users').create(newUserData);
+        }catch (e) {
+            console.error(e);
+            res.status(422);
+            return res.send({errors: 'User not created.'});
+        }
         let send = await userNotification(
             req.body.email,
             'User created',
             '<div style="font-size: 35px;color: #077">Hello, You are registered in WebTop, your password: ' + req.body.password + '</div>',
             'html');
-        return res.send({user: newUser, message: message, generatedPassword});
+        return res.send({data: {user: newUserData, message: message, generatedPassword}, errors: {}});
+    }
+    async update(req, res, next) {
+
+    }
+    async destroy(req, res, next) {
+
     }
 
 }

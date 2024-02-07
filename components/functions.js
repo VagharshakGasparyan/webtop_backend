@@ -102,7 +102,7 @@ async function getWebAuth(req, res) {
 
 function generateString(str_length = 8) {
     let str = '';
-    let words = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$#@-+*=@!?<>';
+    let words = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$#@-+=@!';//  \/:*?"<>|
     for (let i = 0; i < str_length; i++) {
         str += words[Math.floor(Math.random() * words.length)];
     }

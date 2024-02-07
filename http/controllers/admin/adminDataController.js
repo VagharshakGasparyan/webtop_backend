@@ -19,10 +19,7 @@ class AdminDataController {
                     let d = req.body[item] ? JSON.parse(req.body[item]) : {page: 1, perPage: 10};
                     let {page = 1, perPage = 10} = d;
                     let sqlData = await DB(item).paginate(page, perPage).get();
-                    sendData.data[item] = [];
-                    for(let sqlD of sqlData){
-                        sendData.data[item].push(await new items[item](sqlD, res.locals.$api_local));
-                    }
+                    sendData.data[item] = await new items[item](sqlData, res.locals.$api_local);
                 }catch (e) {
                     console.error(e);
                     sendData.data[item] = null;

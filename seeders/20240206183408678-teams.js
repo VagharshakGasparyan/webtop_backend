@@ -98,13 +98,6 @@ class TeamsSeeder {
             },
         );
         */
-        //all_q= INSERT INTO `teams`
-        // (`first_name`, `last_name`, `image`, `images`, `rank`, `active`, `created_at`, `updated_at`)
-        // VALUES ('Poghos', 'Poghosyan', NULL, NULL, '{"hy": "React", "en": "React developer", "ru": "Разработчик React"}', '1', '2024-02-06 19:51:16', '2024-02-06 19:51:16')
-
-        //all_q= INSERT INTO `teams`
-        // (first_name, last_name, image, images, rank, active, created_at, updated_at)
-        // VALUES ('Poghos', 'Poghosyan', NULL, NULL, '{"hy": "React", "en": "React developer", "ru": "Разработчик React"}', '1', '2024-02-06 19:55:15', '2024-02-06 19:55:15')
     }
 
     async down() {

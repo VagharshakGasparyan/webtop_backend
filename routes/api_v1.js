@@ -29,8 +29,12 @@ router.use('/admin', group((adminRouter)=>{
         next();
     });
     adminRouter.get('/logout', new UserController().logout);
+    //--------------------admin user---------------------------------
     adminRouter.post('/user/create', new UserController().create);
-    adminRouter.post('/notification', new UserController().notification);
+    adminRouter.post('/user/update/:user_id', new UserController().update);
+    adminRouter.delete('/user/delete/:user_id', new UserController().destroy);
+
+    // adminRouter.post('/notification', new UserController().notification);
     adminRouter.post('/admin-data', new AdminDataController().index);
 }));
 
