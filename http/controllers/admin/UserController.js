@@ -153,16 +153,83 @@ class UserController {
         );
         return res.send({data: {user: newUserData, message: message, generatedPassword}, errors: {}});
     }
+
     async update(req, res, next) {
         let {user_id} = req.params;
-        console.log(req.params);
-        return res.send({is: "ok"});
+        let user = null;
+        if(!user_id){
+            res.status(422);
+            return res.send({errors: 'No user id parameter.'});
+        }
+        let valid_err = api_validate({
+            email: Joi.string().email(),
+            first_name: Joi.string().min(2).max(30),
+            last_name: Joi.string().min(2).max(30),
+            role: Joi.string().min(2).max(30),
+            old_password: Joi.string().min(6).max(30),
+            new_password: Joi.string().min(6).max(30),
+        }, req, res);
+        if (valid_err) {
+            res.status(422);
+            return res.send({errors: valid_err});
+        }
+        let {email, first_name, last_name, role, new_password, old_password} = req.body;
+        let updatedUserData = {};
+        try {
+            user = await DB('users').find(user_id);
+            if(!user){
+                res.status(422);
+                return res.send({errors: "User with this id " + user_id + " can not found."});
+            }
+            if(email){
+                let uniqueErr = await unique('users', 'email', email);
+                if(uniqueErr){
+                    res.status(422);
+                    return res.send({errors: {email: uniqueErr}});
+                }
+                updatedUserData.email = email;
+            }
+            if(first_name){
+                updatedUserData.first_name = first_name;
+            }
+            if(last_name){
+                updatedUserData.last_name = last_name;
+            }
+            if(role){
+                updatedUserData.role = role;
+            }
+            if(new_password){
+                if(!old_password){
+                    res.status(422);
+                    return res.send({errors: "The old password with new password is required."});
+                }
+                if (!bcrypt.compareSync(old_password, user.password)) {
+                    res.status(422);
+                    return res.send({errors: 'The old password is incorrect.'});
+                }
+                updatedUserData.password = bcrypt.hashSync(new_password, 8);
+            }
+            if(Object.keys(updatedUserData).length > 0){
+                await DB('users').where("id", user_id).update(updatedUserData);
+            }else{
+                return res.send({message: 'Nothing to update.'});
+            }
+        }catch (e) {
+            console.error(e);
+            res.status(422);
+            return res.send({errors: 'User not updated.'});
+        }
+
+
+
+
+
+        return res.send({message: "User data updated successfully."});
     }
     async destroy(req, res, next) {
         let {user_id} = req.params;
         if(!user_id){
             res.status(422);
-            // return res.send({errors: 'Wrong user id parameter.'});
             return res.send({errors: 'No user id parameter.'});
         }
         if(user_id === res.locals.$api_auth.admin.id.toString()){
