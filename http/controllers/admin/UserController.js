@@ -209,6 +209,26 @@ class UserController {
                 }
                 updatedUserData.password = bcrypt.hashSync(new_password, 8);
             }
+            let userPhoto = req.files ? req.files.photo : null;
+            if (userPhoto) {
+                let imageName = md5(Date.now()) + generateString(4);
+                let ext = extFrom(userPhoto.mimetype, userPhoto.name);
+                if(ext.toLowerCase() !== ".png" && ext.toLowerCase() !== ".jpg"){
+                    res.status(422);
+                    return res.send({errors: 'file not a jpg or png.'});
+                }
+
+                let uploaded = saveFileContentToPublic('storage/uploads/users', imageName + ext, userPhoto.data);
+                if (!uploaded) {
+                    res.status(422);
+                    return res.send({errors: 'Photo not uploaded.'});
+                }
+                if(user.photo){
+                    fs.unlinkSync(__basedir + "/public/" + user.photo);
+                }
+                updatedUserData.photo = 'storage/uploads/users/' + imageName + ext;
+            }
+
             if(Object.keys(updatedUserData).length > 0){
                 await DB('users').where("id", user_id).update(updatedUserData);
             }else{
