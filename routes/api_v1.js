@@ -20,6 +20,7 @@ const group = (callback) => {
 };
 
 router.post('/admin/login', new UserController().login);
+router.get('/admin/logged', new UserController().logged);
 router.use('/admin', group((adminRouter)=>{
     adminRouter.use((req, res, next)=>{
         if(!res.locals.$api_auth.admin){

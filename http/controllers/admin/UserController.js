@@ -10,23 +10,33 @@ const queryInterface = db.sequelize.getQueryInterface();
 const {DB} = require('../../../components/db');
 const md5 = require("md5");
 const {extFrom} = require("../../../components/mimeToExt");
+const UsersResource = require("../../resources/UsersResource");
 const moment = require("moment/moment");
+const fs = require('node:fs');
 
 class UserController {
+
+
     async notification(req, res, next){
         let send = await userNotification(
             req.body.email,
             'User created',
-            '<div style="font-size: 35px;color: #077">Hello, You are registered in WebTop, your password: ' + req.body.password + '</div>',
-            'html');
+            'Hello, You are registered in WebTop, your password: ' + req.body.password,
+            );
         return res.send({is: "ok"});
     }
-    async login(req, res, next) {
-        console.log(req.body);
-        // let users = await DB('users').paginate(1, 10).get(['id', 'first_name', 'last_name', 'email']);
-        // console.log(users);
-        // return res.send({tmp: users});
 
+    /**
+     * verify, is admin logged in
+     * @returns true|false
+     */
+    async logged(req, res, next) {
+        let loggedIn = !!res.locals.$api_auth.admin;
+        return res.send({logged: loggedIn});
+    }
+
+    async login(req, res, next) {
+        // console.log(req.body);
         let valid_err = api_validate({
             email: Joi.string().email().required(),
             password: Joi.string().min(6).max(30).required()
@@ -35,12 +45,16 @@ class UserController {
             res.status(422);
             return res.send({errors: valid_err});
         }
-
         const {email, password} = req.body;
         let errors = {};
-        const user = await User.findOne({where: {email: email}});
+        let user = null;
+        try {
+            user = await DB("users").where("email", email).first();
+        }catch (e) {
+            console.error(e);
+        }
         if (user) {
-            if (!bcrypt.compareSync(password, user.dataValues.password)) {
+            if (!bcrypt.compareSync(password, user.password)) {
                 errors['password'] = 'The password is incorrect.';
                 res.status(422);
                 return res.send({errors: errors});
@@ -50,9 +64,10 @@ class UserController {
             res.status(422);
             return res.send({errors: errors});
         }
-        let token = await saveAndGetUserToken(user.dataValues.id, 'admin');
+        let token = await saveAndGetUserToken(user.id, 'admin');
+        user = await new UsersResource(user);
 
-        return res.send({user: user, token: token});
+        return res.send({data: {user: user}, token: token});
     }
 
     async logout(req, res, next) {
@@ -111,8 +126,6 @@ class UserController {
                 return res.send({errors: 'file not uploaded.'});
             }
             photo = 'storage/uploads/users/' + imageName + ext;
-            console.log(uploaded);
-            // fs.writeFileSync(__basedir + '/public/images/' + imageName + ext, file.data );
         }
         let newUserData = {
             first_name: req.body.first_name,
@@ -136,15 +149,45 @@ class UserController {
         let send = await userNotification(
             req.body.email,
             'User created',
-            '<div style="font-size: 35px;color: #077">Hello, You are registered in WebTop, your password: ' + req.body.password + '</div>',
-            'html');
+            'Hello, You are registered in WebTop, your password: ' + req.body.password
+        );
         return res.send({data: {user: newUserData, message: message, generatedPassword}, errors: {}});
     }
     async update(req, res, next) {
-
+        let {user_id} = req.params;
+        console.log(req.params);
+        return res.send({is: "ok"});
     }
     async destroy(req, res, next) {
-
+        let {user_id} = req.params;
+        if(!user_id){
+            res.status(422);
+            // return res.send({errors: 'Wrong user id parameter.'});
+            return res.send({errors: 'No user id parameter.'});
+        }
+        if(user_id === res.locals.$api_auth.admin.id.toString()){
+            res.status(422);
+            return res.send({errors: "You can not delete self."});
+        }
+        let user = null;
+        try {
+            user = await DB("users").find(user_id);
+            if(!user){
+                res.status(422);
+                return res.send({errors: "User with this id " + user_id + " can not found."});
+            }
+            await DB("users").where("id", user_id).delete();
+            let photo = user.photo;
+            if(photo){
+                fs.unlinkSync(__basedir + "/public/" + photo);
+            }
+        }catch (e) {
+            console.error(e);
+            res.status(422);
+            return res.send({errors: 'User not deleted.'});
+        }
+        console.log(req.params);
+        return res.send({message: "User with this id " + user_id + " deleted successfully."});
     }
 
 }

@@ -14,10 +14,11 @@ class UsersResource {
     async index(r) {
 
         return {
-            "id": r.id,
+            id: r.id,
             first_name: r.first_name,
             last_name: r.last_name,
             email: r.email,
+            photo: r.photo,
             email_verified_at: r.email_verified_at,
             role: r.role,
             created_at: r.created_at,

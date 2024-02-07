@@ -2,13 +2,13 @@ const nodemailer = require('nodemailer');
 const {conf} = require('../../config/app_config');
 
 const transporter = nodemailer.createTransport(conf.mail.transporter);
-let userNotification = async (email, subject = '', message = '', type = 'text') => {
-    if(email && typeof email === 'string' && typeof subject === 'string' && typeof message === 'string' && (type === 'text' || type === 'html')){
+let userNotification = async (email, subject = '', message = '') => {
+    if(email && typeof email === 'string' && typeof subject === 'string' && typeof message === 'string'){
         let options = {
             from: conf.mail.from, //'webtop@info.com'
             to: email,
             subject: subject,
-            [type]: message, //text or html: message
+            html: '<div style="font-size: 25px;color: #077">' + message + '</div>', //text or html: message
         };
         try {
             // const info = await transporter.sendMail(options);
