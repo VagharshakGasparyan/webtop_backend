@@ -16,27 +16,33 @@ class AdminDataController {
         for(let item in items){
             if(item in req.body){
                 try {
-                    let d = req.body[item] ? JSON.parse(req.body[item]) : {page: 1, perPage: 10};
-                    let {page = 1, perPage = 10} = d;
+                    // let d = req.body[item] ? JSON.parse(req.body[item]) : {page: 1, perPage: 10};
+                    // let {page = 1, perPage = 10} = d;
+                    let {page, perPage, id} = req.body[item] ? JSON.parse(req.body[item]) : {};
+                    id = Array.isArray(id) ? id : [];
+                    let paginate = !!(page || perPage);
+                    page = page || 1;
+                    perPage = perPage || 100;
+                    perPage = Math.min(perPage, 100);
                     let sqlData;
-                    let _itemCount = await DB(item).count();
-                    let _itemPage = 1;
-                    let _itemPerPage = _itemCount;
-                    let _lastPage = 1;
-                    if(req.body[item]){
-                        _itemPage = page;
-                        _itemPerPage = perPage;
-                        _lastPage = Math.ceil(_itemCount / _itemPerPage);
-                        sqlData = await DB(item).paginate(page, perPage).get();
+                    let count = await DB(item).when(id.length > 0, function (query) {
+                        query.whereIn('id', id);
+                    }).count();
+                    let lastPage = 1;
+                    if(paginate){
+                        lastPage = Math.ceil(count / perPage);
+                        sqlData = await DB(item).when(id.length > 0, function (query) {
+                            query.whereIn('id', id);
+                        }).paginate(page, perPage).get();
                     }else{
                         sqlData = await DB(item).get();
                     }
                     sendData.data[item] = {
                         data: await new items[item](sqlData, res.locals.$api_local),
-                        count: _itemCount,
-                        page: _itemPage,
-                        perPage: _itemPerPage,
-                        lastPage: _lastPage
+                        count: count,
+                        page: page,
+                        perPage: perPage,
+                        lastPage: lastPage
                     };
                 }catch (e) {
                     console.error(e);
