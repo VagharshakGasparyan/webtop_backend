@@ -23,6 +23,7 @@ async function getApiAuth(req, res) {
     bearerToken = bearerToken && bearerToken.startsWith(bw) ? bearerToken.slice(bw.length) : null;
     let [userId, role] = bearerToken ? bearerToken.split(conf.token.delimiter) : [null, null];
     let userSessions = await getTokenData(userId, role, bearerToken);
+    console.log("userSessions", userSessions);
 
     for (const ses of userSessions) {
         let values = {}, newToken = null;

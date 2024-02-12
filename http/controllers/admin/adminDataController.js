@@ -18,8 +18,26 @@ class AdminDataController {
                 try {
                     let d = req.body[item] ? JSON.parse(req.body[item]) : {page: 1, perPage: 10};
                     let {page = 1, perPage = 10} = d;
-                    let sqlData = await DB(item).paginate(page, perPage).get();
-                    sendData.data[item] = await new items[item](sqlData, res.locals.$api_local);
+                    let sqlData;
+                    let _itemCount = await DB(item).count();
+                    let _itemPage = 1;
+                    let _itemPerPage = _itemCount;
+                    let _lastPage = 1;
+                    if(req.body[item]){
+                        _itemPage = page;
+                        _itemPerPage = perPage;
+                        _lastPage = Math.ceil(_itemCount / _itemPerPage);
+                        sqlData = await DB(item).paginate(page, perPage).get();
+                    }else{
+                        sqlData = await DB(item).get();
+                    }
+                    sendData.data[item] = {
+                        data: await new items[item](sqlData, res.locals.$api_local),
+                        count: _itemCount,
+                        page: _itemPage,
+                        perPage: _itemPerPage,
+                        lastPage: _lastPage
+                    };
                 }catch (e) {
                     console.error(e);
                     sendData.data[item] = null;

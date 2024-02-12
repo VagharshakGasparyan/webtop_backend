@@ -31,8 +31,16 @@ class UserController {
      * @returns true|false
      */
     async logged(req, res, next) {
-        let loggedIn = !!res.locals.$api_auth.admin;
-        return res.send({logged: loggedIn});
+        // let loggedIn = !!res.locals.$api_auth.admin;
+        if(res.locals.$api_auth.admin){
+            // return res.send({data: {user: res.locals.$api_auth.admin}});
+            return res.send();
+        }
+        res.status(401);
+        return res.send();
+        // return res.send({data: {user: null}});
+        // let loggedIn = !!res.locals.$api_auth.admin;
+        // return res.send({logged: loggedIn});
     }
 
     async login(req, res, next) {
