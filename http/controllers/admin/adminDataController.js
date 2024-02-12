@@ -35,7 +35,9 @@ class AdminDataController {
                             query.whereIn('id', id);
                         }).paginate(page, perPage).get();
                     }else{
-                        sqlData = await DB(item).get();
+                        sqlData = await DB(item).when(id.length > 0, function (query) {
+                            query.whereIn('id', id);
+                        }).get();
                     }
                     sendData.data[item] = {
                         data: await new items[item](sqlData, res.locals.$api_local),
