@@ -11,12 +11,10 @@ class SettingsSeeder {
         await DB(table).create(
             {
                 key: 'contacts',
-                name: '{"en": "Contacts", "hy": "Կոնտակտ", "ru": "Контакт"}',
+                name: 'Contacts',
                 description: '{"en": "Our contacts", "hy": "Մեր կոնտակտները", "ru": "Наши контакты"}',
                 value: '["077-01-01-01","055-01-01-01","043-01-01-01"]',
-                type: null,
-                image: null,
-                images: null,
+                file: null,
                 active: true,
                 created_at: moment().format('yyyy-MM-DD HH:mm:ss'),
                 updated_at: moment().format('yyyy-MM-DD HH:mm:ss'),

@@ -238,6 +238,7 @@ class UserController {
             }
 
             if(Object.keys(updatedUserData).length > 0){
+                updatedUserData.updated_at = moment().format('yyyy-MM-DD HH:mm:ss');
                 await DB('users').where("id", user_id).update(updatedUserData);
             }else{
                 return res.send({message: 'Nothing to update.'});
