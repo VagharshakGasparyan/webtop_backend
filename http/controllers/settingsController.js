@@ -170,7 +170,34 @@ class SettingsController {
 
     async destroy(req, res, next)
     {
-        //
+        let {setting_id} = req.params;
+        if(!setting_id){
+            res.status(422);
+            return res.send({errors: 'No setting id parameter.'});
+        }
+
+        let setting = null;
+        try {
+            setting = await DB("settings").find(setting_id);
+            if(!setting){
+                res.status(422);
+                return res.send({errors: "Setting with this id " + setting_id + " can not found."});
+            }
+            if(setting.file){
+                try {
+                    fs.unlinkSync(__basedir + "/public/" + setting.file);
+                }catch (e) {
+
+                }
+            }
+            await DB("settings").where("id", setting_id).delete();
+        }catch (e) {
+            console.error(e);
+            res.status(422);
+            return res.send({errors: 'Setting not deleted.'});
+        }
+        console.log(req.params);
+        return res.send({message: "Setting with this id " + setting_id + " deleted successfully."});
     }
 
 }
