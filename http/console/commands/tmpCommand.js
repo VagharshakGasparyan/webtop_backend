@@ -12,17 +12,30 @@ class TmpCommand {
     static command = "tmp";
     async handle()
     {
+        let m0 = moment().format('yyyy-MM-DD HH:mm:ss');
+        let m1 = moment().subtract(10, 's').format('yyyy-MM-DD HH:mm:ss');
+        let m2 = moment().add(10, 's').format('yyyy-MM-DD HH:mm:ss');
+        let m3 = moment().add(10, 'm').format('yyyy-MM-DD HH:mm:ss');
+        let m4 = moment().add(1, 'h').format('yyyy-MM-DD HH:mm:ss');
+        let m5 = moment().add(1, 'day').format('yyyy-MM-DD HH:mm:ss');
+
+        console.log(m0);
+        console.log(m1);
+        console.log(m2);
+        console.log(m3);
+        console.log(m4);
+        console.log(m5);
         // let a = path.relative(__dirname, __dirname + "/../../../components/db");
         // console.log(a);
         // let dir = path.dirname("/users/joe/notes.txt");
         // console.log(dir);
-        let b = new ValidateClass({body: {name: "Name", email: "mail@mail.com"}}, (v)=>{
-            return {
-                "name": v.number(),
-                "email": v.number(),
-            };
-        });
-        console.log(b);
+        // let b = new ValidateClass({body: {name: "Name", email: "mail@mail.com"}}, (v)=>{
+        //     return {
+        //         "name": v.number(),
+        //         "email": v.number(),
+        //     };
+        // });
+        // console.log(b);
     }
 }
 
