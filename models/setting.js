@@ -30,8 +30,7 @@ module.exports = (sequelize, DataTypes) => {
         },
         value: DataTypes.STRING,
         type: DataTypes.STRING,
-        image: DataTypes.STRING,
-        images: DataTypes.STRING,
+        file: DataTypes.STRING,
         active: DataTypes.STRING,
     }, {
         sequelize,

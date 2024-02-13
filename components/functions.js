@@ -3,7 +3,6 @@ const bcrypt = require("bcrypt");
 const {conf} = require('../config/app_config');
 const fs = require("node:fs");
 const path = require('node:path');
-// const queryInterface = db.sequelize.getQueryInterface();
 const {DB} = require("../components/db");
 const moment = require("moment");
 

@@ -1,7 +1,5 @@
 const cron = require("node-cron");
 const {conf} = require("../config/app_config");
-const {Op} = require("sequelize");
-const queryInterface = require('../models').sequelize.getQueryInterface();
 const {DB} = require("../components/db");
 const moment = require("moment");
 

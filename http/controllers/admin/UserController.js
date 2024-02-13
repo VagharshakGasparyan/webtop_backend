@@ -6,7 +6,6 @@ const {saveAndGetUserToken, apiLogoutUser, generateString} = require("../../../c
 const {userNotification} = require('../../notifications/userNotification');
 const {conf} = require("../../../config/app_config");
 const db = require("../../../models");
-const queryInterface = db.sequelize.getQueryInterface();
 const {DB} = require('../../../components/db');
 const md5 = require("md5");
 const {extFrom} = require("../../../components/mimeToExt");

@@ -2,7 +2,6 @@ const Joi = require('joi');
 const db = require("../models");
 const {conf} = require("../config/app_config");
 const {DB} = require('./db');
-const queryInterface = db.sequelize.getQueryInterface();
 
 function validate(schema, req, res) {
     const schema_joi = Joi.object(schema);
@@ -42,8 +41,13 @@ function api_validate(schema, req, res) {
 
 async function unique(table, columnName, columnValue) {
     columnValue = columnValue || columnValue === null ? columnValue : '';
-    let exists = await queryInterface.select(null, table, {where: {[columnName]: columnValue}});
-    if (exists.length) {
+    let exists = true;
+    try {
+        exists = DB(table).where(columnName, columnValue).exists();
+    }catch (e) {
+        console.error(e);
+    }
+    if (exists) {
         return "The " + columnName + " is already in use";
     }
     return null;
