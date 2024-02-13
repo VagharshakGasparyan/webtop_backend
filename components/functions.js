@@ -1,17 +1,21 @@
 const bcrypt = require("bcrypt");
-const {User} = require("../models");
+// const {User} = require("../models");
 const {conf} = require('../config/app_config');
-const db = require('../models');
-const {Op} = require("sequelize");
-const {boolean} = require("joi");
 const fs = require("node:fs");
 const path = require('node:path');
-const queryInterface = db.sequelize.getQueryInterface();
+// const queryInterface = db.sequelize.getQueryInterface();
+const {DB} = require("../components/db");
+const moment = require("moment");
 
 async function getTokenData(userId, role, token){
-    let userSessions = userId && role && token
-        ? await queryInterface.select(null, conf.token.table, {where: {user_id: userId, role: role}})
-        : [];
+    let userSessions = [];
+    try {
+        userSessions = userId && role && token
+            ? await DB(conf.token.table).where("user_id", userId).where("role", role).get()
+            : [];
+    }catch (e) {
+        console.error(e);
+    }
     return userSessions.filter((ses)=>{
         return bcrypt.compareSync(token, ses.token);
     });
@@ -23,28 +27,36 @@ async function getApiAuth(req, res) {
     bearerToken = bearerToken && bearerToken.startsWith(bw) ? bearerToken.slice(bw.length) : null;
     let [userId, role] = bearerToken ? bearerToken.split(conf.token.delimiter) : [null, null];
     let userSessions = await getTokenData(userId, role, bearerToken);
-    console.log("userSessions", userSessions);
+    // console.log("userSessions", userSessions);
 
     for (const ses of userSessions) {
         let values = {}, newToken = null;
         if(conf.api.renewal){
-            values.updated_at = new Date();
+            values.updated_at = moment().format('yyyy-MM-DD HH:mm:ss');
         }
         let canRefresh = Boolean(conf.api.refresh && (ses.refresh ?? new Date()) < new Date(new Date() - conf.api.refreshTime));
         if(canRefresh){
             let newTokens = generateToken(userId, role);
             newToken = newTokens.token;
             values.token = newTokens.hashedToken;
-            values.refresh = new Date();
+            values.refresh = moment().format('yyyy-MM-DD HH:mm:ss');
         }
         if(conf.api.renewal || canRefresh){
-            await queryInterface.bulkUpdate(conf.token.table, values, {
-                token: ses.token,
-                user_id: userId,
-                role: role
-            });
+            try {
+                await DB(conf.token.table).where("token", ses.token)
+                    .where("user_id", userId).where("role", role)
+                    .update(values);
+            }catch (e) {
+                console.error(e);
+            }
+
         }
-        let auth = await User.findOne({where: {id: userId}});
+        let auth = null;
+        try {
+            auth = await DB('users').find(userId);
+        }catch (e) {
+            console.error(e);
+        }
         if(auth && userId && role){
             return {auth, userId, role, newToken};
         }
@@ -79,13 +91,19 @@ async function getWebAuth(req, res) {
                         maxAge: maxAge,
                         httpOnly: true
                     });
-                    await queryInterface.bulkUpdate(conf.token.table, values, {
-                        token: ses.token,
-                        user_id: userId,
-                        role: role
-                    });
+                    try {
+                        await DB(conf.token.table).where("token", ses.token).where("user_id", userId).where("role", role).update(values);
+                    }catch (e) {
+                        console.error(e);
+                    }
+
                 }
-                let auth = await User.findOne({where: {id: userId}});
+                let auth = null;
+                try {
+                    auth = await DB('users').find(userId);
+                }catch (e) {
+                    console.error(e);
+                }
                 if(userId && role && auth){
                     authData[role] = auth;
                 }else{
@@ -148,15 +166,17 @@ async function loginUser(userId, req, res, role = 'user') {
 }
 
 async function saveToken(userId, role, token) {
-    await queryInterface.bulkInsert(conf.token.table, [
-        {
+    try {
+        await DB(conf.token.table).create({
             user_id: userId,
             role: role,
             token: token,
-            refresh: new Date(),
-            updated_at: new Date()
-        }
-    ], {});
+            refresh: moment().format('yyyy-MM-DD HH:mm:ss'),
+            updated_at: moment().format('yyyy-MM-DD HH:mm:ss')
+        })
+    }catch (e) {
+        console.error(e);
+    }
 }
 
 async function logoutUser(userId, role, req, res) {
@@ -165,13 +185,13 @@ async function logoutUser(userId, role, req, res) {
         let token = req.cookies[key];
         let userSessions = await getTokenData(userId, role, token);
         for (const ses of userSessions) {
-            await queryInterface.bulkDelete(conf.token.table, {
-                token: ses.token,
-                user_id: userId,
-                role: role
-            }, {});
-            res.cookie(key, '', {maxAge: -1});
-            return true;
+            try {
+                await DB(conf.token.table).where("token", ses.token).where("user_id", userId).where("role", role).delete();
+                res.cookie(key, '', {maxAge: -1});
+                return true;
+            }catch (e) {
+                console.error(e);
+            }
         }
     }
     return false;
@@ -184,12 +204,12 @@ async function apiLogoutUser(userId, role, req, res) {
     if(bearerToken){
         let userSessions = await getTokenData(userId, role, bearerToken);
         for (const ses of userSessions) {
-            await queryInterface.bulkDelete(conf.token.table, {
-                token: ses.token,
-                user_id: userId,
-                role: role
-            }, {});
-            return true;
+            try {
+                await DB(conf.token.table).where("token", ses.token).where("user_id", userId).where("role", role).delete();
+                return true;
+            }catch (e) {
+                console.error(e);
+            }
         }
     }
     return false;
