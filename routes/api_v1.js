@@ -5,7 +5,6 @@ const router = express.Router();
 // require('express-group-routes');
 const {validate, api_validate} = require("../components/validate");
 const Joi = require("joi");
-const {User} = require("../models");
 const bcrypt = require("bcrypt");
 const {saveAndGetUserToken, apiLogoutUser} = require("../components/functions");
 const fs = require("node:fs");
@@ -15,6 +14,7 @@ const {UserController} = require('../http/controllers/admin/UserController');
 const AdminDataController = require('../http/controllers/admin/AdminDataController');
 const TeamsController = require('../http/controllers/TeamsController');
 const SettingsController = require('../http/controllers/SettingsController');
+const {DB} = require("../components/db");
 
 const group = (callback) => {
     callback(router);
@@ -64,9 +64,9 @@ router.post('/login', async function (req, res, next) {
 
     const {email, password} = req.body;
     let errors = {};
-    const user = await User.findOne({where: {email: email}});
+    const user = await DB('users').where("email", email).first();
     if (user) {
-        if (!bcrypt.compareSync(password, user.dataValues.password)) {
+        if (!bcrypt.compareSync(password, user.password)) {
             errors['password'] = 'The password is incorrect.';
             return res.send({errors: errors});
         }
@@ -74,7 +74,7 @@ router.post('/login', async function (req, res, next) {
         errors['email'] = 'The user with this email does not exists.';
         return res.send({errors: errors});
     }
-    let token = await saveAndGetUserToken(user.dataValues.id, 'admin');
+    let token = await saveAndGetUserToken(user.id, 'admin');
 
     return res.send({user: user, token: token});
 });
@@ -82,10 +82,10 @@ router.post('/login', async function (req, res, next) {
 router.get('/logout', async (req, res, next) => {
     let logout = false;
     if (res.locals.$api_auth.admin) {
-        logout = await apiLogoutUser(res.locals.$api_auth.admin.dataValues.id, 'admin', req, res);
+        logout = await apiLogoutUser(res.locals.$api_auth.admin.id, 'admin', req, res);
     }
     if (res.locals.$api_auth.user) {
-        logout = await apiLogoutUser(res.locals.$api_auth.user.dataValues.id, 'user', req, res);
+        logout = await apiLogoutUser(res.locals.$api_auth.user.id, 'user', req, res);
     }
     if (logout) {
         return res.send({message: 'Logged out successfully.'});

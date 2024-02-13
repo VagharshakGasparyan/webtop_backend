@@ -80,7 +80,7 @@ class UserController {
     async logout(req, res, next) {
         let logout = false;
         if (res.locals.$api_auth.admin) {
-            logout = await apiLogoutUser(res.locals.$api_auth.admin.dataValues.id, 'admin', req, res);
+            logout = await apiLogoutUser(res.locals.$api_auth.admin.id, 'admin', req, res);
         }
         if (logout) {
             return res.send({message: 'Logged out successfully.'});
