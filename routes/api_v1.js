@@ -42,8 +42,8 @@ router.use('/admin', group((adminRouter)=>{
     adminRouter.delete('/team/delete/:team_id', new TeamsController().destroy);
     //--------------------settings---------------------------------
     adminRouter.post('/setting/create', new SettingsController().create);
-    adminRouter.post('/setting/update/:team_id', new SettingsController().update);
-    adminRouter.delete('/setting/delete/:team_id', new SettingsController().destroy);
+    adminRouter.post('/setting/update/:setting_id', new SettingsController().update);
+    adminRouter.delete('/setting/delete/:setting_id', new SettingsController().destroy);
     // adminRouter.post('/notification', new UserController().notification);
     adminRouter.post('/admin-data', new AdminDataController().index);
 }));
