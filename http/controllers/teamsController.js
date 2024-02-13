@@ -1,5 +1,6 @@
 const {DB} = require("../../components/db");
 const bcrypt = require("bcrypt");
+const fs = require('node:fs');
 const moment = require("moment/moment");
 const {api_validate} = require("../../components/validate");
 const Joi = require("joi");
@@ -120,7 +121,123 @@ class TeamsController {
 
     async update(req, res, next)
     {
-        //
+        let errors = [];
+        let {team_id} = req.params;
+        let team = null;
+        if(!team_id){
+            res.status(422);
+            return res.send({errors: 'No team id parameter.'});
+        }
+        let valid_err = api_validate({
+            first_name: Joi.string().min(2).max(30),
+            last_name: Joi.string().min(2).max(30),
+            rank: Joi.string().min(2).max(512),
+            title: Joi.string().min(2).max(512),
+            description: Joi.string().min(2).max(512),
+        }, req, res);
+        if (valid_err) {
+            res.status(422);
+            return res.send({errors: valid_err});
+        }
+        let {first_name, last_name, rank, title, description, active, stayImages} = req.body;
+        let updatedTeamData = {};
+        let locale = res.locals.$api_local;
+        try {
+            team = await DB('teams').find(team_id);
+            if(!team){
+                res.status(422);
+                return res.send({errors: "Team with this id " + team_id + " can not found."});
+            }
+            if(first_name){
+                updatedTeamData.first_name = first_name;
+            }
+            if(last_name){
+                updatedTeamData.last_name = last_name;
+            }
+            if(rank){
+                let oldRank = team.rank ? JSON.parse(team.rank) : {};
+                oldRank[locale] = rank;
+                updatedTeamData.rank = JSON.stringify(oldRank);
+            }
+            if(title){
+                let oldTitle = team.title ? JSON.parse(team.title) : {};
+                oldTitle[locale] = title;
+                updatedTeamData.title = JSON.stringify(oldTitle);
+            }
+            if(description){
+                let oldDescription = team.description ? JSON.parse(team.description) : {};
+                oldDescription[locale] = description;
+                updatedTeamData.description = JSON.stringify(oldDescription);
+            }
+            if(active){
+                updatedTeamData.active = active;
+            }
+
+            let teamImage = req.files ? req.files.image : null;
+            if (teamImage) {
+                let teamImageName = md5(Date.now()) + generateString(4);
+                let ext = extFrom(teamImage.mimetype, teamImage.name);
+                if(ext.toLowerCase() !== ".png" && ext.toLowerCase() !== ".jpg"){
+                    errors.push('Image not a jpg or png format.');
+                }else{
+                    let uploaded = saveFileContentToPublic('storage/uploads/teams', teamImageName + ext, teamImage.data);
+                    if (!uploaded) {
+                        errors.push('Image not uploaded.');
+                    }else{
+                        if(team.image){
+                            fs.unlinkSync(__basedir + "/public/" + team.image);
+                        }
+                        updatedTeamData.image = 'storage/uploads/teams/' + teamImageName + ext;
+                    }
+                }
+            }
+
+            updatedTeamData.images = [];
+            let oldImages = team.images ? JSON.parse(team.images) : [];
+            stayImages = stayImages ? JSON.parse(stayImages) : [];
+            for(let oldImage of oldImages){
+                if(stayImages.includes(oldImage)){
+                    updatedTeamData.images.push(oldImage);
+                }else{
+                    try {
+                        fs.unlinkSync(__basedir + "/public/" + oldImage);
+                    }catch (e) {
+                        errors.push('Images item file ' + oldImage + ' can not delete.');
+                    }
+                }
+            }
+
+            let teamImages = req.files ? req.files.images : null;
+            if(teamImages && teamImages.length > 0){
+                for(let imageItem of teamImages){
+                    let imageItemName = md5(Date.now()) + generateString(4);
+                    let ext = extFrom(imageItem.mimetype, imageItem.name);
+                    if(ext.toLowerCase() !== ".png" && ext.toLowerCase() !== ".jpg"){
+                        errors.push('Images item not a jpg or png format.');
+                        continue;
+                    }
+
+                    let uploaded = saveFileContentToPublic('storage/uploads/teams', imageItemName + ext, imageItem.data);
+                    if (!uploaded) {
+                        errors.push('Images item not uploaded.');
+                        continue;
+                    }
+                    updatedTeamData.images.push('storage/uploads/teams/' + imageItemName + ext);
+                }
+            }
+            updatedTeamData.images = JSON.stringify(updatedTeamData.images);
+            if(Object.keys(updatedTeamData).length > 0){
+                await DB('teams').where("id", team_id).update(updatedTeamData);
+            }else{
+                return res.send({message: 'Nothing to update.'});
+            }
+        }catch (e) {
+            console.error(e);
+            res.status(422);
+            return res.send({errors: 'Team not updated.'});
+        }
+
+        return res.send({message: "Team data updated successfully.", errors: errors});
     }
 
     async destroy(req, res, next)
