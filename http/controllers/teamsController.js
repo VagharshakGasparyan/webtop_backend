@@ -242,7 +242,38 @@ class TeamsController {
 
     async destroy(req, res, next)
     {
-        //
+        let {team_id} = req.params;
+        if(!team_id){
+            res.status(422);
+            return res.send({errors: 'No team id parameter.'});
+        }
+
+        let team = null;
+        try {
+            team = await DB("teams").find(team_id);
+            if(!team){
+                res.status(422);
+                return res.send({errors: "Team with this id " + team_id + " can not found."});
+            }
+            let imagesToBeDelete = team.images ? JSON.parse(team.images) : [];
+            if(team.image){
+                imagesToBeDelete.push(team.image);
+            }
+            for(let imageToBeDelete of imagesToBeDelete){
+                try {
+                    fs.unlinkSync(__basedir + "/public/" + imageToBeDelete);
+                }catch (e) {
+
+                }
+            }
+            await DB("teams").where("id", team_id).delete();
+        }catch (e) {
+            console.error(e);
+            res.status(422);
+            return res.send({errors: 'Team not deleted.'});
+        }
+        console.log(req.params);
+        return res.send({message: "Team with this id " + team_id + " deleted successfully."});
     }
 
 }
