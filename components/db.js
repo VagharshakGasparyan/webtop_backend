@@ -65,12 +65,15 @@ function fDB(q) {
         let con = mysql.createConnection(config);
         con.connect(function (err) {
             if (err) {
+                con.end();
                 reject(err);
             }
             con.query(q, function (err, result) {
                 if (err) {
+                    con.end();
                     reject(err);
                 }
+                con.end();
                 resolve(result);
             });
         });
@@ -78,7 +81,6 @@ function fDB(q) {
 }
 
 class DBClass {
-    //"SELECT * FROM products WHERE disable = 0 LIMIT 10"
     constructor(table) {
         this._tableName = table;
         this._table = _col(table);
