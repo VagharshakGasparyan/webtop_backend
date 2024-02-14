@@ -28,7 +28,11 @@ class TmpCommand {
         // console.log(m3);
         // console.log(m4);
         // console.log(m5);
-        console.log(new Date(new Date('2024-02-14 10:45:01') - 10000));
+        let u = "?%2Fgames=";
+        let u1 = decodeURIComponent(u);
+        let u2 = encodeURI(u);
+        console.log(u1, u2);
+        // console.log(new Date(new Date('2024-02-14 10:45:01') - 10000));
         // let a = path.relative(__dirname, __dirname + "/../../../components/db");
         // console.log(a);
         // let dir = path.dirname("/users/joe/notes.txt");

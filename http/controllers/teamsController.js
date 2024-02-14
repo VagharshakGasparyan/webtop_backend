@@ -237,8 +237,11 @@ class TeamsController {
             res.status(422);
             return res.send({errors: 'Team not updated.'});
         }
+        for(let key in updatedTeamData){
+            team[key] = updatedTeamData[key];
+        }
 
-        return res.send({message: "Team data updated successfully.", errors: errors});
+        return res.send({data:{team}, message: "Team data updated successfully.", errors: errors});
     }
 
     async destroy(req, res, next)

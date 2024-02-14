@@ -247,8 +247,10 @@ class UserController {
             res.status(422);
             return res.send({errors: 'User not updated.'});
         }
-
-        return res.send({message: "User data updated successfully."});
+        for(let key in updatedUserData){
+            user[key] = updatedUserData[key];
+        }
+        return res.send({data:{user}, message: "User data updated successfully.", errors: {}});
     }
     async destroy(req, res, next) {
         let {user_id} = req.params;

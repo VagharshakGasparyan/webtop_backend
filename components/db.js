@@ -65,17 +65,17 @@ function fDB(q) {
         let con = mysql.createConnection(config);
         con.connect(function (err) {
             if (err) {
-                con.end();
                 reject(err);
+                // con.end();
             }
             con.query(q, function (err, result) {
                 if (err) {
-                    con.end();
+                    // con.end();
                     reject(err);
                 }
-                con.end();
                 resolve(result);
             });
+            con.end();
         });
     });
 }

@@ -164,8 +164,10 @@ class SettingsController {
             res.status(422);
             return res.send({errors: 'Setting not updated.'});
         }
-
-        return res.send({message: "Setting data updated successfully.", errors: errors});
+        for(let key in updatedSettingData){
+            setting[key] = updatedSettingData[key];
+        }
+        return res.send({data: {setting}, message: "Setting data updated successfully.", errors: errors});
     }
 
     async destroy(req, res, next)
