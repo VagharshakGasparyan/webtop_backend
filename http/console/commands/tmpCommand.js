@@ -19,12 +19,16 @@ class TmpCommand {
         let m4 = moment().add(1, 'h').format('yyyy-MM-DD HH:mm:ss');
         let m5 = moment().add(1, 'day').format('yyyy-MM-DD HH:mm:ss');
 
-        console.log(m0);
-        console.log(m1);
-        console.log(m2);
-        console.log(m3);
-        console.log(m4);
-        console.log(m5);
+        // console.log(m0 > m1);
+        // console.log(m1 > new Date());
+        // console.log(m1 < new Date());
+        // console.log(m0);
+        // console.log(m1);
+        // console.log(m2);
+        // console.log(m3);
+        // console.log(m4);
+        // console.log(m5);
+        console.log(new Date(new Date('2024-02-14 10:45:01') - 10000));
         // let a = path.relative(__dirname, __dirname + "/../../../components/db");
         // console.log(a);
         // let dir = path.dirname("/users/joe/notes.txt");

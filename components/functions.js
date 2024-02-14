@@ -33,7 +33,10 @@ async function getApiAuth(req, res) {
         if(conf.api.renewal){
             values.updated_at = moment().format('yyyy-MM-DD HH:mm:ss');
         }
-        let canRefresh = Boolean(conf.api.refresh && (ses.refresh ?? new Date()) < new Date(new Date() - conf.api.refreshTime));
+        let canRefresh = Boolean(
+            conf.api.refresh
+            && new Date(ses.refresh ?? moment().format('yyyy-MM-DD HH:mm:ss')) < new Date(new Date() - conf.api.refreshTime)
+        );
         if(canRefresh){
             let newTokens = generateToken(userId, role);
             newToken = newTokens.token;
@@ -74,16 +77,19 @@ async function getWebAuth(req, res) {
                 let values = {},
                     token = sesToken,
                     maxAge = conf.token.maxAge + ((ses.updated_at ?? new Date()) - new Date());
-                let canRefresh = Boolean(conf.web.refresh && (ses.refresh ?? new Date()) < new Date(new Date() - conf.web.refreshTime));
+                let canRefresh = Boolean(
+                    conf.web.refresh
+                    && new Date(ses.refresh ?? moment().format('yyyy-MM-DD HH:mm:ss')) < new Date(new Date() - conf.web.refreshTime)
+                );
                 if(conf.web.renewal){
-                    values.updated_at = new Date();
+                    values.updated_at = moment().format('yyyy-MM-DD HH:mm:ss');
                     maxAge = conf.token.maxAge;
                 }
                 if(canRefresh){
                     let newTokens = generateToken(userId, role);
                     token = newTokens.token;
                     values.token = newTokens.hashedToken;
-                    values.refresh = new Date();
+                    values.refresh = moment().format('yyyy-MM-DD HH:mm:ss');
                 }
                 if(conf.web.renewal || canRefresh){
                     res.cookie(conf.web.prefix + conf.token.delimiter + role, token, {
