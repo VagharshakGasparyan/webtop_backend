@@ -8,6 +8,7 @@ const md5 = require("md5");
 const {generateString} = require("../../components/functions");
 const {extFrom} = require("../../components/mimeToExt");
 const TeamsResource = require("../resources/teamsResource");
+
 class TeamsController {
     constructor() {
         //
@@ -34,7 +35,7 @@ class TeamsController {
         let locale = res.locals.$api_local;
         let {first_name, last_name, rank, title, description, active} = req.body;
         let {image, images} = req.files ?? {image: null, images: null};
-        console.log(first_name, last_name, rank, title, description, active, image, images);
+        // console.log(first_name, last_name, rank, title, description, active, image, images);
         // return res.send({is: "ok"});
         let teamData = {first_name, last_name};
         if(rank){
@@ -94,7 +95,11 @@ class TeamsController {
             }
             teamData.created_at = moment().format('yyyy-MM-DD HH:mm:ss');
             teamData.updated_at = moment().format('yyyy-MM-DD HH:mm:ss');
-            await DB('teams').create(teamData);
+            if("active" in req.body){
+                teamData.active = req.body.active;
+            }
+            let forId = await DB('teams').create(teamData);
+            teamData.id = forId.insertId;
         }catch (e) {
             console.error(e);
             res.status(422);
@@ -169,7 +174,7 @@ class TeamsController {
                 oldDescription[locale] = description;
                 updatedTeamData.description = JSON.stringify(oldDescription);
             }
-            if(active){
+            if("active" in req.body){
                 updatedTeamData.active = active;
             }
 
@@ -240,6 +245,7 @@ class TeamsController {
         for(let key in updatedTeamData){
             team[key] = updatedTeamData[key];
         }
+        team = await new TeamsResource(team, locale);
 
         return res.send({data:{team}, message: "Team data updated successfully.", errors: errors});
     }

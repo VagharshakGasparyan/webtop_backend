@@ -12,6 +12,7 @@ const {extFrom} = require("../../../components/mimeToExt");
 const UsersResource = require("../../resources/UsersResource");
 const moment = require("moment/moment");
 const fs = require('node:fs');
+const TeamsResource = require("../../resources/teamsResource");
 
 class UserController {
 
@@ -147,7 +148,8 @@ class UserController {
         }
 
         try {
-            await DB('users').create(newUserData);
+            let forId = await DB('users').create(newUserData);
+            newUserData.id = forId.insertId;
         }catch (e) {
             console.error(e);
             res.status(422);
@@ -158,7 +160,10 @@ class UserController {
             'User created',
             'Hello, You are registered in WebTop, your password: ' + req.body.password
         );
-        return res.send({data: {user: newUserData, message: message, generatedPassword}, errors: {}});
+        let locale = res.locals.$api_local;
+        let user = await new UsersResource(newUserData, locale);
+
+        return res.send({data: {user: user, message: message, generatedPassword}, errors: {}});
     }
 
     async update(req, res, next) {
@@ -250,6 +255,8 @@ class UserController {
         for(let key in updatedUserData){
             user[key] = updatedUserData[key];
         }
+        let locale = res.locals.$api_local;
+        user = await new UsersResource(user, locale);
         return res.send({data:{user}, message: "User data updated successfully.", errors: {}});
     }
     async destroy(req, res, next) {

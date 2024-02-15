@@ -7,6 +7,8 @@ const fs = require('node:fs');
 const md5 = require("md5");
 const bcrypt = require("bcrypt");
 const moment = require("moment/moment");
+const SettingsResource = require("../resources/SettingsResource");
+
 class SettingsController {
     constructor() {
         //
@@ -62,14 +64,15 @@ class SettingsController {
             if("active" in req.body){
                 newSettingsData.active = req.body.active;
             }
-            await DB('settings').create(newSettingsData);
+            let forId = await DB('settings').create(newSettingsData);
+            newSettingsData.id = forId.insertId;
         }catch (e) {
             console.error(e);
             res.status(422);
             return res.send({errors: 'Setting not created.'});
         }
-
-        return res.send({data: {settings: newSettingsData, message: message}, errors: {}});
+        let setting = await new SettingsResource(newSettingsData, locale);
+        return res.send({data: {settings: setting, message: message}, errors: {}});
     }
 
     async store(req, res, next)
@@ -167,6 +170,7 @@ class SettingsController {
         for(let key in updatedSettingData){
             setting[key] = updatedSettingData[key];
         }
+        setting = await new SettingsResource(setting, locale);
         return res.send({data: {setting}, message: "Setting data updated successfully.", errors: errors});
     }
 
