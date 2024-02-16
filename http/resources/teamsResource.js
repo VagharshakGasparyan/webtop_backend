@@ -14,7 +14,6 @@ class TeamsResource {
     }
 
     async index(r) {
-
         return {
             "id": r.id,
             "first_name": r.first_name,

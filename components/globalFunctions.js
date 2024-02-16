@@ -35,6 +35,8 @@ module.exports = (dirname) => {
                     return w[l];
                 }else if(ld && typeof ld === 'string' && ld in w){
                     return w[ld];
+                }else{
+                    return "";
                 }
             }
             return w;

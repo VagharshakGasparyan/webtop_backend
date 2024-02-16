@@ -39,6 +39,8 @@ async function auth(req, res, next) {
                     return w[l];
                 }else if(ld && typeof ld === 'string' && ld in w){
                     return w[ld];
+                }else{
+                    return "";
                 }
             }
             return w;
