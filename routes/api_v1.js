@@ -34,16 +34,16 @@ router.use('/admin', group((adminRouter)=>{
     adminRouter.get('/logout', new UserController().logout);
     //--------------------admin user---------------------------------
     adminRouter.post('/user/create', new UserController().create);
-    adminRouter.post('/user/update/:user_id', new UserController().update);
-    adminRouter.delete('/user/delete/:user_id', new UserController().destroy);
+    adminRouter.post('/user/update/:user_id(\\d+)', new UserController().update);
+    adminRouter.delete('/user/delete/:user_id(\\d+)', new UserController().destroy);
     //--------------------admin team---------------------------------
     adminRouter.post('/team/create', new TeamsController().create);
-    adminRouter.post('/team/update/:team_id', new TeamsController().update);
-    adminRouter.delete('/team/delete/:team_id', new TeamsController().destroy);
+    adminRouter.post('/team/update/:team_id(\\d+)', new TeamsController().update);
+    adminRouter.delete('/team/delete/:team_id(\\d+)', new TeamsController().destroy);
     //--------------------settings---------------------------------
     adminRouter.post('/setting/create', new SettingsController().create);
-    adminRouter.post('/setting/update/:setting_id', new SettingsController().update);
-    adminRouter.delete('/setting/delete/:setting_id', new SettingsController().destroy);
+    adminRouter.post('/setting/update/:setting_id(\\d+)', new SettingsController().update);
+    adminRouter.delete('/setting/delete/:setting_id(\\d+)', new SettingsController().destroy);
     // adminRouter.post('/notification', new UserController().notification);
     adminRouter.post('/admin-data', new AdminDataController().index);
 }));

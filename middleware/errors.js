@@ -12,6 +12,9 @@ module.exports = (app) => {
         res.locals.error = req.app.get('env') === 'development' ? err : {};
         // render the error page
         res.status(err.status || 500);
+        if(req.path.startsWith('/api')){
+            return res.send({errors: err.message, status: err.status || 500});
+        }
         res.render('errors/error');
     });
 }
