@@ -133,7 +133,7 @@ function generateString(str_length = 8) {
     return str;
 }
 
-function generateToken(userId, role, tokenLength = 128) {
+function generateToken(userId, role, tokenLength = 96) {
     let words = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$#@.-+*&^%{}[]:|=()!?<>';
     let token = userId + '\'' + role + '\'';
     let time = Date.now().toString();

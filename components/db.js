@@ -66,11 +66,9 @@ function fDB(q) {
         con.connect(function (err) {
             if (err) {
                 reject(err);
-                // con.end();
             }
             con.query(q, function (err, result) {
                 if (err) {
-                    // con.end();
                     reject(err);
                 }
                 resolve(result);
@@ -536,7 +534,7 @@ class DBClass {
     _all_q(){
         let pre_q = [this._r_table, this._table].join(" ") + " ";
         let all_q = pre_q + this._q();
-        console.log('all_q=', all_q);
+        // console.log('all_q=', all_q);
         return all_q;
     }
 

@@ -282,7 +282,7 @@ class TeamsController {
             res.status(422);
             return res.send({errors: 'Team not deleted.'});
         }
-        console.log(req.params);
+
         return res.send({message: "Team with this id " + team_id + " deleted successfully."});
     }
 

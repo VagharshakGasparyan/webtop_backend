@@ -4,7 +4,7 @@ const {DB} = require("../components/db");
 const moment = require("moment");
 
 cron.schedule('*/5 * * * *', async () => {//running every 5 minutes
-    console.log('running session cleaner');
+    // console.log('running session cleaner');
     try {
         await DB(conf.token.table).where("updated_at", "<", moment().subtract(conf.token.maxAge, 'ms').format('yyyy-MM-DD HH:mm:ss')).delete();
     }catch (e) {
