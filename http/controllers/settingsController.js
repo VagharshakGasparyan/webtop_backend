@@ -202,7 +202,6 @@ class SettingsController {
             res.status(422);
             return res.send({errors: 'Setting not deleted.'});
         }
-        console.log(req.params);
         return res.send({message: "Setting with this id " + setting_id + " deleted successfully."});
     }
 

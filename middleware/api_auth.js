@@ -12,7 +12,6 @@ async function api_auth(req, res, next) {
     }
     let allLangKeys = Object.keys(conf.lang.all ?? []);
     res.locals.$api_local = allLangKeys.includes(req.headers['accept-language']) ? req.headers['accept-language'] : conf.lang.default ?? null;
-    // console.log(res.locals.$api_local);
     next();
 }
 module.exports = api_auth;

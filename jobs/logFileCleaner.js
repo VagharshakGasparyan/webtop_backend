@@ -5,7 +5,6 @@ const fs = require("node:fs");
 const path = require("node:path");
 const moment = require("moment/moment");
 
-// console.log(__basedir);
 //(second (optional) | minute | hour | day of month | month  day of week)
 cron.schedule('0 0 * * *', async () => {//running every day at 0:00
     let lastDate = new Date(new Date() - 60 * 24 * 3600 * 1000);//last 60 days

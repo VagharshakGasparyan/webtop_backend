@@ -286,7 +286,6 @@ class UserController {
             res.status(422);
             return res.send({errors: 'User not deleted.'});
         }
-        console.log(req.params);
         return res.send({message: "User with this id " + user_id + " deleted successfully."});
     }
 

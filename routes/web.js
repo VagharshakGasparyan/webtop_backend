@@ -19,20 +19,9 @@ router.get('/', (req, res, next) => {
     res.render('pages/home', {title: 'Home', page: 'home'});
 });
 router.get('/products', async (req, res, next) => {
-    console.log(res.locals.$local);
+    //console.log(res.locals.$local);
     let products = [];
-    try {
-        products = await Product.findAll({
-            limit: 20,
-            where: {disable: false},
-            order: [['id', 'ASC']]
-        });
-        // const jane = await User.create({ first_name: "Jane", last_name: "Doe", email: "johnDoe@gmail.com" });
-    } catch (e) {
-        console.error('error=', e);
-    }
     // let products = DB('SELECT * FROM `products` LIMIT 3');
-    console.log(products[0].getName());
     res.render('pages/products', {title: 'Products', page: 'products', products: products});
 });
 router.get('/login', async (req, res, next) => {

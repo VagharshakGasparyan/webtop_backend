@@ -35,8 +35,6 @@ class TeamsController {
         let locale = res.locals.$api_local;
         let {first_name, last_name, rank, title, description, active} = req.body;
         let {image, images} = req.files ?? {image: null, images: null};
-        // console.log(first_name, last_name, rank, title, description, active, image, images);
-        // return res.send({is: "ok"});
         let teamData = {first_name, last_name};
         if(rank){
             teamData.rank = JSON.stringify({
