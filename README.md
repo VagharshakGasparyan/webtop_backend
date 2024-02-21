@@ -13,24 +13,16 @@ npm i sync-mysql
 npm i bcrypt
 npm i mysql2
 npm i express-session
-npm i express-validator
 npm i express-session
 npm i winston
 npm i moment
 npm i node-cron
 npm i jsonwebtoken
 npm i joi
-npm i sequelize
-npm i sequelize-cli
-npx sequelize-cli init
 ```
 - Migrations
 ```
-npx sequelize-cli model:generate --name User --attributes firstName:string,lastName:string,email:string
-npx sequelize-cli migration:generate --name session
-npx sequelize-cli db:migrate
-npx sequelize-cli db:migrate:undo
-npx sequelize-cli db:migrate:undo:all --to XXXXXXXXXXXXXX-create-user.js
+npm
 ```
 - Seeders
 ```

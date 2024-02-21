@@ -3,7 +3,6 @@ const {DB} = require("../components/db");
 const router = express.Router();
 const {normalizeTypes} = require("express/lib/utils");
 const bcrypt = require("bcrypt");
-const {query, check, validationResult, checkSchema} = require('express-validator');
 const moment = require('moment');
 const Joi = require('joi');
 const {validate} = require('../components/validate');
@@ -11,7 +10,7 @@ const {loginUser, logoutUser} = require('../components/functions');
 
 
 /* GET home page. */
-router.get('/', (req, res, next) => {
+router.get('/', async (req, res, next) => {
     // app.param('id', /^\d+$/);
     // app.get('/user/:id', function(req, res){
     //     res.send('user ' + req.params.id);
@@ -20,6 +19,7 @@ router.get('/', (req, res, next) => {
 });
 router.get('/products', async (req, res, next) => {
     //console.log(res.locals.$local);
+
     let products = [];
     // let products = DB('SELECT * FROM `products` LIMIT 3');
     res.render('pages/products', {title: 'Products', page: 'products', products: products});

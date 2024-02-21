@@ -1,11 +1,9 @@
 const {api_validate, unique} = require("../../../components/validate");
 const Joi = require("joi");
-const {User} = require("../../../models");
 const bcrypt = require("bcrypt");
 const {saveAndGetUserToken, apiLogoutUser, generateString} = require("../../../components/functions");
 const {userNotification} = require('../../notifications/userNotification');
 const {conf} = require("../../../config/app_config");
-const db = require("../../../models");
 const {DB} = require('../../../components/db');
 const md5 = require("md5");
 const {extFrom} = require("../../../components/mimeToExt");

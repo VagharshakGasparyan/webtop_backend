@@ -1,5 +1,4 @@
 const Joi = require('joi');
-const db = require("../models");
 const {conf} = require("../config/app_config");
 const {DB} = require('./db');
 

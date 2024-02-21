@@ -1,5 +1,4 @@
 const bcrypt = require("bcrypt");
-// const {User} = require("../models");
 const {conf} = require('../config/app_config');
 const fs = require("node:fs");
 const path = require('node:path');
