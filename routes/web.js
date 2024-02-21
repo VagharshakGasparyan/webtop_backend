@@ -17,12 +17,18 @@ router.get('/', async (req, res, next) => {
     // });
     res.render('pages/home', {title: 'Home', page: 'home'});
 });
+
 router.get('/products', async (req, res, next) => {
     //console.log(res.locals.$local);
+    try {
+        let products = [{id: 1, slug:"tes-hla", name:"TesHla", description:"ElektraMobile", category_id: 5, image: "images/qwerty.png"}];
 
-    let products = [];
-    // let products = DB('SELECT * FROM `products` LIMIT 3');
-    res.render('pages/products', {title: 'Products', page: 'products', products: products});
+        res.render('pages/products', {title: 'Products', page: 'products', products: products});
+    }catch (e) {
+        // res.status(500).json({message: "Server error", status: 500});
+        // console.log(e.message);
+        res.render('errors/error', {message: "Server Error", error: {status: 500, stack: e.message}});
+    }
 });
 router.get('/login', async (req, res, next) => {
     // console.log(moment().format('yyyy_MM_DD_HH:mm:ss'));
