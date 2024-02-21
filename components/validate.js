@@ -42,7 +42,7 @@ async function unique(table, columnName, columnValue) {
     columnValue = columnValue || columnValue === null ? columnValue : '';
     let exists = true;
     try {
-        exists = DB(table).where(columnName, columnValue).exists();
+        exists = await DB(table).where(columnName, columnValue).exists();
     }catch (e) {
         console.error(e);
     }

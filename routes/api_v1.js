@@ -40,7 +40,7 @@ router.use('/admin', group((adminRouter)=>{
     adminRouter.post('/team/create', new TeamsController().create);
     adminRouter.post('/team/update/:team_id([1-9]\\d?)', new TeamsController().update);
     adminRouter.delete('/team/delete/:team_id([1-9]\\d?)', new TeamsController().destroy);
-    //--------------------settings---------------------------------
+    //--------------------settings-----------------------------------
     adminRouter.post('/setting/create', new SettingsController().create);
     adminRouter.post('/setting/update/:setting_id([1-9]\\d?)', new SettingsController().update);
     adminRouter.delete('/setting/delete/:setting_id([1-9]\\d?)', new SettingsController().destroy);

@@ -12,7 +12,6 @@ const {exec, spawn} = require("node:child_process");
 const fileUpload = require("express-fileupload");
 //---------------------------------------------------------------------------------
 console.log(">>>>>>>>>>started");
-// qwerty
 //-------------------------------cors----------------------------------------------
 app.use(cors({
     origin: '*',
