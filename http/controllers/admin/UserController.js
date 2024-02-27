@@ -191,7 +191,7 @@ class UserController {
                 res.status(422);
                 return res.send({errors: "User with this id " + user_id + " can not found."});
             }
-            if(email){
+            if(email && email !== user.email){
                 let uniqueErr = await unique('users', 'email', email);
                 if(uniqueErr){
                     res.status(422);
