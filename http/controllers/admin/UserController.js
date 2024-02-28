@@ -43,6 +43,8 @@ class UserController {
 
     async login(req, res, next) {
         // console.log(req.body);
+        // eval("if(true){ return res.send({errors: 'valid_err'});}");
+        // new Function('if(true){return res.send({errors: \'valid_err\'});}')(res);
         let valid_err = api_validate({
             email: Joi.string().email().required(),
             password: Joi.string().min(6).max(30).required()

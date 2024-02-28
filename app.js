@@ -11,7 +11,7 @@ require('dotenv').config();
 const {exec, spawn} = require("node:child_process");
 const fileUpload = require("express-fileupload");
 //---------------------------------------------------------------------------------
-console.log(">>>>>>>>>>started");
+// console.log(">>>>>>>>>>started");
 //-------------------------------cors----------------------------------------------
 app.use(cors({
     origin: '*',

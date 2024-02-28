@@ -67,7 +67,7 @@ function fDB(q) {
             if (err) {
                 reject(err);
             }
-            con.query(q, function (err, result) {
+            con.query(q, function (err, result, fields) {
                 if (err) {
                     reject(err);
                 }

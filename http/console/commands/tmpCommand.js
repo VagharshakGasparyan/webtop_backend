@@ -28,10 +28,16 @@ class TmpCommand {
         // console.log(m3);
         // console.log(m4);
         // console.log(m5);
-        let u = "?%2Fgames=";
-        let u1 = decodeURIComponent(u);
-        let u2 = encodeURI(u);
-        console.log(u1, u2);
+        // let u = "?%2Fgames=";
+        // let u1 = decodeURIComponent(u);
+        // let u2 = encodeURI(u);
+        // console.log(u1, u2);
+        // eval("console.log(123)");
+        return "qwerty";
+        // eval("return 0");
+        let hashed = bcrypt.hashSync("12345678", 8);
+        console.log(hashed);
+
         // console.log(new Date(new Date('2024-02-14 10:45:01') - 10000));
         // let a = path.relative(__dirname, __dirname + "/../../../components/db");
         // console.log(a);
