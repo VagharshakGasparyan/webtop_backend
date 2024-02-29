@@ -55,7 +55,7 @@ class TeamsController {
             if(image && !Array.isArray(image)){
                 let imageName = md5(Date.now()) + generateString(4);
                 let ext = extFrom(image.mimetype, image.name);
-                if(ext.toLowerCase() !== ".png" && ext.toLowerCase() !== ".jpg"){
+                if(ext.toLowerCase() !== ".png" && ext.toLowerCase() !== ".jpg" && ext.toLowerCase() !== ".jpeg"){
                     res.status(422);
                     return res.send({errors: 'image not a jpg or png.'});
                 }
@@ -281,7 +281,7 @@ class TeamsController {
             return res.send({errors: 'Team not deleted.'});
         }
 
-        return res.send({message: "Team with this id " + team_id + " deleted successfully."});
+        return res.send({id: team.id, message: "Team with this id " + team_id + " deleted successfully."});
     }
 
 }

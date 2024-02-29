@@ -18,26 +18,52 @@ class AdminDataController {
                 try {
                     // let d = req.body[item] ? JSON.parse(req.body[item]) : {page: 1, perPage: 10};
                     // let {page = 1, perPage = 10} = d;
-                    let {page, perPage, id} = req.body[item] ? JSON.parse(req.body[item]) : {};
+                    let {page, perPage, id, key, name} = req.body[item] ? JSON.parse(req.body[item]) : {};
                     id = Array.isArray(id) ? id : [];
+                    key = Array.isArray(key) ? key : [];
+                    name = Array.isArray(name) ? name : [];
                     let paginate = !!(page || perPage);
                     page = page || 1;
                     perPage = perPage || 100;
                     perPage = Math.min(perPage, 100);
                     let sqlData;
-                    let count = await DB(item).when(id.length > 0, function (query) {
-                        query.whereIn('id', id);
-                    }).count();
+                    let count = await DB(item)
+                        .when(id.length > 0, function (query) {
+                            query.orWhereIn('id', id);
+                        })
+                        .when(key.length > 0, function (query) {
+                            query.orWhereIn('key', key);
+                        })
+                        .when(name.length > 0, function (query) {
+                            query.orWhereIn('name', name);
+                        })
+                        .count();
                     let lastPage = 1;
                     if(paginate){
                         lastPage = Math.ceil(count / perPage);
-                        sqlData = await DB(item).when(id.length > 0, function (query) {
-                            query.whereIn('id', id);
-                        }).paginate(page, perPage).get();
+                        sqlData = await DB(item)
+                            .when(id.length > 0, function (query) {
+                                query.orWhereIn('id', id);
+                            })
+                            .when(key.length > 0, function (query) {
+                                query.orWhereIn('key', key);
+                            })
+                            .when(name.length > 0, function (query) {
+                                query.orWhereIn('name', name);
+                            })
+                            .paginate(page, perPage).get();
                     }else{
-                        sqlData = await DB(item).when(id.length > 0, function (query) {
-                            query.whereIn('id', id);
-                        }).get();
+                        sqlData = await DB(item)
+                            .when(id.length > 0, function (query) {
+                                query.orWhereIn('id', id);
+                            })
+                            .when(key.length > 0, function (query) {
+                                query.orWhereIn('key', key);
+                            })
+                            .when(name.length > 0, function (query) {
+                                query.orWhereIn('name', name);
+                            })
+                            .get();
                     }
                     sendData.data[item] = {
                         data: await new items[item](sqlData, res.locals.$api_local),
