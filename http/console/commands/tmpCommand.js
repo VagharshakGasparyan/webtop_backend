@@ -12,12 +12,12 @@ class TmpCommand {
     static command = "tmp";
     async handle()
     {
-        let m0 = moment().format('yyyy-MM-DD HH:mm:ss');
-        let m1 = moment().subtract(10, 's').format('yyyy-MM-DD HH:mm:ss');
-        let m2 = moment().add(10, 's').format('yyyy-MM-DD HH:mm:ss');
-        let m3 = moment().add(10, 'm').format('yyyy-MM-DD HH:mm:ss');
-        let m4 = moment().add(1, 'h').format('yyyy-MM-DD HH:mm:ss');
-        let m5 = moment().add(1, 'day').format('yyyy-MM-DD HH:mm:ss');
+        // let m0 = moment().format('yyyy-MM-DD HH:mm:ss');
+        // let m1 = moment().subtract(10, 's').format('yyyy-MM-DD HH:mm:ss');
+        // let m2 = moment().add(10, 's').format('yyyy-MM-DD HH:mm:ss');
+        // let m3 = moment().add(10, 'm').format('yyyy-MM-DD HH:mm:ss');
+        // let m4 = moment().add(1, 'h').format('yyyy-MM-DD HH:mm:ss');
+        // let m5 = moment().add(1, 'day').format('yyyy-MM-DD HH:mm:ss');
 
         // console.log(m0 > m1);
         // console.log(m1 > new Date());
@@ -33,10 +33,10 @@ class TmpCommand {
         // let u2 = encodeURI(u);
         // console.log(u1, u2);
         // eval("console.log(123)");
-        return "qwerty";
-        // eval("return 0");
-        let hashed = bcrypt.hashSync("12345678", 8);
-        console.log(hashed);
+        // return "qwerty";
+        // // eval("return 0");
+        // let hashed = bcrypt.hashSync("12345678", 8);
+        // console.log(hashed);
 
         // console.log(new Date(new Date('2024-02-14 10:45:01') - 10000));
         // let a = path.relative(__dirname, __dirname + "/../../../components/db");
@@ -50,6 +50,10 @@ class TmpCommand {
         //     };
         // });
         // console.log(b);
+        for (let i = 0; i < 200; i++) {
+            let a = await DB('users').find(1);
+            console.log(a.id);
+        }
     }
 }
 

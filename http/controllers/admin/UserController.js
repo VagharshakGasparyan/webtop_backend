@@ -11,6 +11,7 @@ const UsersResource = require("../../resources/UsersResource");
 const moment = require("moment/moment");
 const fs = require('node:fs');
 const TeamsResource = require("../../resources/teamsResource");
+const SettingsResource = require("../../resources/settingsResource");
 
 class UserController {
 
@@ -287,6 +288,22 @@ class UserController {
             return res.send({errors: 'User not deleted.'});
         }
         return res.send({message: "User with this id " + user_id + " deleted successfully."});
+    }
+
+    async client(req, res, next){
+        try {
+            let locale = res.locals.$api_local;
+            let teams = await DB('teams').where("active", 1).get();
+            let settings = await DB('settings').where("active", 1).get();
+            teams = await new TeamsResource(teams, locale);
+            settings = await new SettingsResource(settings, locale);
+            return res.send({teams: teams, settings: settings});
+        }catch (e) {
+            console.error(e);
+            res.status(422);
+            return res.send({errors: 'Server side error.'});
+        }
+        // return res.send({message: "Client data"});
     }
 
 }

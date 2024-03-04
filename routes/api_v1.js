@@ -21,6 +21,8 @@ const group = (callback) => {
     return router;
 };
 
+router.get('/client', new UserController().client);
+
 router.post('/admin/login', new UserController().login);
 router.get('/admin/auth/me', new UserController().logged);
 router.use('/admin', group((adminRouter)=>{
