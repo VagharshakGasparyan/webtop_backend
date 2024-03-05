@@ -15,13 +15,16 @@ const AdminDataController = require('../http/controllers/admin/AdminDataControll
 const TeamsController = require('../http/controllers/TeamsController');
 const SettingsController = require('../http/controllers/SettingsController');
 const {DB} = require("../components/db");
+const ClientController = require("../http/controllers/clientController");
 
 const group = (callback) => {
     callback(router);
     return router;
 };
 
-router.get('/client', new UserController().client);
+router.get('/client', new ClientController().client);
+router.get('/team/:team_id([1-9]\\d*)', new ClientController().team);
+router.get('/setting/:setting_id([1-9]\\d*)', new ClientController().setting);
 
 router.post('/admin/login', new UserController().login);
 router.get('/admin/auth/me', new UserController().logged);
@@ -36,16 +39,16 @@ router.use('/admin', group((adminRouter)=>{
     adminRouter.get('/logout', new UserController().logout);
     //--------------------admin user---------------------------------
     adminRouter.post('/user/create', new UserController().create);
-    adminRouter.post('/user/update/:user_id([1-9]\\d?)', new UserController().update);
-    adminRouter.delete('/user/delete/:user_id([1-9]\\d?)', new UserController().destroy);
+    adminRouter.post('/user/update/:user_id([1-9]\\d*)', new UserController().update);
+    adminRouter.delete('/user/delete/:user_id([1-9]\\d*)', new UserController().destroy);
     //--------------------admin team---------------------------------
     adminRouter.post('/team/create', new TeamsController().create);
-    adminRouter.post('/team/update/:team_id([1-9]\\d?)', new TeamsController().update);
-    adminRouter.delete('/team/delete/:team_id([1-9]\\d?)', new TeamsController().destroy);
+    adminRouter.post('/team/update/:team_id([1-9]\\d*)', new TeamsController().update);
+    adminRouter.delete('/team/delete/:team_id([1-9]\\d*)', new TeamsController().destroy);
     //--------------------settings-----------------------------------
     adminRouter.post('/setting/create', new SettingsController().create);
-    adminRouter.post('/setting/update/:setting_id([1-9]\\d?)', new SettingsController().update);
-    adminRouter.delete('/setting/delete/:setting_id([1-9]\\d?)', new SettingsController().destroy);
+    adminRouter.post('/setting/update/:setting_id([1-9]\\d*)', new SettingsController().update);
+    adminRouter.delete('/setting/delete/:setting_id([1-9]\\d*)', new SettingsController().destroy);
     // adminRouter.post('/notification', new UserController().notification);
     adminRouter.post('/admin-data', new AdminDataController().index);
 }));
