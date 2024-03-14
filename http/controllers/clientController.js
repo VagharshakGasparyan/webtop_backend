@@ -24,6 +24,34 @@ class ClientController {
         // return res.send({message: "Client data"});
     }
 
+    async teams(req, res, next){
+        try {
+            let locale = res.locals.$api_local;
+            let teams = await DB('teams').where("active", 1).get();
+            teams = await new TeamsResource(teams, locale);
+            return res.send({teams: teams});
+        }catch (e) {
+            console.error(e);
+            res.status(422);
+            return res.send({errors: 'Server side error.'});
+        }
+        // return res.send({message: "Client data"});
+    }
+
+    async settings(req, res, next){
+        try {
+            let locale = res.locals.$api_local;
+            let settings = await DB('settings').where("active", 1).get();
+            settings = await new SettingsResource(settings, locale);
+            return res.send({settings: settings});
+        }catch (e) {
+            console.error(e);
+            res.status(422);
+            return res.send({errors: 'Server side error.'});
+        }
+        // return res.send({message: "Client data"});
+    }
+
     async team(req, res, next){
         try {
             let locale = res.locals.$api_local;
@@ -58,6 +86,28 @@ class ClientController {
             if(!setting){
                 res.status(422);
                 return res.send({errors: 'Setting with this id not fount.'});
+            }
+            setting = await new SettingsResource(setting, locale);
+            return res.send({setting: setting});
+        }catch (e) {
+            console.error(e);
+            res.status(422);
+            return res.send({errors: 'Server side error.'});
+        }
+    }
+
+    async setting_key(req, res, next){
+        try {
+            let locale = res.locals.$api_local;
+            let {setting_key} = req.params;
+            if(!setting_key){
+                res.status(422);
+                return res.send({errors: 'No setting key parameter.'});
+            }
+            let setting = await DB('settings').where('active', 1).where('key', setting_key).first();
+            if(!setting){
+                res.status(422);
+                return res.send({errors: 'Setting with this key not fount.'});
             }
             setting = await new SettingsResource(setting, locale);
             return res.send({setting: setting});

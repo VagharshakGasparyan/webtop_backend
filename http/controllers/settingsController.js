@@ -52,10 +52,18 @@ class SettingsController {
         }
         let newSettingsData = {};
         try {
+            let arrDescription = {}, hasLangDescription = false;
+            for (let item in req.body){
+                if(item.startsWith('description_') && item.length > 'description_'.length){
+                    hasLangDescription = true;
+                    let itemLang = item.slice('description_'.length);
+                    arrDescription[itemLang] = req.body[item];
+                }
+            }
             newSettingsData = {
                 key: req.body.key,
                 name: req.body.name,
-                description: JSON.stringify({[locale]: req.body.description}),
+                description: JSON.stringify( hasLangDescription ? arrDescription : {[locale]: req.body.description}),
                 value: req.body.value,
                 file: fileName,
                 created_at: moment().format('yyyy-MM-DD HH:mm:ss'),
@@ -72,7 +80,7 @@ class SettingsController {
             return res.send({errors: 'Setting not created.'});
         }
         let setting = await new SettingsResource(newSettingsData, locale);
-        return res.send({data: {settings: setting, message: message}, errors: {}});
+        return res.send({data: {setting: setting, message: message}, errors: {}});
     }
 
     async store(req, res, next)
@@ -100,11 +108,6 @@ class SettingsController {
             return res.send({errors: 'No setting id parameter.'});
         }
         let locale = res.locals.$api_local;
-        let uniqueErr = await unique('settings', 'key', req.body.key);
-        if(uniqueErr){
-            res.status(422);
-            return res.send({errors: {key: uniqueErr}});
-        }
         let valid_err = api_validate({
             key: Joi.string(),
             name: Joi.string().min(1).max(512),
@@ -123,14 +126,32 @@ class SettingsController {
                 res.status(422);
                 return res.send({errors: "Setting with this id " + setting_id + " can not found."});
             }
-            if(key){
+            if(key && key !== setting.key){
+                let uniqueErr = await unique('settings', 'key', key);
+                if(uniqueErr){
+                    res.status(422);
+                    return res.send({errors: {key: uniqueErr}});
+                }
                 updatedSettingData.key = key;
             }
             if(name){
                 updatedSettingData.name = name;
             }
-            if(description){
-                let oldDescription = setting.description ? JSON.parse(setting.description) : {};
+            let arrDescription = {}, hasLangDescription = false;
+            for (let item in req.body){
+                if(item.startsWith('description_') && item.length > 'description_'.length){
+                    hasLangDescription = true;
+                    let itemLang = item.slice('description_'.length);
+                    arrDescription[itemLang] = req.body[item];
+                }
+            }
+            let oldDescription = setting.description ? JSON.parse(setting.description) : {};
+            if(hasLangDescription){
+                for(let item in arrDescription){
+                    oldDescription[item] = arrDescription[item];
+                }
+                updatedSettingData.description = JSON.stringify(oldDescription);
+            }else if(description){
                 oldDescription[locale] = description;
                 updatedSettingData.description = JSON.stringify(oldDescription);
             }
@@ -202,7 +223,7 @@ class SettingsController {
             res.status(422);
             return res.send({errors: 'Setting not deleted.'});
         }
-        return res.send({message: "Setting with this id " + setting_id + " deleted successfully."});
+        return res.send({id: setting.id, message: "Setting with this id " + setting_id + " deleted successfully."});
     }
 
 }
