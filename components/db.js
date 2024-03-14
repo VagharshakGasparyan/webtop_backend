@@ -493,7 +493,8 @@ class DBClass {
                     let prefix = fromMethod === 'changeColumn' ? "ADD " : "";
                     let [referenceTable, referencePrimaryKey] = q_obj.foreign;
                     q_arr.push(", " + prefix + "CONSTRAINT " + _col("FK_" + tableName + "__" + referenceTable)
-                        + " FOREIGN KEY (" + _col(_column) + ") REFERENCES " + _col(referenceTable) + "(" + _col(referencePrimaryKey) + ")");
+                        + " FOREIGN KEY (" + _col(_column) + ") REFERENCES " + _col(referenceTable)
+                        + "(" + _col(referencePrimaryKey) + ") ON DELETE CASCADE");
                 }
                 if(q_obj.dropForeign){
                     q_arr.push(", DROP FOREIGN KEY " + _col("FK_" + tableName + "__" + q_obj.dropForeign));
