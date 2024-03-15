@@ -17,7 +17,7 @@ class PortfolioResource {
             "second_info_description", "second_info_title"];
         let trans = {};
         translatable.forEach((t)=>{
-            trans[t] = r.t ? tr(JSON.parse(r.t), this.local) : r.t;
+            trans[t] = r[t] ? tr(JSON.parse(r[t]), this.local) : r[t];
         });
         let categories = [];
         try {
@@ -42,8 +42,8 @@ class PortfolioResource {
         return {
             "id": r.id,
             "title": trans.title,
-            "client_avatar": r.client_avatar,
             "client": {
+                "avatar": r.client_avatar,
                 "name": r.client_name,
                 "description": trans.client_description,
                 "social": r.client_social ? JSON.parse(r.client_social) : r.client_social

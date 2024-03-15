@@ -16,6 +16,7 @@ const TeamsController = require('../http/controllers/TeamsController');
 const SettingsController = require('../http/controllers/SettingsController');
 const {DB} = require("../components/db");
 const ClientController = require("../http/controllers/clientController");
+const PortfolioController = require("../http/controllers/portfolioController");
 
 const group = (callback) => {
     callback(router);
@@ -42,18 +43,22 @@ router.use('/admin', group((adminRouter)=>{
         next();
     });
     adminRouter.get('/logout', new UserController().logout);
-    //--------------------admin user---------------------------------
+    //--------------------admin user------------------------------------------------------------------------------------
     adminRouter.post('/user/create', new UserController().create);
     adminRouter.post('/user/update/:user_id([1-9][0-9]{0,})', new UserController().update);
     adminRouter.delete('/user/delete/:user_id([1-9]\\d*)', new UserController().destroy);
-    //--------------------admin team---------------------------------
+    //--------------------admin team------------------------------------------------------------------------------------
     adminRouter.post('/team/create', new TeamsController().create);
     adminRouter.post('/team/update/:team_id([1-9][0-9]{0,})', new TeamsController().update);
     adminRouter.delete('/team/delete/:team_id([1-9][0-9]{0,})', new TeamsController().destroy);
-    //--------------------settings-----------------------------------
+    //--------------------settings--------------------------------------------------------------------------------------
     adminRouter.post('/setting/create', new SettingsController().create);
     adminRouter.post('/setting/update/:setting_id([1-9][0-9]{0,})', new SettingsController().update);
     adminRouter.delete('/setting/delete/:setting_id([1-9][0-9]{0,})', new SettingsController().destroy);
+    //--------------------admin portfolio-------------------------------------------------------------------------------
+    adminRouter.post('/portfolio/create', new PortfolioController().create);
+    adminRouter.post('/portfolio/update/:portfolio_id([1-9][0-9]{0,})', new PortfolioController().update);
+    adminRouter.delete('/portfolio/delete/:portfolio_id([1-9][0-9]{0,})', new PortfolioController().destroy);
     // adminRouter.post('/notification', new UserController().notification);
     adminRouter.post('/admin-data', new AdminDataController().index);
 }));

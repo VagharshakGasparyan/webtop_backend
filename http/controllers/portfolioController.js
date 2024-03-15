@@ -1,6 +1,12 @@
 const {DB} = require("../../components/db");
 const bcrypt = require("bcrypt");
 const moment = require("moment/moment");
+const PortfolioResource = require("../resources/portfolioResource");
+const {generateString} = require("../../components/functions");
+const {extFrom} = require("../../components/mimeToExt");
+const md5 = require("md5");
+const {api_validate} = require("../../components/validate");
+const Joi = require("joi");
 class PortfolioController {
     constructor() {
         //
@@ -17,7 +23,125 @@ class PortfolioController {
 
     async create(req, res, next)
     {
-        //
+        let valid_err = api_validate({
+            title: Joi.string().min(2).max(512).required(),
+            client_avatar: Joi.string().min(2).max(512).required(),
+            client_name: Joi.string().min(2).max(255).required(),
+            client_description: Joi.string().min(2).max(512),
+            client_social: Joi.string().min(2).max(512),
+            first_info_description: Joi.string().min(2).max(512),
+            first_info_title: Joi.string().min(2).max(255),
+            second_info_description: Joi.string().min(2).max(512),
+            second_info_title: Joi.string().min(2).max(255),
+            categories: Joi.string().min(2).max(2024),
+            // background: Joi.string().min(2).max(255),
+        }, req, res);
+        // return res.send({tmp: 'ok'});
+        if (valid_err) {
+            res.status(422);
+            return res.send({errors: valid_err});
+        }
+        let locale = res.locals.$api_local;
+        let {title, client_avatar, client_name, client_description, client_social, first_info_description,
+            first_info_title, second_info_description, second_info_title, categories} = req.body;
+        let {background, image, gallery} = req.files ?? {background: null, image: null, gallery: null};
+        let portfolioData = {client_avatar, client_name};
+        if(title){
+            portfolioData.title = JSON.stringify({
+                [locale]: title
+            });
+        }
+        if(client_description){
+            portfolioData.client_description = JSON.stringify({
+                [locale]: client_description
+            });
+        }
+        if(first_info_description){
+            portfolioData.first_info_description = JSON.stringify({
+                [locale]: first_info_description
+            });
+        }
+        if(first_info_title){
+            portfolioData.first_info_title = JSON.stringify({
+                [locale]: first_info_title
+            });
+        }
+        if(second_info_description){
+            portfolioData.second_info_description = JSON.stringify({
+                [locale]: second_info_description
+            });
+        }
+        if(second_info_title){
+            portfolioData.second_info_title = JSON.stringify({
+                [locale]: second_info_title
+            });
+        }
+        try {
+            if(image && !Array.isArray(image)){
+                let imageName = md5(Date.now()) + generateString(4);
+                let ext = extFrom(image.mimetype, image.name);
+                if(ext.toLowerCase() !== ".png" && ext.toLowerCase() !== ".jpg" && ext.toLowerCase() !== ".jpeg"){
+                    res.status(422);
+                    return res.send({errors: 'image not a jpg or png.'});
+                }
+                let uploaded = saveFileContentToPublic('storage/uploads/portfolio', imageName + ext, image.data);
+                if (!uploaded) {
+                    res.status(422);
+                    return res.send({errors: 'image not uploaded.'});
+                }
+                image = 'storage/uploads/portfolio/' + imageName + ext;
+                portfolioData.image = image;
+            }
+            if(background && !Array.isArray(background)){
+                let imageName = md5(Date.now()) + generateString(4);
+                let ext = extFrom(image.mimetype, image.name);
+                if(ext.toLowerCase() !== ".png" && ext.toLowerCase() !== ".jpg" && ext.toLowerCase() !== ".jpeg"){
+                    res.status(422);
+                    return res.send({errors: 'image not a jpg or png.'});
+                }
+                let uploaded = saveFileContentToPublic('storage/uploads/portfolio', imageName + ext, image.data);
+                if (!uploaded) {
+                    res.status(422);
+                    return res.send({errors: 'image not uploaded.'});
+                }
+                background = 'storage/uploads/portfolio/' + imageName + ext;
+                portfolioData.background = background;
+            }
+            if(gallery && !Array.isArray(gallery)){
+                gallery = [gallery];
+            }
+            portfolioData.gallery = [];
+            for(let img of gallery ?? []){
+                let imageName = md5(Date.now()) + generateString(4);
+                let ext = extFrom(img.mimetype, img.name);
+                if(ext.toLowerCase() !== ".png" && ext.toLowerCase() !== ".jpg"){
+                    res.status(422);
+                    return res.send({errors: 'Gallery image not a jpg or png.'});
+                }
+                let uploaded = saveFileContentToPublic('storage/uploads/portfolio', imageName + ext, img.data);
+                if (!uploaded) {
+                    res.status(422);
+                    return res.send({errors: 'image not uploaded.'});
+                }
+                img = 'storage/uploads/portfolio/' + imageName + ext;
+                portfolioData.gallery.push(img);
+            }
+            if(portfolioData.gallery.length < 1){
+                delete portfolioData.gallery;
+            }else{
+                portfolioData.gallery = JSON.stringify(portfolioData.gallery);
+            }
+            portfolioData.created_at = moment().format('yyyy-MM-DD HH:mm:ss');
+            portfolioData.updated_at = moment().format('yyyy-MM-DD HH:mm:ss');
+            let forId = await DB('portfolio').create(portfolioData);
+            portfolioData.id = forId.insertId;
+        }catch (e) {
+            console.error(e);
+            res.status(422);
+            return res.send({errors: 'Portfolio not created.'});
+        }
+        let portfolio = await new PortfolioResource(portfolioData, locale);
+        return res.send({data: {portfolio: portfolio}, message: "Portfolio created successfully.", errors: {}});
     }
 
     async store(req, res, next)
