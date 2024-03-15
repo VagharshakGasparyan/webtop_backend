@@ -7,8 +7,8 @@ class Portfolio_categoryMigration {
 
     async up() {
         await DB(table).createTable([
-            DB.column('portfolio_id').bigint().unsigned().foreign('portfolio', 'id'),
-            DB.column('category_id').bigint().unsigned().foreign('categories', 'id')
+            DB.column('portfolio_id').bigint().unsigned().foreign('portfolio', 'id').onDeleteCascade(),
+            DB.column('category_id').bigint().unsigned().foreign('categories', 'id').onDeleteCascade()
         ]);
         /*Or can create*/
         /*

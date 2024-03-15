@@ -447,6 +447,14 @@ class DBClass {
                 q_obj.foreign = [referenceTable, referencePrimaryKey];
                 return secondary;
             },
+            onDeleteCascade: function () {
+                q_obj.on_delete = "ON DELETE CASCADE";
+                return secondary;
+            },
+            onDeleteSetNull: function () {
+                q_obj.on_delete = "ON DELETE SET NULL";
+                return secondary;
+            },
             dropForeign: function (referenceTable) {
                 q_obj.dropForeign = referenceTable;
                 return secondary;
@@ -494,7 +502,10 @@ class DBClass {
                     let [referenceTable, referencePrimaryKey] = q_obj.foreign;
                     q_arr.push(", " + prefix + "CONSTRAINT " + _col("FK_" + tableName + "__" + referenceTable)
                         + " FOREIGN KEY (" + _col(_column) + ") REFERENCES " + _col(referenceTable)
-                        + "(" + _col(referencePrimaryKey) + ") ON DELETE CASCADE");
+                        + "(" + _col(referencePrimaryKey) + ")");//ON DELETE SET NULL
+                }
+                if(q_obj.on_delete){
+                    q_arr.push(q_obj.on_delete);
                 }
                 if(q_obj.dropForeign){
                     q_arr.push(", DROP FOREIGN KEY " + _col("FK_" + tableName + "__" + q_obj.dropForeign));

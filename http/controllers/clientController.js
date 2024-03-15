@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const moment = require("moment/moment");
 const TeamsResource = require("../resources/teamsResource");
 const SettingsResource = require("../resources/settingsResource");
+const PortfolioResource = require("../resources/portfolioResource");
 class ClientController {
     constructor() {
         //
@@ -50,6 +51,42 @@ class ClientController {
             return res.send({errors: 'Server side error.'});
         }
         // return res.send({message: "Client data"});
+    }
+
+    async portfolios(req, res, next){
+        try {
+            let locale = res.locals.$api_local;
+            let portfolios = await DB('portfolio').get();
+            portfolios = await new PortfolioResource(portfolios, locale);
+            return res.send({portfolios: portfolios});
+        }catch (e) {
+            console.error(e);
+            res.status(422);
+            return res.send({errors: 'Server side error.'});
+        }
+        // return res.send({message: "Client data"});
+    }
+
+    async portfolio(req, res, next){
+        try {
+            let locale = res.locals.$api_local;
+            let {portfolio_id} = req.params;
+            if(!portfolio_id){
+                res.status(422);
+                return res.send({errors: 'No portfolio id parameter.'});
+            }
+            let portfolio = await DB('portfolio').find(portfolio_id);
+            if(!portfolio){
+                res.status(422);
+                return res.send({errors: 'Portfolio with this id not fount.'});
+            }
+            portfolio = await new PortfolioResource(portfolio, locale);
+            return res.send({portfolio: portfolio});
+        }catch (e) {
+            console.error(e);
+            res.status(422);
+            return res.send({errors: 'Server side error.'});
+        }
     }
 
     async team(req, res, next){

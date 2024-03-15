@@ -25,9 +25,11 @@ const group = (callback) => {
 router.get('/client', new ClientController().client);
 router.get('/client/teams', new ClientController().teams);
 router.get('/client/settings', new ClientController().settings);
+router.get('/client/portfolios', new ClientController().portfolios);
 router.get('/team/:team_id([1-9][0-9]{0,})', new ClientController().team);
 router.get('/setting/:setting_id([1-9][0-9]{0,})', new ClientController().setting);
 router.get('/setting-key/:setting_key', new ClientController().setting_key);
+router.get('/portfolio/:portfolio_id([1-9][0-9]{0,})', new ClientController().portfolio);
 
 router.post('/admin/login', new UserController().login);
 router.get('/admin/auth/me', new UserController().logged);
