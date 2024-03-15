@@ -14,9 +14,11 @@ class ClientController {
             let locale = res.locals.$api_local;
             let teams = await DB('teams').where("active", 1).get();
             let settings = await DB('settings').where("active", 1).get();
+            let portfolios = await DB('portfolio').get();
             teams = await new TeamsResource(teams, locale);
             settings = await new SettingsResource(settings, locale);
-            return res.send({teams: teams, settings: settings});
+            portfolios = await new PortfolioResource(portfolios, locale);
+            return res.send({teams: teams, settings: settings, portfolios: portfolios});
         }catch (e) {
             console.error(e);
             res.status(422);
