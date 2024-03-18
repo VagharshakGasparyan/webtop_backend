@@ -21,13 +21,6 @@ class PortfolioResource {
         });
         let categories = [];
         try {
-            // let answer = await DB('sessions')
-            //     .where('role', 'admin')
-            //     .whereHas('users', 'user_id', 'id', function (query) {
-            //         query.where('role', 'admin');
-            //         query.orWhere('role', 'user');
-            //     }).get();
-            // console.log(answer);
             // let pc = await DB('portfolio_category').where('portfolio_id', r.id).get(['category_id']);
             // categories = await DB('categories').whereIn('id', pc.map((p) => {return p['category_id']})).get(['name', 'id']);
             categories = await DB('categories')
@@ -46,7 +39,7 @@ class PortfolioResource {
                 "avatar": r.client_avatar,
                 "name": r.client_name,
                 "description": trans.client_description,
-                "social": r.client_social ? JSON.parse(r.client_social) : r.client_social
+                "social": r.client_social ? JSON.parse(r.client_social) : []
             },
             "first_info": {
                 "description": trans.first_info_description,
@@ -56,9 +49,9 @@ class PortfolioResource {
                 "description": trans.second_info_description,
                 "title": trans.second_info_title
             },
-            "image": r.image,
-            "gallery": r.gallery ? JSON.parse(r.gallery) : r.gallery,
-            "background": r.background,
+            "image": r.image ?? null,
+            "gallery": r.gallery ? JSON.parse(r.gallery) : [],
+            "background": r.background ?? null,
             "categories": categories,
             "created_at": r.created_at,
             "updated_at": r.updated_at,

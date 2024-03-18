@@ -46,36 +46,20 @@ class PortfolioController {
             first_info_title, second_info_description, second_info_title, categories} = req.body;
         let {background, image, gallery} = req.files ?? {background: null, image: null, gallery: null};
         let portfolioData = {client_avatar, client_name};
-        if(title){
-            portfolioData.title = JSON.stringify({
-                [locale]: title
-            });
+
+        let obj = {title, client_description, first_info_description, first_info_title, second_info_description, second_info_title};
+        for(let item in obj){
+            if(obj[item]){
+                portfolioData[item] = JSON.stringify({
+                    [locale]: obj[item]
+                });
+            }
         }
-        if(client_description){
-            portfolioData.client_description = JSON.stringify({
-                [locale]: client_description
-            });
-        }
-        if(first_info_description){
-            portfolioData.first_info_description = JSON.stringify({
-                [locale]: first_info_description
-            });
-        }
-        if(first_info_title){
-            portfolioData.first_info_title = JSON.stringify({
-                [locale]: first_info_title
-            });
-        }
-        if(second_info_description){
-            portfolioData.second_info_description = JSON.stringify({
-                [locale]: second_info_description
-            });
-        }
-        if(second_info_title){
-            portfolioData.second_info_title = JSON.stringify({
-                [locale]: second_info_title
-            });
-        }
+        // if(title){
+        //     portfolioData.title = JSON.stringify({
+        //         [locale]: title
+        //     });
+        // }
         try {
             if(image && !Array.isArray(image)){
                 let imageName = md5(Date.now()) + generateString(4);
@@ -94,12 +78,12 @@ class PortfolioController {
             }
             if(background && !Array.isArray(background)){
                 let imageName = md5(Date.now()) + generateString(4);
-                let ext = extFrom(image.mimetype, image.name);
+                let ext = extFrom(background.mimetype, background.name);
                 if(ext.toLowerCase() !== ".png" && ext.toLowerCase() !== ".jpg" && ext.toLowerCase() !== ".jpeg"){
                     res.status(422);
                     return res.send({errors: 'image not a jpg or png.'});
                 }
-                let uploaded = saveFileContentToPublic('storage/uploads/portfolio', imageName + ext, image.data);
+                let uploaded = saveFileContentToPublic('storage/uploads/portfolio', imageName + ext, background.data);
                 if (!uploaded) {
                     res.status(422);
                     return res.send({errors: 'image not uploaded.'});

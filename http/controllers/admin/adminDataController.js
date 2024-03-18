@@ -4,6 +4,8 @@ const moment = require("moment/moment");
 const SettingsResource = require("../../resources/settingsResource");
 const UsersResource = require("../../resources/UsersResource");
 const TeamsResource = require("../../resources/TeamsResource");
+const PortfolioResource = require("../../resources/portfolioResource");
+const CategoriesResource = require("../../resources/categoriesResource");
 
 class AdminDataController {
     constructor() {
@@ -11,7 +13,8 @@ class AdminDataController {
     }
     async index(req, res, next)
     {
-        let items = {"settings": SettingsResource, "users": UsersResource, "teams": TeamsResource};
+        let items = {"settings": SettingsResource, "users": UsersResource, "teams": TeamsResource,
+            "portfolio": PortfolioResource, "categories": CategoriesResource};
         let sendData = {data: {}, errors: {}};
         for(let item in items){
             if(item in req.body){

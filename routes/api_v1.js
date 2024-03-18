@@ -17,6 +17,7 @@ const SettingsController = require('../http/controllers/SettingsController');
 const {DB} = require("../components/db");
 const ClientController = require("../http/controllers/clientController");
 const PortfolioController = require("../http/controllers/portfolioController");
+const CategoriesController = require("../http/controllers/categoriesController");
 
 const group = (callback) => {
     callback(router);
@@ -59,6 +60,10 @@ router.use('/admin', group((adminRouter)=>{
     adminRouter.post('/portfolio/create', new PortfolioController().create);
     adminRouter.post('/portfolio/update/:portfolio_id([1-9][0-9]{0,})', new PortfolioController().update);
     adminRouter.delete('/portfolio/delete/:portfolio_id([1-9][0-9]{0,})', new PortfolioController().destroy);
+    //--------------------admin categories------------------------------------------------------------------------------
+    adminRouter.post('/category/create', new CategoriesController().create);
+    adminRouter.post('/category/update/:category_id([1-9][0-9]{0,})', new CategoriesController().update);
+    adminRouter.delete('/category/delete/:category_id([1-9][0-9]{0,})', new CategoriesController().destroy);
     // adminRouter.post('/notification', new UserController().notification);
     adminRouter.post('/admin-data', new AdminDataController().index);
 }));
