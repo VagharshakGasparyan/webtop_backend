@@ -1,6 +1,7 @@
 const {DB} = require("../../components/db");
 const bcrypt = require("bcrypt");
 const moment = require("moment/moment");
+const fs = require('node:fs');
 const PortfolioResource = require("../resources/portfolioResource");
 const {generateString} = require("../../components/functions");
 const {extFrom} = require("../../components/mimeToExt");
@@ -150,7 +151,41 @@ class PortfolioController {
 
     async destroy(req, res, next)
     {
-        //
+        let {portfolio_id} = req.params;
+        if(!portfolio_id){
+            res.status(422);
+            return res.send({errors: 'No portfolio id parameter.'});
+        }
+
+        let portfolio = null;
+        try {
+            portfolio = await DB("portfolio").find(portfolio_id);
+            if(!portfolio){
+                res.status(422);
+                return res.send({errors: "Portfolio with this id " + portfolio_id + " can not found."});
+            }
+            let filesToBeDelete = portfolio.gallery ? JSON.parse(portfolio.gallery) : [];
+            if(portfolio.image){
+                filesToBeDelete.push(portfolio.image);
+            }
+            if(portfolio.background){
+                filesToBeDelete.push(portfolio.background);
+            }
+            for(let fileToBeDelete of filesToBeDelete){
+                try {
+                    fs.unlinkSync(__basedir + "/public/" + fileToBeDelete);
+                }catch (e) {
+                    // console.log(e);
+                }
+            }
+            await DB("portfolio").where("id", portfolio_id).delete();
+        }catch (e) {
+            console.error(e);
+            res.status(422);
+            return res.send({errors: 'Portfolio not deleted.'});
+        }
+
+        return res.send({id: portfolio.id, message: "Portfolio with this id " + portfolio_id + " deleted successfully."});
     }
 
 }
