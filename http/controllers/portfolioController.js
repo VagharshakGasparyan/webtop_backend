@@ -205,7 +205,7 @@ class PortfolioController {
         }
         let locale = res.locals.$api_local;
         let {title, client_name, client_description, first_info_description,
-            first_info_title, second_info_description, second_info_title, categories, gallery: gallery_stay} = req.body;
+            first_info_title, second_info_description, second_info_title, categories, gallery_stay} = req.body;
         let client_social = {}, has_client_social = false;
         for(let key in req.body){
             if(key.startsWith('client_social_') && key.length > 'client_social_'.length){
@@ -329,10 +329,37 @@ class PortfolioController {
             }else{
                 gallery = [];
             }
-            for(let galleryItem of gallery){
-
+            updatedData.gallery = [];
+            for(let img of gallery ?? []){
+                let imageName = md5(Date.now()) + generateString(4);
+                let ext = extFrom(img.mimetype, img.name);
+                if(ext.toLowerCase() !== ".png" && ext.toLowerCase() !== ".jpg"){
+                    res.status(422);
+                    return res.send({errors: 'Gallery image not a jpg or png.'});
+                }
+                let uploaded = saveFileContentToPublic('storage/uploads/portfolio', imageName + ext, img.data);
+                if (!uploaded) {
+                    res.status(422);
+                    return res.send({errors: 'Gallery image not uploaded.'});
+                }
+                img = 'storage/uploads/portfolio/' + imageName + ext;
+                updatedData.gallery.push(img);
             }
 
+            let oldGallery = portfolio.gallery ? JSON.parse(portfolio.gallery) : [];
+            gallery_stay = gallery_stay ? (Array.isArray(gallery_stay) ? gallery_stay : JSON.parse(gallery_stay)) : [];
+            for(let oldGalleryImage of oldGallery){
+                if(gallery_stay.includes(oldGalleryImage)){
+                    updatedData.gallery.push(oldGalleryImage);
+                }else{
+                    filesToBeDelete.push(oldGalleryImage);
+                }
+            }
+            if (updatedData.gallery.length < 1) {
+                delete updatedData.gallery;
+            } else {
+                updatedData.gallery = JSON.stringify(updatedData.gallery);
+            }
 
             for(let fileToBeDelete of filesToBeDelete){
                 try {
@@ -341,7 +368,15 @@ class PortfolioController {
                     // console.log(e);
                 }
             }
+            categories = categories ? JSON.parse(categories): [];
+            if(categories.length > 0){
+                try {
+                    await DB('portfolio_category').where('portfolio_id', portfolio_id).delete();
+                    await DB('portfolio_category').create(categories.map((category_id)=>{return {portfolio_id: portfolio_id, category_id: category_id}}));
+                }catch (e) {
 
+                }
+            }
             if(Object.keys(updatedData).length > 0){
                 updatedData.updated_at = moment().format('yyyy-MM-DD HH:mm:ss');
                 await DB('portfolio').where("id", portfolio_id).update(updatedData);
