@@ -22,6 +22,7 @@ class PortfolioMigration {
             DB.column('image').varchar(255).nullable(),
             DB.column('gallery').json().nullable(),
             DB.column('background').varchar(255).nullable(),
+            DB.column('active').tinyint().default(1),
             DB.column('created_at').timestamp().nullable(),
             DB.column('updated_at').timestamp().nullable(),
         ]);

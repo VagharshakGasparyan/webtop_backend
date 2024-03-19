@@ -36,7 +36,8 @@ router.get('/portfolio/:portfolio_id([1-9][0-9]{0,})', new ClientController().po
 router.post('/admin/login', new UserController().login);
 router.get('/admin/auth/me', new UserController().logged);
 router.use('/admin', group((adminRouter)=>{
-    adminRouter.use((req, res, next)=>{
+    adminRouter.use('/admin', (req, res, next)=>{
+        // console.log(req.path);
         if(!res.locals.$api_auth.admin){
             res.status(401);
             return res.send({status: 401, message: "Unauthorized"});
@@ -118,24 +119,24 @@ router.get('/products', async (req, res) => {
     return res.send({auth: res.locals.$api_auth, locale: res.locals.$api_local});
 });
 router.post('/upload-file', async (req, res) => {
-    let file = req.files ? req.files.avatar : null;
-    // console.log('req.body=', req.body);
-    // console.log('req.files=', req.files);
+    // let file = req.files ? req.files.avatar : null;
+    console.log('req.body=', req.body);
+    console.log('req.files=', req.files);
     // return res.send({is: 'ok'});
 
-    if (file) {
-        // console.log(file);
-        let imageName = md5(Date.now());
-        let ext = extFrom(file.mimetype, file.name);
-        // fs.copyFileSync(file.path, __basedir + '/public/images/qwerty.png');
-        let uploaded = saveFileContentToPublic('storage/uploads/avatars', imageName + ext, file.data);
-        if (!uploaded) {
-            res.status(422);
-            return res.send({errors: 'file not uploaded.'});
-        }
-        console.log(uploaded);
-        // fs.writeFileSync(__basedir + '/public/images/' + imageName + ext, file.data );
-    }
+    // if (file) {
+    //     // console.log(file);
+    //     let imageName = md5(Date.now());
+    //     let ext = extFrom(file.mimetype, file.name);
+    //     // fs.copyFileSync(file.path, __basedir + '/public/images/qwerty.png');
+    //     let uploaded = saveFileContentToPublic('storage/uploads/avatars', imageName + ext, file.data);
+    //     if (!uploaded) {
+    //         res.status(422);
+    //         return res.send({errors: 'file not uploaded.'});
+    //     }
+    //     console.log(uploaded);
+    //     // fs.writeFileSync(__basedir + '/public/images/' + imageName + ext, file.data );
+    // }
     // fs.writeFileSync(__basedir + '/academious_123.png', req.files.avatar );
 
     return res.send({is: 'ok'});
