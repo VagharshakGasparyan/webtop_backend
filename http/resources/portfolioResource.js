@@ -52,6 +52,7 @@ class PortfolioResource {
             "image": r.image ?? null,
             "gallery": r.gallery ? JSON.parse(r.gallery) : [],
             "background": r.background ?? null,
+            "active": r.active,
             "categories": categories,
             "created_at": r.created_at,
             "updated_at": r.updated_at,

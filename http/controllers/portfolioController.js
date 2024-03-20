@@ -27,16 +27,14 @@ class PortfolioController {
     {
         let valid_err = api_validate({
             title: Joi.string().min(2).max(512).required(),
-            // client_avatar: Joi.string().min(2).max(512).required(),
             client_name: Joi.string().min(2).max(255).required(),
-            client_description: Joi.string().min(2).max(512),
-            client_social: Joi.string().min(2).max(512),
-            first_info_description: Joi.string().min(2).max(512),
-            first_info_title: Joi.string().min(2).max(255),
-            second_info_description: Joi.string().min(2).max(512),
-            second_info_title: Joi.string().min(2).max(255),
-            categories: Joi.string().min(2).max(2024),
-            // background: Joi.string().min(2).max(255),
+            client_description: Joi.string().min(2).max(512).required(),
+            client_social: Joi.string().min(2).max(512).required(),
+            first_info_description: Joi.string().min(2).max(512).required(),
+            first_info_title: Joi.string().min(2).max(255).required(),
+            second_info_description: Joi.string().min(2).max(512).required(),
+            second_info_title: Joi.string().min(2).max(255).required(),
+            categories: Joi.string().min(2).max(2024).required(),
         }, req, res);
         // return res.send({tmp: 'ok'});
         if (valid_err) {
@@ -72,6 +70,8 @@ class PortfolioController {
         try {
             if("active" in req.body){
                 portfolioData.active = req.body.active;
+            }else{
+                portfolioData.active = 1;
             }
             if(image && !Array.isArray(image)){
                 let imageName = md5(Date.now()) + generateString(4);
@@ -87,6 +87,9 @@ class PortfolioController {
                 }
                 image = 'storage/uploads/portfolio/' + imageName + ext;
                 portfolioData.image = image;
+            }else{
+                res.status(422);
+                return res.send({errors: 'The image is required.'});
             }
             if(client_avatar && !Array.isArray(client_avatar)){
                 let imageName = md5(Date.now()) + generateString(4);
@@ -102,6 +105,9 @@ class PortfolioController {
                 }
                 client_avatar = 'storage/uploads/portfolio/' + imageName + ext;
                 portfolioData.client_avatar = client_avatar;
+            }else{
+                res.status(422);
+                return res.send({errors: 'The client avatar is required.'});
             }
             if(background && !Array.isArray(background)){
                 let imageName = md5(Date.now()) + generateString(4);
@@ -117,6 +123,9 @@ class PortfolioController {
                 }
                 background = 'storage/uploads/portfolio/' + imageName + ext;
                 portfolioData.background = background;
+            }else{
+                res.status(422);
+                return res.send({errors: 'The background is required.'});
             }
             if(gallery && !Array.isArray(gallery)){
                 gallery = [gallery];
