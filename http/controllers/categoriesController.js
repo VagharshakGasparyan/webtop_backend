@@ -7,6 +7,7 @@ const {generateString} = require("../../components/functions");
 const {extFrom} = require("../../components/mimeToExt");
 const md5 = require("md5");
 const CategoriesResource = require("../resources/categoriesResource");
+const controllersAssistant = require("../../components/controllersAssistant");
 class CategoriesController {
     constructor() {
         //
@@ -19,34 +20,25 @@ class CategoriesController {
     async create(req, res, next)
     {
         let locale = res.locals.$api_local;
-        let uniqueErr = await unique('categories', 'name', req.body.name);
-        if(uniqueErr){
+        let translatable = ['name'];
+        let newData = {};
+        let errors = [];
+        controllersAssistant.translateAblesCreate(req, res, translatable, newData, errors);
+        if(errors.length){
             res.status(422);
-            return res.send({errors: {name: uniqueErr}});
+            return res.send({errors: errors});
         }
-        let valid_err = api_validate({
-            name: Joi.string().min(1).max(512).required()
-        }, req, res);
-        if (valid_err) {
-            res.status(422);
-            return res.send({errors: valid_err});
-        }
-
-        let categoryData = {};
         try {
-            categoryData = {
-                name: req.body.name,
-                created_at: moment().format('yyyy-MM-DD HH:mm:ss'),
-                updated_at: moment().format('yyyy-MM-DD HH:mm:ss'),
-            }
-            let forId = await DB('categories').create(categoryData);
-            categoryData.id = forId.insertId;
+            newData.created_at = moment().format('yyyy-MM-DD HH:mm:ss');
+            newData.updated_at = moment().format('yyyy-MM-DD HH:mm:ss');
+            let forId = await DB('categories').create(newData);
+            newData.id = forId.insertId;
         }catch (e) {
             console.error(e);
             res.status(422);
             return res.send({errors: 'Category not created.'});
         }
-        let category = await new CategoriesResource(categoryData, locale);
+        let category = await new CategoriesResource(newData, locale);
         return res.send({data: {category: category, message: 'Category created successfully.'}, errors: {}});
     }
 
@@ -74,15 +66,8 @@ class CategoriesController {
             res.status(422);
             return res.send({errors: 'No category id parameter.'});
         }
-        let valid_err = api_validate({
-            name: Joi.string().min(1).max(512).required()
-        }, req, res);
-        if (valid_err) {
-            res.status(422);
-            return res.send({errors: valid_err});
-        }
-        let {name} = req.body;
-        let updatedCategoryData = {};
+
+        let newData = {};
         let locale = res.locals.$api_local;
         try {
             category = await DB('categories').find(category_id);
@@ -90,27 +75,19 @@ class CategoriesController {
                 res.status(422);
                 return res.send({errors: "Category with this id " + category_id + " can not found."});
             }
-            if(name && name !== category.name){
-                let uniqueErr = await unique('categories', 'name', name);
-                if(uniqueErr){
-                    res.status(422);
-                    return res.send({errors: {name: uniqueErr}});
-                }
-                updatedCategoryData.name = name;
-            }
-            if(Object.keys(updatedCategoryData).length > 0){
-                updatedCategoryData.updated_at = moment().format('yyyy-MM-DD HH:mm:ss');
-                await DB('categories').where("id", category_id).update(updatedCategoryData);
-            }else{
-                return res.send({message: 'Nothing to update.'});
+            let translatable = ['name'];
+            controllersAssistant.translateAblesUpdate(req, res, translatable, newData, category);
+            if(Object.keys(newData).length > 0){
+                newData.updated_at = moment().format('yyyy-MM-DD HH:mm:ss');
+                await DB('categories').where("id", category_id).update(newData);
             }
         }catch (e) {
             console.error(e);
             res.status(422);
             return res.send({errors: 'Category not updated.'});
         }
-        for(let key in updatedCategoryData){
-            category[key] = updatedCategoryData[key];
+        for(let key in newData){
+            category[key] = newData[key];
         }
         category = await new CategoriesResource(category, locale);
 

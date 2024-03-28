@@ -29,7 +29,7 @@ class PortfolioController {
             title: Joi.string().min(2).max(512).required(),
             client_name: Joi.string().min(2).max(255).required(),
             client_description: Joi.string().min(2).max(512).required(),
-            client_social: Joi.string().min(2).max(512).required(),
+            // client_social: Joi.string().min(2).max(512).required(),
             first_info_description: Joi.string().min(2).max(512).required(),
             first_info_title: Joi.string().min(2).max(255).required(),
             second_info_description: Joi.string().min(2).max(512).required(),
@@ -44,12 +44,17 @@ class PortfolioController {
         let locale = res.locals.$api_local;
         let {title, client_name, client_description, first_info_description,
             first_info_title, second_info_description, second_info_title, categories} = req.body;
-        let client_social = {};
+        let client_social = {}, has_client_social = false;
         for(let key in req.body){
             if(key.startsWith('client_social_') && key.length > 'client_social_'.length){
                 let myKey = key.slice('client_social_'.length);
                 client_social[myKey] = req.body[key];
+                has_client_social = true;
             }
+        }
+        if(!has_client_social){
+            res.status(422);
+            return res.send({errors: 'The client_social attribute is required.'});
         }
         let {background, image, gallery, client_avatar} = req.files ?? {background: null, image: null, gallery: null, client_avatar: null};
         let portfolioData = {client_name, client_social: JSON.stringify(client_social)};
@@ -67,6 +72,7 @@ class PortfolioController {
         //         [locale]: title
         //     });
         // }
+
         try {
             if("active" in req.body){
                 portfolioData.active = req.body.active;
@@ -201,7 +207,7 @@ class PortfolioController {
             title: Joi.string().min(2).max(512),
             client_name: Joi.string().min(2).max(255),
             client_description: Joi.string().min(2).max(512),
-            client_social: Joi.string().min(2).max(512),
+            // client_social: Joi.string().min(2).max(512),
             first_info_description: Joi.string().min(2).max(512),
             first_info_title: Joi.string().min(2).max(255),
             second_info_description: Joi.string().min(2).max(512),
@@ -223,6 +229,7 @@ class PortfolioController {
                 has_client_social = true;
             }
         }
+
         let {background, image, gallery, client_avatar} = req.files ?? {background: null, image: null, gallery: null, client_avatar: null};
         let updatedData = {};
         let errors = [];
@@ -389,8 +396,6 @@ class PortfolioController {
             if(Object.keys(updatedData).length > 0){
                 updatedData.updated_at = moment().format('yyyy-MM-DD HH:mm:ss');
                 await DB('portfolio').where("id", portfolio_id).update(updatedData);
-            }else{
-                return res.send({message: 'Nothing to update.'});
             }
         }catch (e) {
             console.error(e);

@@ -232,8 +232,6 @@ class TeamsController {
             if(Object.keys(updatedTeamData).length > 0){
                 updatedTeamData.updated_at = moment().format('yyyy-MM-DD HH:mm:ss');
                 await DB('teams').where("id", team_id).update(updatedTeamData);
-            }else{
-                return res.send({message: 'Nothing to update.'});
             }
         }catch (e) {
             console.error(e);

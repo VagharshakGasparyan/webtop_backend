@@ -8,6 +8,7 @@ const md5 = require("md5");
 const bcrypt = require("bcrypt");
 const moment = require("moment/moment");
 const SettingsResource = require("../resources/SettingsResource");
+const controllersAssistant = require("../../components/controllersAssistant");
 
 class SettingsController {
     constructor() {
@@ -38,6 +39,17 @@ class SettingsController {
         }
         let message = null;
 
+        //---------------------------------------------------------------------------------
+        let translatable = ['description'];
+        let newData = {};
+        let errors = [];
+        controllersAssistant.translateAblesCreate(req, res, translatable, newData, errors);
+        if(errors.length){
+            res.status(422);
+            return res.send({errors: errors});
+        }
+        //---------------------------------------------------------------------------------
+
         let settingFile = req.files ? req.files.file : null;
         let fileName = null;
         if (settingFile) {
@@ -50,7 +62,6 @@ class SettingsController {
             }
             fileName = 'storage/uploads/settings/' + fileName + ext;
         }
-        let newSettingsData = {};
         try {
             let arrDescription = {}, hasLangDescription = false;
             for (let item in req.body){
@@ -60,7 +71,7 @@ class SettingsController {
                     arrDescription[itemLang] = req.body[item];
                 }
             }
-            newSettingsData = {
+            newData = {
                 key: req.body.key,
                 name: req.body.name,
                 description: JSON.stringify( hasLangDescription ? arrDescription : {[locale]: req.body.description}),
@@ -70,16 +81,16 @@ class SettingsController {
                 updated_at: moment().format('yyyy-MM-DD HH:mm:ss'),
             }
             if("active" in req.body){
-                newSettingsData.active = req.body.active;
+                newData.active = req.body.active;
             }
-            let forId = await DB('settings').create(newSettingsData);
-            newSettingsData.id = forId.insertId;
+            let forId = await DB('settings').create(newData);
+            newData.id = forId.insertId;
         }catch (e) {
             console.error(e);
             res.status(422);
             return res.send({errors: 'Setting not created.'});
         }
-        let setting = await new SettingsResource(newSettingsData, locale);
+        let setting = await new SettingsResource(newData, locale);
         return res.send({data: {setting: setting, message: message}, errors: {}});
     }
 
@@ -119,7 +130,7 @@ class SettingsController {
             return res.send({errors: valid_err});
         }
         let {key, name, description, value, active} = req.body;
-        let updatedSettingData = {};
+        let newData = {};
         try {
             setting = await DB('settings').find(setting_id);
             if(!setting){
@@ -132,34 +143,20 @@ class SettingsController {
                     res.status(422);
                     return res.send({errors: {key: uniqueErr}});
                 }
-                updatedSettingData.key = key;
+                newData.key = key;
             }
             if(name){
-                updatedSettingData.name = name;
+                newData.name = name;
             }
-            let arrDescription = {}, hasLangDescription = false;
-            for (let item in req.body){
-                if(item.startsWith('description_') && item.length > 'description_'.length){
-                    hasLangDescription = true;
-                    let itemLang = item.slice('description_'.length);
-                    arrDescription[itemLang] = req.body[item];
-                }
-            }
-            let oldDescription = setting.description ? JSON.parse(setting.description) : {};
-            if(hasLangDescription){
-                for(let item in arrDescription){
-                    oldDescription[item] = arrDescription[item];
-                }
-                updatedSettingData.description = JSON.stringify(oldDescription);
-            }else if(description){
-                oldDescription[locale] = description;
-                updatedSettingData.description = JSON.stringify(oldDescription);
-            }
+            //---------------------------------------------------------------------------------
+            let translatable = ['description'];
+            controllersAssistant.translateAblesUpdate(req, res, translatable, newData, setting);
+            //---------------------------------------------------------------------------------
             if(value){
-                updatedSettingData.value = value;
+                newData.value = value;
             }
             if("active" in req.body){
-                updatedSettingData.active = active;
+                newData.active = active;
             }
 
             let settingFile = req.files ? req.files.file : null;
@@ -173,23 +170,21 @@ class SettingsController {
                     if(setting.file){
                         fs.unlinkSync(__basedir + "/public/" + setting.file);
                     }
-                    updatedSettingData.file = 'storage/uploads/settings/' + settingFileName + ext;
+                    newData.file = 'storage/uploads/settings/' + settingFileName + ext;
                 }
             }
 
-            if(Object.keys(updatedSettingData).length > 0){
-                updatedSettingData.updated_at = moment().format('yyyy-MM-DD HH:mm:ss');
-                await DB('settings').where("id", setting_id).update(updatedSettingData);
-            }else{
-                return res.send({message: 'Nothing to update.'});
+            if(Object.keys(newData).length > 0){
+                newData.updated_at = moment().format('yyyy-MM-DD HH:mm:ss');
+                await DB('settings').where("id", setting_id).update(newData);
             }
         }catch (e) {
             console.error(e);
             res.status(422);
             return res.send({errors: 'Setting not updated.'});
         }
-        for(let key in updatedSettingData){
-            setting[key] = updatedSettingData[key];
+        for(let key in newData){
+            setting[key] = newData[key];
         }
         setting = await new SettingsResource(setting, locale);
         return res.send({data: {setting}, message: "Setting data updated successfully.", errors: errors});

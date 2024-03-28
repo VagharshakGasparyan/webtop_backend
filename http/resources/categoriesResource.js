@@ -5,6 +5,7 @@ class CategoriesResource {
     constructor(resource = {}, params = {}) {
         this.resource = resource;
         this.params = params;
+        this.local = params;// ?? conf.lang.default ?? null;
         if(Array.isArray(resource)){
             return this.collection(resource);
         }
@@ -15,7 +16,7 @@ class CategoriesResource {
 
         return {
             "id": r.id,
-            "name": r.name,
+            "name": r.name ? tr(JSON.parse(r.name), this.local) : r.name,
             "created_at": r.created_at,
             "updated_at": r.updated_at,
         };
