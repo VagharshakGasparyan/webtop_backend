@@ -8,8 +8,8 @@ class TeamsMigration {
     async up() {
         await DB(table).createTable([
             DB.column('id').id(),
-            DB.column('first_name').varchar(255),
-            DB.column('last_name').varchar(255).nullable(),
+            DB.column('first_name').json(),
+            DB.column('last_name').json().nullable(),
             DB.column('image').varchar(255).nullable(),
             DB.column('images').json().nullable(),
             DB.column('rank').json().nullable(),

@@ -2,7 +2,7 @@ const {DB} = require("./db");
 const {api_validate, unique} = require("./validate");
 const Joi = require("joi");
 const {extFrom} = require("./mimeToExt");
-const {generateString} = require("./functions");
+const {generateString, makeDirectoryIfNotExists} = require("./functions");
 const fs = require('node:fs');
 const md5 = require("md5");
 const bcrypt = require("bcrypt");
@@ -54,6 +54,55 @@ class controllersAssistant {
             }
             newData[t] = JSON.stringify(item);
         });
+    }
+
+    static filesCreate(req, res, files, arrFiles, filesPath, allowedFilesExtensions, newData, errors)
+    {
+        for(let i = 0; i < files.length; i++){
+            let file = files[i];
+            try {
+                let reqFile = req.files ? req.files[file] : null;
+                let ext = extFrom(reqFile.mimetype, reqFile.name);
+                if(Array.isArray(allowedFilesExtensions) && !allowedFilesExtensions.includes(ext.toLowerCase())){
+                    errors.push('The file "' + file + '" not a ' + allowedFilesExtensions.join(', ') + ' format.');
+                    continue;
+                }
+                let fileName = md5(Date.now()) + generateString(4) + ext;
+                let fullPath = __basedir + '/public/' + filesPath;
+                makeDirectoryIfNotExists(fullPath);
+                fs.writeFileSync(fullPath + '/' + fileName, reqFile.data);
+                newData[file] = filesPath + '/' + fileName;
+            }catch (e) {
+                errors.push('The file ' + file + ' not uploaded.');
+            }
+        }
+
+        for(let i = 0; i < arrFiles.length; i++){
+            let arrFile = arrFiles[i];
+            let reqFiles = req.files && arrFile in req.files ? req.files[arrFile] : [];
+            if(!Array.isArray(reqFiles)){
+                reqFiles = [reqFiles];
+            }
+            let arrFilesData = [];
+            for(let j = 0; j < reqFiles.length; j++){
+                let reqFile = reqFiles[i];
+                try {
+                    let ext = extFrom(reqFile.mimetype, reqFile.name);
+                    if(Array.isArray(allowedFilesExtensions) && !allowedFilesExtensions.includes(ext.toLowerCase())){
+                        errors.push('The file "' + arrFile + '[' + j + ']' + '" not a ' + allowedFilesExtensions.join(' ,') + ' format.');
+                        continue;
+                    }
+                    let fileName = md5(Date.now()) + generateString(4) + ext;
+                    let fullPath = __basedir + '/public/' + filesPath;
+                    makeDirectoryIfNotExists(fullPath);
+                    fs.writeFileSync(fullPath + '/' + fileName, reqFile.data);
+                    arrFilesData.push(filesPath + '/' + fileName);
+                }catch (e) {
+                    errors.push('The file ' + arrFile + '[' + j + ']' + ' not uploaded.');
+                }
+            }
+            newData[arrFile] = JSON.stringify(arrFilesData);
+        }
     }
 }
 
