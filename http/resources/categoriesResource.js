@@ -13,13 +13,20 @@ class CategoriesResource {
     }
 
     async index(r) {
-
-        return {
+        let translatable = ["name"];
+        let resObj = {
             "id": r.id,
-            "name": r.name ? tr(JSON.parse(r.name), this.local) : r.name,
             "created_at": r.created_at,
             "updated_at": r.updated_at,
         };
+        translatable.forEach((trField)=>{
+            let items = r[trField] ? JSON.parse(r[trField]) : {};
+            resObj[trField] = items;
+            for(let langKey in items){
+                resObj[trField + '_' + langKey] = items[langKey];
+            }
+        });
+        return resObj;
     }
 
     async collection(resource) {

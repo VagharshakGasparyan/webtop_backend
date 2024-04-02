@@ -15,10 +15,6 @@ class PortfolioResource {
     async index(r) {
         let translatable = ["title", "client_description", "first_info_description", "first_info_title",
             "second_info_description", "second_info_title"];
-        let trans = {};
-        translatable.forEach((t)=>{
-            trans[t] = r[t] ? tr(JSON.parse(r[t]), this.local) : r[t];
-        });
         let categories = [];
         try {
             // let pc = await DB('portfolio_category').where('portfolio_id', r.id).get(['category_id']);
@@ -32,22 +28,22 @@ class PortfolioResource {
             console.error(e);
         }
 
-        return {
+        let resObj = {
             "id": r.id,
-            "title": trans.title,
+            "title": r.title ? JSON.parse(r.title) : {},
             "client": {
                 "avatar": r.client_avatar,
                 "name": r.client_name,
-                "description": trans.client_description,
-                "social": r.client_social ? JSON.parse(r.client_social) : []
+                "description": r.client_description ? JSON.parse(r.client_description) : {},
+                "social": r.client_social ? JSON.parse(r.client_social) : {}
             },
             "first_info": {
-                "description": trans.first_info_description,
-                "title": trans.first_info_title
+                "description": r.first_info_description ? JSON.parse(r.first_info_description) : {},
+                "title": r.first_info_title ? JSON.parse(r.first_info_title) : {},
             },
             "second_info": {
-                "description": trans.second_info_description,
-                "title": trans.second_info_title
+                "description": r.second_info_description ? JSON.parse(r.second_info_description) : {},
+                "title": r.second_info_title ? JSON.parse(r.second_info_title) : {},
             },
             "image": r.image ?? null,
             "gallery": r.gallery ? JSON.parse(r.gallery) : [],
@@ -57,6 +53,14 @@ class PortfolioResource {
             "created_at": r.created_at,
             "updated_at": r.updated_at,
         };
+        translatable.forEach((trField)=>{
+            let items = r[trField] ? JSON.parse(r[trField]) : {};
+            // resObj[trField] = items;
+            for(let langKey in items){
+                resObj[trField + '_' + langKey] = items[langKey];
+            }
+        });
+        return resObj;
     }
 
     async collection(resource) {

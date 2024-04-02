@@ -15,18 +15,25 @@ class SettingsResource {
     }
 
     async index(r) {
-
-        return {
+        let translatable = ['description', 'title'];
+        let resObj = {
             "id": r.id,
             "key": r.key,
             "name": r.name,
-            "description": r.description ? tr(JSON.parse(r.description), this.local) : r.description,
             "value": r.value,
             "file": r.file,
             "active": r.active,
             "created_at": r.created_at,
             "updated_at": r.updated_at,
         };
+        translatable.forEach((trField)=>{
+            let items = r[trField] ? JSON.parse(r[trField]) : {};
+            resObj[trField] = items;
+            for(let langKey in items){
+                resObj[trField + '_' + langKey] = items[langKey];
+            }
+        });
+        return resObj;
     }
 
     async collection(resource) {

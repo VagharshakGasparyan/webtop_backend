@@ -86,19 +86,19 @@ class TeamsController {
             res.status(422);
             return res.send({errors: 'No team id parameter.'});
         }
-        let valid_err = api_validate({
-            first_name: Joi.string().min(2).max(30),
-            last_name: Joi.string().min(2).max(30),
-            rank: Joi.string().min(2).max(512),
-            title: Joi.string().min(2).max(512),
-            description: Joi.string().min(2).max(512),
-        }, req, res);
-        if (valid_err) {
-            res.status(422);
-            return res.send({errors: valid_err});
-        }
+        // let valid_err = api_validate({
+        //     first_name: Joi.string().min(2).max(30),
+        //     last_name: Joi.string().min(2).max(30),
+        //     rank: Joi.string().min(2).max(512),
+        //     title: Joi.string().min(2).max(512),
+        //     description: Joi.string().min(2).max(512),
+        // }, req, res);
+        // if (valid_err) {
+        //     res.status(422);
+        //     return res.send({errors: valid_err});
+        // }
         let {first_name, last_name, rank, title, description, active, stayImages} = req.body;
-        let updatedTeamData = {};
+        let newData = {};
         let locale = res.locals.$api_local;
         try {
             team = await DB('teams').find(team_id);
@@ -106,29 +106,8 @@ class TeamsController {
                 res.status(422);
                 return res.send({errors: "Team with this id " + team_id + " can not found."});
             }
-            if(first_name){
-                updatedTeamData.first_name = first_name;
-            }
-            if(last_name){
-                updatedTeamData.last_name = last_name;
-            }
-            if(rank){
-                let oldRank = team.rank ? JSON.parse(team.rank) : {};
-                oldRank[locale] = rank;
-                updatedTeamData.rank = JSON.stringify(oldRank);
-            }
-            if(title){
-                let oldTitle = team.title ? JSON.parse(team.title) : {};
-                oldTitle[locale] = title;
-                updatedTeamData.title = JSON.stringify(oldTitle);
-            }
-            if(description){
-                let oldDescription = team.description ? JSON.parse(team.description) : {};
-                oldDescription[locale] = description;
-                updatedTeamData.description = JSON.stringify(oldDescription);
-            }
             if("active" in req.body){
-                updatedTeamData.active = active;
+                newData.active = active;
             }
 
             let teamImage = req.files ? req.files.image : null;
@@ -145,17 +124,17 @@ class TeamsController {
                         if(team.image){
                             fs.unlinkSync(__basedir + "/public/" + team.image);
                         }
-                        updatedTeamData.image = 'storage/uploads/teams/' + teamImageName + ext;
+                        newData.image = 'storage/uploads/teams/' + teamImageName + ext;
                     }
                 }
             }
 
-            updatedTeamData.images = [];
+            newData.images = [];
             let oldImages = team.images ? JSON.parse(team.images) : [];
             stayImages = stayImages ? JSON.parse(stayImages) : [];
             for(let oldImage of oldImages){
                 if(stayImages.includes(oldImage)){
-                    updatedTeamData.images.push(oldImage);
+                    newData.images.push(oldImage);
                 }else{
                     try {
                         fs.unlinkSync(__basedir + "/public/" + oldImage);
@@ -180,21 +159,23 @@ class TeamsController {
                         errors.push('Images item not uploaded.');
                         continue;
                     }
-                    updatedTeamData.images.push('storage/uploads/teams/' + imageItemName + ext);
+                    newData.images.push('storage/uploads/teams/' + imageItemName + ext);
                 }
             }
-            updatedTeamData.images = JSON.stringify(updatedTeamData.images);
-            if(Object.keys(updatedTeamData).length > 0){
-                updatedTeamData.updated_at = moment().format('yyyy-MM-DD HH:mm:ss');
-                await DB('teams').where("id", team_id).update(updatedTeamData);
+            newData.images = JSON.stringify(newData.images);
+            let translatable = ['first_name', 'last_name', 'rank', 'title', 'description'];
+            controllersAssistant.translateAblesUpdate(req, res, translatable, newData, team);
+            if(Object.keys(newData).length > 0){
+                newData.updated_at = moment().format('yyyy-MM-DD HH:mm:ss');
+                await DB('teams').where("id", team_id).update(newData);
             }
         }catch (e) {
             console.error(e);
             res.status(422);
             return res.send({errors: 'Team not updated.'});
         }
-        for(let key in updatedTeamData){
-            team[key] = updatedTeamData[key];
+        for(let key in newData){
+            team[key] = newData[key];
         }
         team = await new TeamsResource(team, locale);
 

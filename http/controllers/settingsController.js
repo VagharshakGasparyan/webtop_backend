@@ -29,57 +29,28 @@ class SettingsController {
         }
         let valid_err = api_validate({
             key: Joi.string().required(),
-            name: Joi.string().min(1).max(512),
-            description: Joi.string().min(1),
-            value: Joi.string().min(1)
+            name: Joi.string().min(1).max(512).required(),
+            value: Joi.string().min(1).required()
         }, req, res);
         if (valid_err) {
             res.status(422);
             return res.send({errors: valid_err});
         }
         let message = null;
-
-        //---------------------------------------------------------------------------------
-        let translatable = ['description'];
         let newData = {};
         let errors = [];
-        controllersAssistant.translateAblesCreate(req, res, translatable, newData, errors);
-        if(errors.length){
-            res.status(422);
-            return res.send({errors: errors});
-        }
-        //---------------------------------------------------------------------------------
-
-        let settingFile = req.files ? req.files.file : null;
-        let fileName = null;
-        if (settingFile) {
-            fileName = md5(Date.now()) + generateString(4);
-            let ext = extFrom(settingFile.mimetype, settingFile.name);
-            let uploaded = saveFileContentToPublic('storage/uploads/settings', fileName + ext, settingFile.data);
-            if (!uploaded) {
-                res.status(422);
-                return res.send({errors: 'file not uploaded.'});
-            }
-            fileName = 'storage/uploads/settings/' + fileName + ext;
-        }
         try {
-            let arrDescription = {}, hasLangDescription = false;
-            for (let item in req.body){
-                if(item.startsWith('description_') && item.length > 'description_'.length){
-                    hasLangDescription = true;
-                    let itemLang = item.slice('description_'.length);
-                    arrDescription[itemLang] = req.body[item];
-                }
+            controllersAssistant.translateAblesCreate(req, res, ['description', 'title'], newData, errors);
+            controllersAssistant.filesCreate(req, res, ['file'], [], 'storage/uploads/settings', '*', newData, errors);
+            if(errors.length){
+                res.status(422);
+                return res.send({errors: errors});
             }
-            newData = {
-                key: req.body.key,
-                name: req.body.name,
-                description: JSON.stringify( hasLangDescription ? arrDescription : {[locale]: req.body.description}),
-                value: req.body.value,
-                file: fileName,
-                created_at: moment().format('yyyy-MM-DD HH:mm:ss'),
-                updated_at: moment().format('yyyy-MM-DD HH:mm:ss'),
-            }
+            newData.key = req.body.key;
+            newData.name = req.body.name;
+            newData.value = req.body.value;
+            newData.created_at = moment().format('yyyy-MM-DD HH:mm:ss');
+            newData.updated_at = moment().format('yyyy-MM-DD HH:mm:ss');
             if("active" in req.body){
                 newData.active = req.body.active;
             }
@@ -122,7 +93,6 @@ class SettingsController {
         let valid_err = api_validate({
             key: Joi.string(),
             name: Joi.string().min(1).max(512),
-            description: Joi.string().min(1),
             value: Joi.string().min(1)
         }, req, res);
         if (valid_err) {
@@ -149,7 +119,7 @@ class SettingsController {
                 newData.name = name;
             }
             //---------------------------------------------------------------------------------
-            let translatable = ['description'];
+            let translatable = ['description', 'title'];
             controllersAssistant.translateAblesUpdate(req, res, translatable, newData, setting);
             //---------------------------------------------------------------------------------
             if(value){

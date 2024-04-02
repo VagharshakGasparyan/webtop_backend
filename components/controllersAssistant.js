@@ -13,6 +13,8 @@ class controllersAssistant {
         //
     }
 
+
+
     static translateAblesCreate(req, res, translatable, newData, errors)
     {
         let locale = res.locals.$api_local;
@@ -61,10 +63,13 @@ class controllersAssistant {
         for(let i = 0; i < files.length; i++){
             let file = files[i];
             try {
-                let reqFile = req.files ? req.files[file] : null;
+                let reqFile = req.files && file in req.files ? req.files[file] : null;
+                if(!reqFile){
+                    continue;
+                }
                 let ext = extFrom(reqFile.mimetype, reqFile.name);
                 if(Array.isArray(allowedFilesExtensions) && !allowedFilesExtensions.includes(ext.toLowerCase())){
-                    errors.push('The file "' + file + '" not a ' + allowedFilesExtensions.join(', ') + ' format.');
+                    errors.push('The file ' + file + ' not a ' + allowedFilesExtensions.join(', ') + ' format.');
                     continue;
                 }
                 let fileName = md5(Date.now()) + generateString(4) + ext;
@@ -89,7 +94,7 @@ class controllersAssistant {
                 try {
                     let ext = extFrom(reqFile.mimetype, reqFile.name);
                     if(Array.isArray(allowedFilesExtensions) && !allowedFilesExtensions.includes(ext.toLowerCase())){
-                        errors.push('The file "' + arrFile + '[' + j + ']' + '" not a ' + allowedFilesExtensions.join(' ,') + ' format.');
+                        errors.push('The file "' + arrFile + '[' + j + ']' + '" not a ' + allowedFilesExtensions.join(', ') + ' format.');
                         continue;
                     }
                     let fileName = md5(Date.now()) + generateString(4) + ext;

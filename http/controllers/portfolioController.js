@@ -9,6 +9,7 @@ const md5 = require("md5");
 const {api_validate} = require("../../components/validate");
 const Joi = require("joi");
 const TeamsResource = require("../resources/teamsResource");
+const controllersAssistant = require("../../components/controllersAssistant");
 class PortfolioController {
     constructor() {
         //
@@ -26,14 +27,7 @@ class PortfolioController {
     async create(req, res, next)
     {
         let valid_err = api_validate({
-            title: Joi.string().min(2).max(512).required(),
             client_name: Joi.string().min(2).max(255).required(),
-            client_description: Joi.string().min(2).max(512).required(),
-            // client_social: Joi.string().min(2).max(512).required(),
-            first_info_description: Joi.string().min(2).max(512).required(),
-            first_info_title: Joi.string().min(2).max(255).required(),
-            second_info_description: Joi.string().min(2).max(512).required(),
-            second_info_title: Joi.string().min(2).max(255).required(),
             categories: Joi.string().min(2).max(2024).required(),
         }, req, res);
         // return res.send({tmp: 'ok'});
@@ -42,8 +36,7 @@ class PortfolioController {
             return res.send({errors: valid_err});
         }
         let locale = res.locals.$api_local;
-        let {title, client_name, client_description, first_info_description,
-            first_info_title, second_info_description, second_info_title, categories} = req.body;
+        let {client_name, categories} = req.body;
         let client_social = {}, has_client_social = false;
         for(let key in req.body){
             if(key.startsWith('client_social_') && key.length > 'client_social_'.length){
@@ -56,112 +49,31 @@ class PortfolioController {
             res.status(422);
             return res.send({errors: 'The client_social attribute is required.'});
         }
-        let {background, image, gallery, client_avatar} = req.files ?? {background: null, image: null, gallery: null, client_avatar: null};
-        let portfolioData = {client_name, client_social: JSON.stringify(client_social)};
+        let newData = {client_name, client_social: JSON.stringify(client_social)};
 
-        let obj = {title, client_description, first_info_description, first_info_title, second_info_description, second_info_title};
-        for(let item in obj){
-            if(obj[item]){
-                portfolioData[item] = JSON.stringify({
-                    [locale]: obj[item]
-                });
-            }
-        }
-        // if(title){
-        //     portfolioData.title = JSON.stringify({
-        //         [locale]: title
-        //     });
-        // }
-
+        let errors = [];
         try {
+            controllersAssistant.filesCreate(
+                req, res, ['client_avatar', 'image', 'background'], ['gallery'], 'storage/uploads/portfolio',
+                ['.jpeg', '.jpg', '.png'], newData, errors
+            );
+            controllersAssistant.translateAblesCreate(req, res,
+                ['title', 'client_description', 'first_info_description', 'first_info_title', 'second_info_description', 'second_info_title'],
+                newData, errors);
+            if(errors.length){
+                res.status(422);
+                return res.send({errors: errors});
+            }
             if("active" in req.body){
-                portfolioData.active = req.body.active;
+                newData.active = req.body.active;
             }else{
-                portfolioData.active = 1;
+                newData.active = 1;
             }
-            if(image && !Array.isArray(image)){
-                let imageName = md5(Date.now()) + generateString(4);
-                let ext = extFrom(image.mimetype, image.name);
-                if(ext.toLowerCase() !== ".png" && ext.toLowerCase() !== ".jpg" && ext.toLowerCase() !== ".jpeg"){
-                    res.status(422);
-                    return res.send({errors: 'image not a jpg or png.'});
-                }
-                let uploaded = saveFileContentToPublic('storage/uploads/portfolio', imageName + ext, image.data);
-                if (!uploaded) {
-                    res.status(422);
-                    return res.send({errors: 'image not uploaded.'});
-                }
-                image = 'storage/uploads/portfolio/' + imageName + ext;
-                portfolioData.image = image;
-            }else{
-                res.status(422);
-                return res.send({errors: 'The image is required.'});
-            }
-            if(client_avatar && !Array.isArray(client_avatar)){
-                let imageName = md5(Date.now()) + generateString(4);
-                let ext = extFrom(client_avatar.mimetype, client_avatar.name);
-                if(ext.toLowerCase() !== ".png" && ext.toLowerCase() !== ".jpg" && ext.toLowerCase() !== ".jpeg"){
-                    res.status(422);
-                    return res.send({errors: 'client_avatar not a jpg or png.'});
-                }
-                let uploaded = saveFileContentToPublic('storage/uploads/portfolio', imageName + ext, client_avatar.data);
-                if (!uploaded) {
-                    res.status(422);
-                    return res.send({errors: 'client_avatar not uploaded.'});
-                }
-                client_avatar = 'storage/uploads/portfolio/' + imageName + ext;
-                portfolioData.client_avatar = client_avatar;
-            }else{
-                res.status(422);
-                return res.send({errors: 'The client avatar is required.'});
-            }
-            if(background && !Array.isArray(background)){
-                let imageName = md5(Date.now()) + generateString(4);
-                let ext = extFrom(background.mimetype, background.name);
-                if(ext.toLowerCase() !== ".png" && ext.toLowerCase() !== ".jpg" && ext.toLowerCase() !== ".jpeg"){
-                    res.status(422);
-                    return res.send({errors: 'image not a jpg or png.'});
-                }
-                let uploaded = saveFileContentToPublic('storage/uploads/portfolio', imageName + ext, background.data);
-                if (!uploaded) {
-                    res.status(422);
-                    return res.send({errors: 'image not uploaded.'});
-                }
-                background = 'storage/uploads/portfolio/' + imageName + ext;
-                portfolioData.background = background;
-            }else{
-                res.status(422);
-                return res.send({errors: 'The background is required.'});
-            }
-            if(gallery && !Array.isArray(gallery)){
-                gallery = [gallery];
-            }
-            portfolioData.gallery = [];
-            for(let img of gallery ?? []){
-                let imageName = md5(Date.now()) + generateString(4);
-                let ext = extFrom(img.mimetype, img.name);
-                if(ext.toLowerCase() !== ".png" && ext.toLowerCase() !== ".jpg"){
-                    res.status(422);
-                    return res.send({errors: 'Gallery image not a jpg or png.'});
-                }
-                let uploaded = saveFileContentToPublic('storage/uploads/portfolio', imageName + ext, img.data);
-                if (!uploaded) {
-                    res.status(422);
-                    return res.send({errors: 'image not uploaded.'});
-                }
-                img = 'storage/uploads/portfolio/' + imageName + ext;
-                portfolioData.gallery.push(img);
-            }
-            if(portfolioData.gallery.length < 1){
-                delete portfolioData.gallery;
-            }else{
-                portfolioData.gallery = JSON.stringify(portfolioData.gallery);
-            }
-            portfolioData.created_at = moment().format('yyyy-MM-DD HH:mm:ss');
-            portfolioData.updated_at = moment().format('yyyy-MM-DD HH:mm:ss');
-            let forId = await DB('portfolio').create(portfolioData);
+            newData.created_at = moment().format('yyyy-MM-DD HH:mm:ss');
+            newData.updated_at = moment().format('yyyy-MM-DD HH:mm:ss');
+            let forId = await DB('portfolio').create(newData);
             let id = forId.insertId;
-            portfolioData.id = id;
+            newData.id = id;
 
             categories = categories ? JSON.parse(categories): [];
             if(categories.length > 0){
@@ -171,14 +83,13 @@ class PortfolioController {
 
                 }
             }
-
         }catch (e) {
             console.error(e);
             res.status(422);
             return res.send({errors: 'Portfolio not created.'});
         }
-        let portfolio = await new PortfolioResource(portfolioData, locale);
-        return res.send({data: {portfolio: portfolio}, message: "Portfolio created successfully.", errors: {}});
+        let portfolio = await new PortfolioResource(newData, locale);
+        return res.send({data: {portfolio: portfolio}, message: "Portfolio created successfully.", errors: []});
     }
 
     async store(req, res, next)
@@ -204,14 +115,7 @@ class PortfolioController {
             return res.send({errors: 'No portfolio id parameter.'});
         }
         let valid_err = api_validate({
-            title: Joi.string().min(2).max(512),
             client_name: Joi.string().min(2).max(255),
-            client_description: Joi.string().min(2).max(512),
-            // client_social: Joi.string().min(2).max(512),
-            first_info_description: Joi.string().min(2).max(512),
-            first_info_title: Joi.string().min(2).max(255),
-            second_info_description: Joi.string().min(2).max(512),
-            second_info_title: Joi.string().min(2).max(255),
             categories: Joi.string().min(2).max(2024),
         }, req, res);
         if (valid_err) {
@@ -219,8 +123,7 @@ class PortfolioController {
             return res.send({errors: valid_err});
         }
         let locale = res.locals.$api_local;
-        let {title, client_name, client_description, first_info_description,
-            first_info_title, second_info_description, second_info_title, categories, gallery_stay} = req.body;
+        let {title, client_name, categories, gallery_stay} = req.body;
         let client_social = {}, has_client_social = false;
         for(let key in req.body){
             if(key.startsWith('client_social_') && key.length > 'client_social_'.length){
@@ -231,7 +134,7 @@ class PortfolioController {
         }
 
         let {background, image, gallery, client_avatar} = req.files ?? {background: null, image: null, gallery: null, client_avatar: null};
-        let updatedData = {};
+        let newData = {};
         let errors = [];
         let filesToBeDelete = [];
         let portfolio = null;
@@ -242,45 +145,16 @@ class PortfolioController {
                 return res.send({errors: "Portfolio with this id " + portfolio_id + " can not found."});
             }
             if(has_client_social){
-                updatedData.client_social = JSON.stringify(client_social);
+                newData.client_social = JSON.stringify(client_social);
             }
             if('active' in req.body){
-                updatedData.active = req.body;
+                newData.active = req.body;
             }
-            if(title){
-                let oldValue = portfolio.title ? JSON.parse(portfolio.title) : {};
-                oldValue[locale] = title;
-                updatedData.title = JSON.stringify(oldValue);
-            }
-            if(client_description){
-                let oldValue = portfolio.client_description ? JSON.parse(portfolio.client_description) : {};
-                oldValue[locale] = client_description;
-                updatedData.client_description = JSON.stringify(oldValue);
-            }
-            if(first_info_description){
-                let oldValue = portfolio.first_info_description ? JSON.parse(portfolio.first_info_description) : {};
-                oldValue[locale] = first_info_description;
-                updatedData.first_info_description = JSON.stringify(oldValue);
-            }
-            if(first_info_title){
-                let oldValue = portfolio.first_info_title ? JSON.parse(portfolio.first_info_title) : {};
-                oldValue[locale] = first_info_title;
-                updatedData.first_info_title = JSON.stringify(oldValue);
-            }
-            if(second_info_description){
-                let oldValue = portfolio.second_info_description ? JSON.parse(portfolio.second_info_description) : {};
-                oldValue[locale] = second_info_description;
-                updatedData.second_info_description = JSON.stringify(oldValue);
-            }
-            if(second_info_title){
-                let oldValue = portfolio.second_info_title ? JSON.parse(portfolio.second_info_title) : {};
-                oldValue[locale] = second_info_title;
-                updatedData.second_info_title = JSON.stringify(oldValue);
-            }
+            let translatable = ['title', 'client_description', 'first_info_description', 'first_info_title', 'second_info_description', 'second_info_title'];
+            controllersAssistant.translateAblesUpdate(req, res, translatable, newData, portfolio);
             if(client_name){
-                updatedData.client_name = client_name;
+                newData.client_name = client_name;
             }
-
             if(background && !Array.isArray(background)){
                 let fileName = md5(Date.now()) + generateString(4);
                 let ext = extFrom(background.mimetype, background.name);
@@ -293,7 +167,7 @@ class PortfolioController {
                         errors.push('background not uploaded.');
                     }else{
                         background = 'storage/uploads/portfolio/' + fileName + ext;
-                        updatedData.background = background;
+                        newData.background = background;
                         if(portfolio.background){
                             filesToBeDelete.push(portfolio.background)
                         }
@@ -312,7 +186,7 @@ class PortfolioController {
                         errors.push('background not uploaded.');
                     }else{
                         image = 'storage/uploads/portfolio/' + fileName + ext;
-                        updatedData.image = image;
+                        newData.image = image;
                         if(portfolio.image){
                             filesToBeDelete.push(portfolio.image)
                         }
@@ -331,7 +205,7 @@ class PortfolioController {
                         errors.push('client avatar not uploaded.');
                     }else{
                         client_avatar = 'storage/uploads/portfolio/' + fileName + ext;
-                        updatedData.client_avatar = client_avatar;
+                        newData.client_avatar = client_avatar;
                         if(portfolio.client_avatar){
                             filesToBeDelete.push(portfolio.client_avatar)
                         }
@@ -345,7 +219,7 @@ class PortfolioController {
             }else{
                 gallery = [];
             }
-            updatedData.gallery = [];
+            newData.gallery = [];
             for(let img of gallery ?? []){
                 let imageName = md5(Date.now()) + generateString(4);
                 let ext = extFrom(img.mimetype, img.name);
@@ -359,22 +233,22 @@ class PortfolioController {
                     return res.send({errors: 'Gallery image not uploaded.'});
                 }
                 img = 'storage/uploads/portfolio/' + imageName + ext;
-                updatedData.gallery.push(img);
+                newData.gallery.push(img);
             }
 
             let oldGallery = portfolio.gallery ? JSON.parse(portfolio.gallery) : [];
             gallery_stay = gallery_stay ? (Array.isArray(gallery_stay) ? gallery_stay : JSON.parse(gallery_stay)) : [];
             for(let oldGalleryImage of oldGallery){
                 if(gallery_stay.includes(oldGalleryImage)){
-                    updatedData.gallery.push(oldGalleryImage);
+                    newData.gallery.push(oldGalleryImage);
                 }else{
                     filesToBeDelete.push(oldGalleryImage);
                 }
             }
-            if (updatedData.gallery.length < 1) {
-                delete updatedData.gallery;
+            if (newData.gallery.length < 1) {
+                delete newData.gallery;
             } else {
-                updatedData.gallery = JSON.stringify(updatedData.gallery);
+                newData.gallery = JSON.stringify(newData.gallery);
             }
 
             for(let fileToBeDelete of filesToBeDelete){
@@ -393,9 +267,9 @@ class PortfolioController {
 
                 }
             }
-            if(Object.keys(updatedData).length > 0){
-                updatedData.updated_at = moment().format('yyyy-MM-DD HH:mm:ss');
-                await DB('portfolio').where("id", portfolio_id).update(updatedData);
+            if(Object.keys(newData).length > 0){
+                newData.updated_at = moment().format('yyyy-MM-DD HH:mm:ss');
+                await DB('portfolio').where("id", portfolio_id).update(newData);
             }
         }catch (e) {
             console.error(e);
@@ -403,8 +277,8 @@ class PortfolioController {
             return res.send({errors: 'Portfolio not updated.'});
         }
 
-        for(let key in updatedData){
-            portfolio[key] = updatedData[key];
+        for(let key in newData){
+            portfolio[key] = newData[key];
         }
         portfolio = await new PortfolioResource(portfolio, locale);
         return res.send({data: {portfolio}, message: "Portfolio data updated successfully.", errors: errors});

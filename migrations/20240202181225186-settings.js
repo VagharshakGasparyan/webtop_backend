@@ -11,6 +11,7 @@ class SettingsMigration {
             DB.column('key').varchar(255).unique(),
             DB.column('name').varchar(255).nullable(),
             DB.column('description').json().nullable(),
+            DB.column('title').json().nullable(),
             DB.column('value').text().nullable(),
             DB.column('file').varchar(255).nullable(),
             DB.column('active').tinyint().default(1),

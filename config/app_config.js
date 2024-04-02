@@ -23,7 +23,7 @@ const conf = {
         path: 'logs',
     },
     lang: {
-        default: 'hy',
+        default: 'en',
         all: {'hy': 'Հայերեն', 'en': 'English', 'ru': 'Русский'},
     },
     mail: {
