@@ -1,6 +1,7 @@
 const {DB} = require("../../components/db");
 const bcrypt = require("bcrypt");
 const moment = require("moment/moment");
+const ClientCategoriesResource = require("./clientCategoriesResource");
 class PortfolioResource {
     constructor(resource = {}, params = {}) {
         this.resource = resource;
@@ -22,7 +23,8 @@ class PortfolioResource {
             categories = await DB('categories')
                 .whereHas('portfolio_category', 'id', 'category_id', function (query) {
                     query.where('portfolio_id', r.id);
-            }).get(['name', 'id']);
+            }).get();
+            categories = await new ClientCategoriesResource(categories, 'hy');
             // console.log(categories);
         }catch (e){
             console.error(e);
