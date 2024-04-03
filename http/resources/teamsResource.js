@@ -25,7 +25,6 @@ class TeamsResource {
         };
         translatable.forEach((trField)=>{
             let items = r[trField] ? JSON.parse(r[trField]) : {};
-            resObj[trField] = items;
             for(let langKey in items){
                 resObj[trField + '_' + langKey] = items[langKey];
             }

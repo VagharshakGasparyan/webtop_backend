@@ -11,7 +11,7 @@ class PortfolioMigration {
             DB.column('id').id(),
             DB.column('title').json().nullable(),
             DB.column('client_avatar').varchar(255).nullable(),
-            DB.column('client_name').varchar(255).nullable(),
+            DB.column('client_name').json().nullable(),
             DB.column('client_description').json().nullable(),
             DB.column('client_social').json().nullable(),
             DB.column('first_info_description').json().nullable(),

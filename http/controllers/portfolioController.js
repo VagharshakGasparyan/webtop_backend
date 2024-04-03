@@ -27,7 +27,6 @@ class PortfolioController {
     async create(req, res, next)
     {
         let valid_err = api_validate({
-            client_name: Joi.string().min(2).max(255).required(),
             categories: Joi.string().min(2).max(2024).required(),
         }, req, res);
         // return res.send({tmp: 'ok'});
@@ -36,7 +35,7 @@ class PortfolioController {
             return res.send({errors: valid_err});
         }
         let locale = res.locals.$api_local;
-        let {client_name, categories} = req.body;
+        let {categories} = req.body;
         let client_social = {}, has_client_social = false;
         for(let key in req.body){
             if(key.startsWith('client_social_') && key.length > 'client_social_'.length){
@@ -49,7 +48,7 @@ class PortfolioController {
             res.status(422);
             return res.send({errors: 'The client_social attribute is required.'});
         }
-        let newData = {client_name, client_social: JSON.stringify(client_social)};
+        let newData = {client_social: JSON.stringify(client_social)};
 
         let errors = [];
         try {
@@ -58,7 +57,7 @@ class PortfolioController {
                 ['.jpeg', '.jpg', '.png'], newData, errors
             );
             controllersAssistant.translateAblesCreate(req, res,
-                ['title', 'client_description', 'first_info_description', 'first_info_title', 'second_info_description', 'second_info_title'],
+                ['title', 'client_name', 'client_description', 'first_info_description', 'first_info_title', 'second_info_description', 'second_info_title'],
                 newData, errors);
             if(errors.length){
                 res.status(422);
@@ -115,7 +114,6 @@ class PortfolioController {
             return res.send({errors: 'No portfolio id parameter.'});
         }
         let valid_err = api_validate({
-            client_name: Joi.string().min(2).max(255),
             categories: Joi.string().min(2).max(2024),
         }, req, res);
         if (valid_err) {
@@ -123,7 +121,7 @@ class PortfolioController {
             return res.send({errors: valid_err});
         }
         let locale = res.locals.$api_local;
-        let {title, client_name, categories, gallery_stay} = req.body;
+        let {categories, gallery_stay} = req.body;
         let client_social = {}, has_client_social = false;
         for(let key in req.body){
             if(key.startsWith('client_social_') && key.length > 'client_social_'.length){
@@ -148,13 +146,10 @@ class PortfolioController {
                 newData.client_social = JSON.stringify(client_social);
             }
             if('active' in req.body){
-                newData.active = req.body;
+                newData.active = req.body.active;
             }
-            let translatable = ['title', 'client_description', 'first_info_description', 'first_info_title', 'second_info_description', 'second_info_title'];
+            let translatable = ['title', 'client_name', 'client_description', 'first_info_description', 'first_info_title', 'second_info_description', 'second_info_title'];
             controllersAssistant.translateAblesUpdate(req, res, translatable, newData, portfolio);
-            if(client_name){
-                newData.client_name = client_name;
-            }
             if(background && !Array.isArray(background)){
                 let fileName = md5(Date.now()) + generateString(4);
                 let ext = extFrom(background.mimetype, background.name);

@@ -1,9 +1,8 @@
 const {DB} = require("../../components/db");
 const bcrypt = require("bcrypt");
 const moment = require("moment/moment");
-const {conf} = require("../../config/app_config");
 
-class SettingsResource {
+class ClientTeamsResource {
     constructor(resource = {}, params = {}) {
         this.resource = resource;
         this.params = params;
@@ -15,23 +14,14 @@ class SettingsResource {
     }
 
     async index(r) {
-        let translatable = ['description', 'title'];
+        let translatable = ['first_name', 'last_name', 'rank', 'title', 'description'];
         let resObj = {
             "id": r.id,
-            "key": r.key,
-            "name": r.name,
-            "value": r.value,
-            "file": r.file,
-            "active": r.active,
-            "created_at": r.created_at,
-            "updated_at": r.updated_at,
+            "image": r.image,
+            "images": r.images ? JSON.parse(r.images) : []
         };
-        translatable.forEach((trField)=>{
-            let items = r[trField] ? JSON.parse(r[trField]) : {};
-            // resObj[trField] = items;
-            for(let langKey in items){
-                resObj[trField + '_' + langKey] = items[langKey];
-            }
+        translatable.forEach((trField) => {
+            resObj[trField] = r[trField] ? JSON.parse(r[trField]) : {};
         });
         return resObj;
     }
@@ -45,4 +35,4 @@ class SettingsResource {
     }
 }
 
-module.exports = SettingsResource;
+module.exports = ClientTeamsResource;

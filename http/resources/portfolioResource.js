@@ -13,7 +13,7 @@ class PortfolioResource {
     }
 
     async index(r) {
-        let translatable = ["title", "client_description", "first_info_description", "first_info_title",
+        let translatable = ["title", "client_name", "client_description", "first_info_description", "first_info_title",
             "second_info_description", "second_info_title"];
         let categories = [];
         try {
@@ -30,21 +30,7 @@ class PortfolioResource {
 
         let resObj = {
             "id": r.id,
-            "title": r.title ? JSON.parse(r.title) : {},
-            "client": {
-                "avatar": r.client_avatar,
-                "name": r.client_name,
-                "description": r.client_description ? JSON.parse(r.client_description) : {},
-                "social": r.client_social ? JSON.parse(r.client_social) : {}
-            },
-            "first_info": {
-                "description": r.first_info_description ? JSON.parse(r.first_info_description) : {},
-                "title": r.first_info_title ? JSON.parse(r.first_info_title) : {},
-            },
-            "second_info": {
-                "description": r.second_info_description ? JSON.parse(r.second_info_description) : {},
-                "title": r.second_info_title ? JSON.parse(r.second_info_title) : {},
-            },
+            "client_avatar": r.client_avatar,
             "image": r.image ?? null,
             "gallery": r.gallery ? JSON.parse(r.gallery) : [],
             "background": r.background ?? null,
@@ -53,6 +39,11 @@ class PortfolioResource {
             "created_at": r.created_at,
             "updated_at": r.updated_at,
         };
+        let clientSocial = r.client_social ? JSON.parse(r.client_social) : {};
+        for(let clSh in clientSocial){
+            resObj['client_social_' + clSh] = clientSocial[clSh];
+        }
+
         translatable.forEach((trField)=>{
             let items = r[trField] ? JSON.parse(r[trField]) : {};
             // resObj[trField] = items;
