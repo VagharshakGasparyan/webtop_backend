@@ -53,7 +53,7 @@ class PortfolioController {
         let errors = [];
         try {
             controllersAssistant.filesCreate(
-                req, res, ['client_avatar', 'image', 'background'], ['gallery'], 'storage/uploads/portfolio',
+                req, res, ['client_avatar', 'image', 'background'], ['gallery[]'], 'storage/uploads/portfolio',
                 ['.jpeg', '.jpg', '.png'], newData, errors
             );
             controllersAssistant.translateAblesCreate(req, res,
@@ -131,7 +131,8 @@ class PortfolioController {
             }
         }
 
-        let {background, image, gallery, client_avatar} = req.files ?? {background: null, image: null, gallery: null, client_avatar: null};
+        let {background, image, client_avatar} = req.files ?? {background: null, image: null, client_avatar: null};
+        let gallery = req.files && 'gallery[]' in req.files ? req.files['gallery[]'] : null;
         let newData = {};
         let errors = [];
         let filesToBeDelete = [];

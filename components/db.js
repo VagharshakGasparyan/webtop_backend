@@ -10,6 +10,8 @@ function _val(value) {
         return value ? 1 : 0;
     }else if(value === undefined){
         return '';
+    }else if(typeof value === 'string'){
+        return "'" + value.replace(/'/ig, "\\'") + "'";
     }
     return "'" + value + "'";
 }

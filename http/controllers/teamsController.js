@@ -38,7 +38,7 @@ class TeamsController {
         let errors = [];
         try {
             controllersAssistant.filesCreate(
-                req, res, ['image'], ['images'], 'storage/uploads/teams',
+                req, res, ['image'], ['images[]'], 'storage/uploads/teams',
                 ['.jpeg', '.jpg', '.png'], newData, errors
             );
             controllersAssistant.translateAblesCreate(req, res, ['first_name', 'last_name', 'rank', 'title', 'description'], newData, errors);
@@ -144,23 +144,28 @@ class TeamsController {
                 }
             }
 
-            let teamImages = req.files ? req.files.images : null;
-            if(teamImages && teamImages.length > 0){
-                for(let imageItem of teamImages){
-                    let imageItemName = md5(Date.now()) + generateString(4);
-                    let ext = extFrom(imageItem.mimetype, imageItem.name);
-                    if(ext.toLowerCase() !== ".png" && ext.toLowerCase() !== ".jpg"){
-                        errors.push('Images item not a jpg or png format.');
-                        continue;
-                    }
-
-                    let uploaded = saveFileContentToPublic('storage/uploads/teams', imageItemName + ext, imageItem.data);
-                    if (!uploaded) {
-                        errors.push('Images item not uploaded.');
-                        continue;
-                    }
-                    newData.images.push('storage/uploads/teams/' + imageItemName + ext);
+            let teamImages = req.files && 'images[]' in req.files ? req.files['images[]'] : null;
+            if(teamImages){
+                if(!Array.isArray(teamImages)){
+                    teamImages = [teamImages];
                 }
+            }else{
+                teamImages = [];
+            }
+            for(let imageItem of teamImages){
+                let imageItemName = md5(Date.now()) + generateString(4);
+                let ext = extFrom(imageItem.mimetype, imageItem.name);
+                if(ext.toLowerCase() !== ".png" && ext.toLowerCase() !== ".jpg"){
+                    errors.push('Images item not a jpg or png format.');
+                    continue;
+                }
+
+                let uploaded = saveFileContentToPublic('storage/uploads/teams', imageItemName + ext, imageItem.data);
+                if (!uploaded) {
+                    errors.push('Images item not uploaded.');
+                    continue;
+                }
+                newData.images.push('storage/uploads/teams/' + imageItemName + ext);
             }
             newData.images = JSON.stringify(newData.images);
             let translatable = ['first_name', 'last_name', 'rank', 'title', 'description'];

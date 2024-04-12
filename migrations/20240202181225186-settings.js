@@ -12,7 +12,7 @@ class SettingsMigration {
             DB.column('name').varchar(255).nullable(),
             DB.column('description').json().nullable(),
             DB.column('title').json().nullable(),
-            DB.column('value').text().nullable(),
+            DB.column('value').longtext().nullable(),
             DB.column('file').varchar(255).nullable(),
             DB.column('active').tinyint().default(1),
             DB.column('created_at').timestamp().nullable(),

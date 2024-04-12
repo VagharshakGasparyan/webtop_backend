@@ -76,31 +76,36 @@ class ValidateClass {
     array(){
 
     }
+    min(n){
+
+    }
+    max(n){
+
+    }
+    unique(table, column){
+
+    }
 }
 
-async function requestValidate(req, res, validationErrors, dataObj) {
+async function V(req, res, validationErrors, dataObj) {
     let types = [
         'number', 'integer', 'float', 'positive', 'negative', 'boolean', 'string', 'array', 'json', 'required',
         'file', 'min', 'max', 'unique', 'in', 'array_min', 'array_max', 'or', '', '', '', '',
         '', '', '', '', '', '', '', '', '', '', '', ''
     ];
-    dataObj = {
-        'first_name': 'string min 2 max 256 required',
-        'last_name': 'string min 2 max 256',
-        'image': 'file max 20m nullable',
-        'images': 'array(file max 20m) array_max 10',
-        'rank': 'in()',
-        'key': 'unique(settings key) required',
-        'active': [],
-        'categories': 'array(integer positive)',
-    };
+
     let body = req.body ?? {};
     let files = req.files ?? {};
+    return {
+        item(reqKey){
 
+        },
+
+    };
 
 
 
 
 }
 
-module.exports = {validate, api_validate, unique, ValidateClass};
+module.exports = {validate, api_validate, unique, ValidateClass, V};

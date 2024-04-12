@@ -30,7 +30,6 @@ class SettingsController {
         let valid_err = api_validate({
             key: Joi.string().required(),
             name: Joi.string().min(1).max(512).required(),
-            value: Joi.string().min(1).required()
         }, req, res);
         if (valid_err) {
             res.status(422);
@@ -93,7 +92,6 @@ class SettingsController {
         let valid_err = api_validate({
             key: Joi.string(),
             name: Joi.string().min(1).max(512),
-            value: Joi.string().min(1)
         }, req, res);
         if (valid_err) {
             res.status(422);

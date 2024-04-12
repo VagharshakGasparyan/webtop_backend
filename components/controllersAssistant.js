@@ -84,6 +84,7 @@ class controllersAssistant {
 
         for(let i = 0; i < arrFiles.length; i++){
             let arrFile = arrFiles[i];
+            let dbArrFile = arrFile.endsWith('[]') ? arrFile.slice(0, -'[]'.length) : arrFile;
             let reqFiles = req.files && arrFile in req.files ? req.files[arrFile] : [];
             if(!Array.isArray(reqFiles)){
                 reqFiles = [reqFiles];
@@ -94,7 +95,7 @@ class controllersAssistant {
                 try {
                     let ext = extFrom(reqFile.mimetype, reqFile.name);
                     if(Array.isArray(allowedFilesExtensions) && !allowedFilesExtensions.includes(ext.toLowerCase())){
-                        errors.push('The file "' + arrFile + '[' + j + ']' + '" not a ' + allowedFilesExtensions.join(', ') + ' format.');
+                        errors.push('The file "' + dbArrFile + '[' + j + ']' + '" not a ' + allowedFilesExtensions.join(', ') + ' format.');
                         continue;
                     }
                     let fileName = md5(Date.now()) + generateString(4) + ext;
@@ -103,10 +104,10 @@ class controllersAssistant {
                     fs.writeFileSync(fullPath + '/' + fileName, reqFile.data);
                     arrFilesData.push(filesPath + '/' + fileName);
                 }catch (e) {
-                    errors.push('The file ' + arrFile + '[' + j + ']' + ' not uploaded.');
+                    errors.push('The file ' + dbArrFile + '[' + j + ']' + ' not uploaded.');
                 }
             }
-            newData[arrFile] = JSON.stringify(arrFilesData);
+            newData[dbArrFile] = JSON.stringify(arrFilesData);
         }
     }
 }
