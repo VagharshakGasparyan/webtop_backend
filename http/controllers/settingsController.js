@@ -126,21 +126,7 @@ class SettingsController {
             if("active" in req.body){
                 newData.active = active;
             }
-
-            let settingFile = req.files ? req.files.file : null;
-            if (settingFile) {
-                let settingFileName = md5(Date.now()) + generateString(4);
-                let ext = extFrom(settingFile.mimetype, settingFile.name);
-                let uploaded = saveFileContentToPublic('storage/uploads/settings', settingFileName + ext, settingFile.data);
-                if (!uploaded) {
-                    errors.push('File not uploaded.');
-                }else{
-                    if(setting.file){
-                        fs.unlinkSync(__basedir + "/public/" + setting.file);
-                    }
-                    newData.file = 'storage/uploads/settings/' + settingFileName + ext;
-                }
-            }
+            controllersAssistant.filesUpdate(req, res, ['file'], [], 'storage/uploads/settings', setting, newData, errors);
 
             if(Object.keys(newData).length > 0){
                 newData.updated_at = moment().format('yyyy-MM-DD HH:mm:ss');

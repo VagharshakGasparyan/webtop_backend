@@ -58,8 +58,7 @@ class controllersAssistant {
         });
     }
 
-    static filesCreate(req, res, files, arrFiles, filesPath, allowedFilesExtensions, newData, errors)
-    {
+    static filesCreate(req, res, files, arrFiles, filesPath, allowedFilesExtensions, newData, errors) {
         for(let i = 0; i < files.length; i++){
             let file = files[i];
             try {
@@ -107,6 +106,70 @@ class controllersAssistant {
                     errors.push('The file ' + dbArrFile + '[' + j + ']' + ' not uploaded.');
                 }
             }
+            newData[dbArrFile] = JSON.stringify(arrFilesData);
+        }
+    }
+
+    static filesUpdate(req, res, files, arrFiles, filesPath, dbData, newData, errors) {
+        for(let i = 0; i < files.length; i++){
+            let file = files[i];
+            try {
+                let reqFile = req.files && file in req.files ? req.files[file] : null;
+                if(!reqFile){
+                    continue;
+                }
+                let ext = extFrom(reqFile.mimetype, reqFile.name);
+                let fileName = md5(Date.now()) + generateString(4) + ext;
+                let fullPath = __basedir + '/public/' + filesPath;
+                makeDirectoryIfNotExists(fullPath);
+                fs.writeFileSync(fullPath + '/' + fileName, reqFile.data);
+                newData[file] = filesPath + '/' + fileName;
+                if(dbData[file]){
+                    fs.unlinkSync(__basedir + "/public/" + dbData[file]);
+                }
+            }catch (e) {
+                errors.push('The file ' + file + ' not uploaded.');
+            }
+        }
+
+        for(let i = 0; i < arrFiles.length; i++){
+            let arrFile = arrFiles[i];
+            let dbArrFile = arrFile.endsWith('[]') ? arrFile.slice(0, -'[]'.length) : arrFile;
+            let reqFiles = req.files && arrFile in req.files ? req.files[arrFile] : [];
+            if(!Array.isArray(reqFiles)){
+                reqFiles = [reqFiles];
+            }
+            let arrFilesData = [];
+            for(let j = 0; j < reqFiles.length; j++){
+                let reqFile = reqFiles[i];
+                try {
+                    let ext = extFrom(reqFile.mimetype, reqFile.name);
+                    let fileName = md5(Date.now()) + generateString(4) + ext;
+                    let fullPath = __basedir + '/public/' + filesPath;
+                    makeDirectoryIfNotExists(fullPath);
+                    fs.writeFileSync(fullPath + '/' + fileName, reqFile.data);
+                    arrFilesData.push(filesPath + '/' + fileName);
+                }catch (e) {
+                    errors.push('The file ' + dbArrFile + '[' + j + ']' + ' not uploaded.');
+                }
+            }
+            let dbFiles = dbData[dbArrFile] ? JSON.parse(dbData[dbArrFile]) : [];
+            let stayFiles = req.body && arrFile in req.body ? req.body[arrFile] : [];
+            if(!Array.isArray(stayFiles)){
+                stayFiles = [stayFiles];
+            }
+            dbFiles.forEach((dbFile)=>{
+                if(!stayFiles.includes(dbFile)){
+                    try {
+                        fs.unlinkSync(__basedir + "/public/" + dbFile);
+                    }catch (e) {
+                        errors.push('The file ' + dbFile + ' can not deleted.');
+                    }
+                }else{
+                    arrFilesData.push(dbFile);
+                }
+            });
+
             newData[dbArrFile] = JSON.stringify(arrFilesData);
         }
     }

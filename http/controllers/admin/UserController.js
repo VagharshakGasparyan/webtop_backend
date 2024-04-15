@@ -12,6 +12,7 @@ const moment = require("moment/moment");
 const fs = require('node:fs');
 const TeamsResource = require("../../resources/teamsResource");
 const SettingsResource = require("../../resources/settingsResource");
+const controllersAssistant = require("../../../components/controllersAssistant");
 
 class UserController {
 
@@ -187,7 +188,7 @@ class UserController {
             return res.send({errors: valid_err});
         }
         let {email, first_name, last_name, role, new_password, old_password} = req.body;
-        let updatedUserData = {};
+        let newData = {};
         try {
             user = await DB('users').find(user_id);
             if(!user){
@@ -200,16 +201,16 @@ class UserController {
                     res.status(422);
                     return res.send({errors: {email: uniqueErr}});
                 }
-                updatedUserData.email = email;
+                newData.email = email;
             }
             if(first_name){
-                updatedUserData.first_name = first_name;
+                newData.first_name = first_name;
             }
             if(last_name){
-                updatedUserData.last_name = last_name;
+                newData.last_name = last_name;
             }
             if(role){
-                updatedUserData.role = role;
+                newData.role = role;
             }
             if(new_password){
                 if(!old_password){
@@ -220,44 +221,46 @@ class UserController {
                     res.status(422);
                     return res.send({errors: 'The old password is incorrect.'});
                 }
-                updatedUserData.password = bcrypt.hashSync(new_password, 8);
+                newData.password = bcrypt.hashSync(new_password, 8);
             }
-            let userPhoto = req.files ? req.files.photo : null;
-            if (userPhoto) {
-                let imageName = md5(Date.now()) + generateString(4);
-                let ext = extFrom(userPhoto.mimetype, userPhoto.name);
-                if(ext.toLowerCase() !== ".png" && ext.toLowerCase() !== ".jpg"){
-                    res.status(422);
-                    return res.send({errors: 'file not a jpg or png.'});
-                }
+            controllersAssistant.filesUpdate(req, res, ['photo'], [], 'storage/uploads/users', user, newData, []);
+            // let userPhoto = req.files ? req.files.photo : null;
+            // if (userPhoto) {
+            //     let imageName = md5(Date.now()) + generateString(4);
+            //     let ext = extFrom(userPhoto.mimetype, userPhoto.name);
+            //     if(ext.toLowerCase() !== ".png" && ext.toLowerCase() !== ".jpg"){
+            //         res.status(422);
+            //         return res.send({errors: 'file not a jpg or png.'});
+            //     }
+            //
+            //     let uploaded = saveFileContentToPublic('storage/uploads/users', imageName + ext, userPhoto.data);
+            //     if (!uploaded) {
+            //         res.status(422);
+            //         return res.send({errors: 'Photo not uploaded.'});
+            //     }
+            //     if(user.photo){
+            //         fs.unlinkSync(__basedir + "/public/" + user.photo);
+            //     }
+            //     newData.photo = 'storage/uploads/users/' + imageName + ext;
+            // }
 
-                let uploaded = saveFileContentToPublic('storage/uploads/users', imageName + ext, userPhoto.data);
-                if (!uploaded) {
-                    res.status(422);
-                    return res.send({errors: 'Photo not uploaded.'});
-                }
-                if(user.photo){
-                    fs.unlinkSync(__basedir + "/public/" + user.photo);
-                }
-                updatedUserData.photo = 'storage/uploads/users/' + imageName + ext;
-            }
-
-            if(Object.keys(updatedUserData).length > 0){
-                updatedUserData.updated_at = moment().format('yyyy-MM-DD HH:mm:ss');
-                await DB('users').where("id", user_id).update(updatedUserData);
+            if(Object.keys(newData).length > 0){
+                newData.updated_at = moment().format('yyyy-MM-DD HH:mm:ss');
+                await DB('users').where("id", user_id).update(newData);
             }
         }catch (e) {
             console.error(e);
             res.status(422);
             return res.send({errors: 'User not updated.'});
         }
-        for(let key in updatedUserData){
-            user[key] = updatedUserData[key];
+        for(let key in newData){
+            user[key] = newData[key];
         }
         let locale = res.locals.$api_local;
         user = await new UsersResource(user, locale);
         return res.send({data:{user}, message: "User data updated successfully.", errors: {}});
     }
+
     async destroy(req, res, next) {
         let {user_id} = req.params;
         if(!user_id){

@@ -121,7 +121,7 @@ class PortfolioController {
             return res.send({errors: valid_err});
         }
         let locale = res.locals.$api_local;
-        let {categories, gallery_stay} = req.body;
+        let {categories} = req.body;
         let client_social = {}, has_client_social = false;
         for(let key in req.body){
             if(key.startsWith('client_social_') && key.length > 'client_social_'.length){
@@ -131,11 +131,8 @@ class PortfolioController {
             }
         }
 
-        let {background, image, client_avatar} = req.files ?? {background: null, image: null, client_avatar: null};
-        let gallery = req.files && 'gallery[]' in req.files ? req.files['gallery[]'] : null;
         let newData = {};
         let errors = [];
-        let filesToBeDelete = [];
         let portfolio = null;
         try {
             portfolio = await DB('portfolio').find(portfolio_id);
@@ -151,109 +148,8 @@ class PortfolioController {
             }
             let translatable = ['title', 'client_name', 'client_description', 'first_info_description', 'first_info_title', 'second_info_description', 'second_info_title'];
             controllersAssistant.translateAblesUpdate(req, res, translatable, newData, portfolio);
-            if(background && !Array.isArray(background)){
-                let fileName = md5(Date.now()) + generateString(4);
-                let ext = extFrom(background.mimetype, background.name);
-                if(ext.toLowerCase() !== ".png" && ext.toLowerCase() !== ".jpg" && ext.toLowerCase() !== ".jpeg"){
-                    res.status(422);
-                    errors.push('background not a jpg or png file.');
-                }else{
-                    let uploaded = saveFileContentToPublic('storage/uploads/portfolio', fileName + ext, background.data);
-                    if (!uploaded) {
-                        errors.push('background not uploaded.');
-                    }else{
-                        background = 'storage/uploads/portfolio/' + fileName + ext;
-                        newData.background = background;
-                        if(portfolio.background){
-                            filesToBeDelete.push(portfolio.background)
-                        }
-                    }
-                }
-            }
-            if(image && !Array.isArray(image)){
-                let fileName = md5(Date.now()) + generateString(4);
-                let ext = extFrom(image.mimetype, image.name);
-                if(ext.toLowerCase() !== ".png" && ext.toLowerCase() !== ".jpg" && ext.toLowerCase() !== ".jpeg"){
-                    res.status(422);
-                    errors.push('background not a jpg or png file.');
-                }else{
-                    let uploaded = saveFileContentToPublic('storage/uploads/portfolio', fileName + ext, image.data);
-                    if (!uploaded) {
-                        errors.push('background not uploaded.');
-                    }else{
-                        image = 'storage/uploads/portfolio/' + fileName + ext;
-                        newData.image = image;
-                        if(portfolio.image){
-                            filesToBeDelete.push(portfolio.image)
-                        }
-                    }
-                }
-            }
-            if(client_avatar && !Array.isArray(client_avatar)){
-                let fileName = md5(Date.now()) + generateString(4);
-                let ext = extFrom(client_avatar.mimetype, client_avatar.name);
-                if(ext.toLowerCase() !== ".png" && ext.toLowerCase() !== ".jpg" && ext.toLowerCase() !== ".jpeg"){
-                    res.status(422);
-                    errors.push('client avatar not a jpg or png file.');
-                }else{
-                    let uploaded = saveFileContentToPublic('storage/uploads/portfolio', fileName + ext, client_avatar.data);
-                    if (!uploaded) {
-                        errors.push('client avatar not uploaded.');
-                    }else{
-                        client_avatar = 'storage/uploads/portfolio/' + fileName + ext;
-                        newData.client_avatar = client_avatar;
-                        if(portfolio.client_avatar){
-                            filesToBeDelete.push(portfolio.client_avatar)
-                        }
-                    }
-                }
-            }
-            if(gallery){
-                if(!Array.isArray(gallery)){
-                    gallery = [gallery];
-                }
-            }else{
-                gallery = [];
-            }
-            newData.gallery = [];
-            for(let img of gallery ?? []){
-                let imageName = md5(Date.now()) + generateString(4);
-                let ext = extFrom(img.mimetype, img.name);
-                if(ext.toLowerCase() !== ".png" && ext.toLowerCase() !== ".jpg"){
-                    res.status(422);
-                    return res.send({errors: 'Gallery image not a jpg or png.'});
-                }
-                let uploaded = saveFileContentToPublic('storage/uploads/portfolio', imageName + ext, img.data);
-                if (!uploaded) {
-                    res.status(422);
-                    return res.send({errors: 'Gallery image not uploaded.'});
-                }
-                img = 'storage/uploads/portfolio/' + imageName + ext;
-                newData.gallery.push(img);
-            }
+            controllersAssistant.filesUpdate(req, res, ['background', 'image', 'client_avatar'], ['gallery[]'], 'storage/uploads/portfolio', portfolio, newData, errors);
 
-            let oldGallery = portfolio.gallery ? JSON.parse(portfolio.gallery) : [];
-            gallery_stay = gallery_stay ? (Array.isArray(gallery_stay) ? gallery_stay : JSON.parse(gallery_stay)) : [];
-            for(let oldGalleryImage of oldGallery){
-                if(gallery_stay.includes(oldGalleryImage)){
-                    newData.gallery.push(oldGalleryImage);
-                }else{
-                    filesToBeDelete.push(oldGalleryImage);
-                }
-            }
-            if (newData.gallery.length < 1) {
-                delete newData.gallery;
-            } else {
-                newData.gallery = JSON.stringify(newData.gallery);
-            }
-
-            for(let fileToBeDelete of filesToBeDelete){
-                try {
-                    fs.unlinkSync(__basedir + "/public/" + fileToBeDelete);
-                }catch (e) {
-                    // console.log(e);
-                }
-            }
             categories = categories ? JSON.parse(categories): [];
             if(categories.length > 0){
                 try {

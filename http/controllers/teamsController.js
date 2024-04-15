@@ -79,6 +79,8 @@ class TeamsController {
 
     async update(req, res, next)
     {
+        // console.log(req.body);
+        // return res.send({ok: 'ok.'});
         let errors = [];
         let {team_id} = req.params;
         let team = null;
@@ -97,7 +99,7 @@ class TeamsController {
         //     res.status(422);
         //     return res.send({errors: valid_err});
         // }
-        let {first_name, last_name, rank, title, description, active, stayImages} = req.body;
+        let {active} = req.body;
         let newData = {};
         let locale = res.locals.$api_local;
         try {
@@ -109,65 +111,8 @@ class TeamsController {
             if("active" in req.body){
                 newData.active = active;
             }
+            controllersAssistant.filesUpdate(req, res, ['image'], ['images[]'], 'storage/uploads/teams', team, newData, errors);
 
-            let teamImage = req.files ? req.files.image : null;
-            if (teamImage) {
-                let teamImageName = md5(Date.now()) + generateString(4);
-                let ext = extFrom(teamImage.mimetype, teamImage.name);
-                if(ext.toLowerCase() !== ".png" && ext.toLowerCase() !== ".jpg"){
-                    errors.push('Image not a jpg or png format.');
-                }else{
-                    let uploaded = saveFileContentToPublic('storage/uploads/teams', teamImageName + ext, teamImage.data);
-                    if (!uploaded) {
-                        errors.push('Image not uploaded.');
-                    }else{
-                        if(team.image){
-                            fs.unlinkSync(__basedir + "/public/" + team.image);
-                        }
-                        newData.image = 'storage/uploads/teams/' + teamImageName + ext;
-                    }
-                }
-            }
-
-            newData.images = [];
-            let oldImages = team.images ? JSON.parse(team.images) : [];
-            stayImages = stayImages ? JSON.parse(stayImages) : [];
-            for(let oldImage of oldImages){
-                if(stayImages.includes(oldImage)){
-                    newData.images.push(oldImage);
-                }else{
-                    try {
-                        fs.unlinkSync(__basedir + "/public/" + oldImage);
-                    }catch (e) {
-                        errors.push('Images item file ' + oldImage + ' can not delete.');
-                    }
-                }
-            }
-
-            let teamImages = req.files && 'images[]' in req.files ? req.files['images[]'] : null;
-            if(teamImages){
-                if(!Array.isArray(teamImages)){
-                    teamImages = [teamImages];
-                }
-            }else{
-                teamImages = [];
-            }
-            for(let imageItem of teamImages){
-                let imageItemName = md5(Date.now()) + generateString(4);
-                let ext = extFrom(imageItem.mimetype, imageItem.name);
-                if(ext.toLowerCase() !== ".png" && ext.toLowerCase() !== ".jpg"){
-                    errors.push('Images item not a jpg or png format.');
-                    continue;
-                }
-
-                let uploaded = saveFileContentToPublic('storage/uploads/teams', imageItemName + ext, imageItem.data);
-                if (!uploaded) {
-                    errors.push('Images item not uploaded.');
-                    continue;
-                }
-                newData.images.push('storage/uploads/teams/' + imageItemName + ext);
-            }
-            newData.images = JSON.stringify(newData.images);
             let translatable = ['first_name', 'last_name', 'rank', 'title', 'description'];
             controllersAssistant.translateAblesUpdate(req, res, translatable, newData, team);
             if(Object.keys(newData).length > 0){
