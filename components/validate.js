@@ -128,107 +128,68 @@ class VRequest {
                     continue;
                 }
             }else{
+                if(seqKey === 'array'){
+                    hasArray = true;
+                    if(!Array.isArray(val)){
+                        this.#_pushErr(key, 'The ' + key + ' is not an array.');
+                    }
+                    continue;
+                }
+                if(seqKey === 'arrayEach'){
+                    hasArrayEach = true;
+                    continue;
+                }
                 if(seqKey === 'unique'){
                     await this.#_unique(key, val, seqVal);
                     continue;
                 }
                 if(seqKey === 'min'){
-                    if(hasNumeric){
-                        if(val < seqVal){
-                            this.#_pushErr(key, 'The ' + key + ' value less then ' + seqVal + '.');
+                    if(hasArrayEach && Array.isArray(val)){
+                        for(let i1 = 0; i1 < val.length; i1++){
+                            this.#_min(key, val[i1], seqVal, hasNumeric, false, i1);
                         }
-                    }else if(hasArray){
-                        if(Array.isArray(val) && val.length < seqVal){
-                            this.#_pushErr(key, 'The ' + key + ' length is less then ' + seqVal + '.');
-                        }
-                    }else{//string
-                        if(val.length < seqVal){
-                            this.#_pushErr(key, 'The ' + key + ' length is less then ' + seqVal + '.');
-                        }
+                    }else{
+                        this.#_min(key, val, seqVal, hasNumeric, hasArray);
                     }
                     continue;
                 }
+                if(seqKey === 'max'){
+                    if(hasArrayEach && Array.isArray(val)){
+                        for(let i1 = 0; i1 < val.length; i1++){
+                            this.#_max(key, val[i1], seqVal, hasNumeric, false, i1);
+                        }
+                    }else{
+                        this.#_max(key, val, seqVal, hasNumeric, hasArray);
+                    }
+                    continue;
+                }
+                if(seqKey === 'integer'){
+                    hasNumeric = true;
+                    if(hasArrayEach && Array.isArray(val)){
+                        for(let i1 = 0; i1 < val.length; i1++){
+                            this.#_integer(key, val[i1], i1);
+                        }
+                    }else{
+                        this.#_integer(key, val);
+                    }
+                    continue;
+                }
+                if(seqKey === 'number'){
+                    hasNumeric = true;
+                    if(hasArrayEach && Array.isArray(val)){
+                        for(let i1 = 0; i1 < val.length; i1++){
+                            this.#_number(key, val[i1], i1);
+                        }
+                    }else{
+                        this.#_number(key, val);
+                    }
+                }
+
+
             }
 
-
-
-
-            if(seq && typeof seq === 'object' && !Array.isArray(seq)){//{...}
-                if('key' in seq){
-                    key  = seq['key'];
-                    val = this._body[key];
-                    hasArray = false;
-                    hasArrayEach = false;
-                    hasNumeric = false;
-                    hasFile = false;
-                }else if(val !== undefined && 'unique' in seq){
-                    let exists = await DB(seq.unique.table).where(seq.unique.column, val).when(seq.unique.without, function (query) {
-                        query.where(seq.unique.column, '<>', seq.unique.without);
-                    }).exists();
-                    if(exists){
-                        err = 'The ' + key + ' with this value ' + val + ' already exists.';
-                        this.#_pushErr(key, err);
-                    }
-                }else if(val !== undefined && 'min' in seq){
-                    if(hasNumeric){
-                        if(val < seq.min){
-                            err = 'The ' + key + ' value less then ' + seq.min + '.';
-                            this.#_pushErr(key, err);
-                        }
-                    }else if(hasArray){
-                        if(Array.isArray(val) && val.length < seq.min){
-                            err = 'The ' + key + ' length is less then ' + seq.min + '.';
-                            this.#_pushErr(key, err);
-                        }
-                    }else{//string
-                        if(val.length < seq.min){
-                            err = 'The ' + key + ' length is less then ' + seq.min + '.';
-                            this.#_pushErr(key, err);
-                        }
-                    }
-
-                }else if(val !== undefined && 'max' in seq){
-                    if(hasNumeric){
-                        if(val > seq.max){
-                            err = 'The ' + key + ' value greater then ' + seq.max + '.';
-                            this.#_pushErr(key, err);
-                        }
-                    }else if(hasArray){
-                        if(Array.isArray(val) && val.length > seq.max){
-                            err = 'The ' + key + ' length is greater then ' + seq.max + '.';
-                            this.#_pushErr(key, err);
-                        }
-                    }else{//string
-                        if(val.length > seq.max){
-                            err = 'The ' + key + ' length is greater then ' + seq.max + '.';
-                            this.#_pushErr(key, err);
-                        }
-                    }
-                }
-            }else if(val !== undefined && seq === 'number'){
-                hasNumeric = true;
-                if(isNaN(val)){
-                    err = 'The ' + key + ' value is not a numeric.';
-                    this.#_pushErr(key, err);
-                }
-            }else if(val !== undefined && seq === 'integer'){
-                hasNumeric = true;
-                if(!Number.isInteger(parseFloat(val))){
-                    err = 'The ' + key + ' value is not an integer.';
-                    this.#_pushErr(key, err);
-                }
-            }else if(val !== undefined && seq === 'array'){
-                hasArray = true;
-                if(!Array.isArray(val)){
-                    err = 'The ' + key + ' is not an array.';
-                    this.#_pushErr(key, err);
-                }
-            }else if(val === undefined && seq === 'required'){
-                err = 'The ' + key + ' is required.';
-                this.#_pushErr(key, err);
-            }
         }
-        // this._errors = {a: ['qwerty']};
+
         console.log(this._sequence);
         console.log(this._errors);
         return this._errors;
@@ -266,6 +227,31 @@ class VRequest {
             if(val.length < seqVal){
                 this.#_pushErr(key, 'The ' + key + (index === null ? '' : '[' + index + ']') + ' length is less then ' + seqVal + '.');
             }
+        }
+    }
+    #_max(key, val, seqVal, hasNumeric, hasArray, index = null){
+        if(hasNumeric){
+            if(val > seqVal){
+                this.#_pushErr(key, 'The ' + key + (index === null ? '' : '[' + index + ']') + ' value greater then ' + seqVal + '.');
+            }
+        }else if(hasArray){
+            if(Array.isArray(val) && val.length > seqVal){
+                this.#_pushErr(key, 'The ' + key + (index === null ? '' : '[' + index + ']') + ' length is greater then ' + seqVal + '.');
+            }
+        }else{//string
+            if(val.length > seqVal){
+                this.#_pushErr(key, 'The ' + key + (index === null ? '' : '[' + index + ']') + ' length is greater then ' + seqVal + '.');
+            }
+        }
+    }
+    #_integer(key, val, index = null){
+        if(!Number.isInteger(parseFloat(val))){
+            this.#_pushErr(key, 'The ' + key + (index === null ? '' : '[' + index + ']') + ' value is not an integer.');
+        }
+    }
+    #_number(key, val, index = null){
+        if(isNaN(val)){
+            this.#_pushErr(key, 'The ' + key + (index === null ? '' : '[' + index + ']') + ' value is not a numeric.');
         }
     }
     //----------------------------------------------

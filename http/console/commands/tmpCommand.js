@@ -16,7 +16,7 @@ class TmpCommand {
             body: {
                 user_id: '1',
                 levels: '105.6',
-                gallery: ['qwerty', 'asd', 'zxcvbnm', 'abcd'],
+                gallery: ['qwerty', 'asd', '5576', 'abcd'],
                 nmb: '125.785'
             },
             files: null
@@ -25,7 +25,7 @@ class TmpCommand {
             .key('user_id').unique('users', 'id', 5).min(1).max(7)
             .key('levels').integer().min(0).max(100).required()
             .key('zmbrdm').required()
-            .key('gallery').array().max(3).arrayEach().number()
+            .key('gallery').array().max(3).arrayEach().number().max(1000)
             .key('nmb').number()
             .validate()
         ;
