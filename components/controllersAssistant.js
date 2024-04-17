@@ -136,12 +136,13 @@ class controllersAssistant {
             let arrFile = arrFiles[i];
             let dbArrFile = arrFile.endsWith('[]') ? arrFile.slice(0, -'[]'.length) : arrFile;
             let reqFiles = req.files && arrFile in req.files ? req.files[arrFile] : [];
+
             if(!Array.isArray(reqFiles)){
                 reqFiles = [reqFiles];
             }
             let arrFilesData = [];
             for(let j = 0; j < reqFiles.length; j++){
-                let reqFile = reqFiles[i];
+                let reqFile = reqFiles[j];
                 try {
                     let ext = extFrom(reqFile.mimetype, reqFile.name);
                     let fileName = md5(Date.now()) + generateString(4) + ext;
