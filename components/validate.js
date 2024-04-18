@@ -114,6 +114,10 @@ class VRequest {
         this._sequence.push({file: 'file'});
         return this;
     }
+    image(){
+        this._sequence.push({image: 'image'});
+        return this;
+    }
     mimetypes(arrMimeTypes){
         this._sequence.push({mimetypes: arrMimeTypes});
         return this;
@@ -139,7 +143,7 @@ class VRequest {
                 hasFile = false;
                 let i1 = i + 1;
                 while (i1 < this._sequence.length && Object.keys(this._sequence[i1])[0] !== 'key'){
-                    if(Object.keys(this._sequence[i1])[0] === 'file'){
+                    if(Object.keys(this._sequence[i1])[0] === 'file' || Object.keys(this._sequence[i1])[0] === 'image'){
                         // hasFile = true;
                         val = fileVal;
                         break;
@@ -184,6 +188,18 @@ class VRequest {
                     // }else{
                     //     this.#_file(key, val, seqVal);
                     // }
+                    continue;
+                }
+                if(seqKey === 'image'){
+                    hasFile = true;
+                    val = fileVal;
+                    if(hasArrayEach && Array.isArray(val)){
+                        for(let i1 = 0; i1 < val.length; i1++){
+                            await this.#_image(key, val[i1], seqVal, i1);
+                        }
+                    }else{
+                        this.#_image(key, val, seqVal);
+                    }
                     continue;
                 }
                 if(seqKey === 'mimetypes'){
@@ -297,6 +313,11 @@ class VRequest {
     #_file(key, val, seqVal, index = null){
         this.#_pushErr(key, 'The file, the facto.');
     }
+    #_image(key, val, seqVal, index = null){
+        if(val && typeof val === 'object' && 'mimetype' in val &&  !val.mimetype.startsWith('image/')){
+            this.#_pushErr(key, 'The ' + key + (index === null ? '' : '[' + index + ']') + ' is not an image.');
+        }
+    }
     #_mimetypes(key, val, seqVal, index = null){
         if(val && typeof val === 'object' && 'mimetype' in val &&  !seqVal.includes(val.mimetype)){
             this.#_pushErr(key, 'The ' + key + (index === null ? '' : '[' + index + ']') + ' file is not of type of ' + seqVal.join(', ') + '.');
@@ -309,7 +330,6 @@ class VRequest {
                 this.#_pushErr(key, 'The ' + key + (index === null ? '' : '[' + index + ']') + ' file is not of type of ' + seqVal.join(', ') + '.');
             }
         }
-
     }
     async #_unique(key, val, seqVal, index = null){
         let exists = await DB(seqVal.table).where(seqVal.column, val).when(seqVal.without, function (query) {

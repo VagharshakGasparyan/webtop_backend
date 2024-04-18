@@ -36,9 +36,10 @@ class TmpCommand {
             .key('gallery').array().max(3).arrayEach().number().max(1000)
             .key('nmb').number()
             .key('category_id').exists('categories', 'id')
-            .key('picture').array().max(2).arrayEach().file().max(500000)
+            .key('picture').array().max(2).arrayEach().image()
+            // .max(500000)
             // .mimetypes(['image/jpeg', 'image/png'])
-            .mimes(['.jpeg', '.pdf'])
+            // .mimes(['.png', '.pdf'])
             .key('in_do').in(['1', '2', '3', '7'])
             .validate()
         ;

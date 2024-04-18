@@ -3,7 +3,7 @@ const router = express.Router();
 
 // var app = require('express');
 // require('express-group-routes');
-const {validate, api_validate} = require("../components/validate");
+const {validate, api_validate, VRequest} = require("../components/validate");
 const Joi = require("joi");
 const bcrypt = require("bcrypt");
 const {saveAndGetUserToken, apiLogoutUser} = require("../components/functions");
@@ -122,6 +122,14 @@ router.get('/products', async (req, res) => {
 });
 router.post('/upload-file', async (req, res) => {
     // let file = req.files ? req.files.avatar : null;
+    let errors = await  new VRequest(req, res)
+        .key('testFiles').array().max(3).arrayEach().file().mimes(['.png'])
+        .key('testText').required().max(7)
+        .validate();
+    if(errors){
+        res.status(422);
+        return res.send({errors: errors});
+    }
     console.log('req.body=', req.body);
     console.log('req.files=', req.files);
     // return res.send({is: 'ok'});
