@@ -101,6 +101,14 @@ class VRequest {
         this._sequence.push({unique : {table, column, without}});
         return this;
     }
+    exists(table, column){
+        this._sequence.push({exists : {table, column}});
+        return this;
+    }
+    in(enumerationArray){
+        this._sequence.push({in : enumerationArray});
+        return this;
+    }
     file(){
         this._sequence.push({file: 'file'});
         return this;
@@ -120,12 +128,20 @@ class VRequest {
                 hasArrayEach = false;
                 hasNumeric = false;
                 hasFile = false;
+                let i1 = i + 1;
+                while (i1 < this._sequence.length && Object.keys(this._sequence[i1])[0] !== 'key'){
+                    if(Object.keys(this._sequence[i1])[0] === 'file'){
+                        // hasFile = true;
+                        val = fileVal;
+                        break;
+                    }
+                    i1++;
+                }
                 continue;
             }
             if(val === undefined){
                 if(seqKey === 'required'){
                     this.#_pushErr(key, 'The ' + key + ' is required.');
-                    continue;
                 }
             }else{
                 if(seqKey === 'array'){
@@ -139,27 +155,65 @@ class VRequest {
                     hasArrayEach = true;
                     continue;
                 }
+                if(seqKey === 'in'){
+                    if(hasArrayEach && Array.isArray(val)){
+                        for(let i1 = 0; i1 < val.length; i1++){
+                            this.#_in(key, val[i1], seqVal, i1);
+                        }
+                    }else{
+                        this.#_in(key, val, seqVal);
+                    }
+                    continue;
+                }
+                if(seqKey === 'file'){
+                    hasFile = true;
+                    val = fileVal;
+                    // if(hasArrayEach && Array.isArray(val)){
+                    //     for(let i1 = 0; i1 < val.length; i1++){
+                    //         await this.#_file(key, val[i1], seqVal, i1);
+                    //     }
+                    // }else{
+                    //     this.#_file(key, val, seqVal);
+                    // }
+                    continue;
+                }
                 if(seqKey === 'unique'){
-                    await this.#_unique(key, val, seqVal);
+                    if(hasArrayEach && Array.isArray(val)){
+                        for(let i1 = 0; i1 < val.length; i1++){
+                            await this.#_unique(key, val[i1], seqVal, i1);
+                        }
+                    }else{
+                        await this.#_unique(key, val, seqVal);
+                    }
+                    continue;
+                }
+                if(seqKey === 'exists'){
+                    if(hasArrayEach && Array.isArray(val)){
+                        for(let i1 = 0; i1 < val.length; i1++){
+                            await this.#_exists(key, val[i1], seqVal, i1);
+                        }
+                    }else{
+                        await this.#_exists(key, val, seqVal);
+                    }
                     continue;
                 }
                 if(seqKey === 'min'){
                     if(hasArrayEach && Array.isArray(val)){
                         for(let i1 = 0; i1 < val.length; i1++){
-                            this.#_min(key, val[i1], seqVal, hasNumeric, false, i1);
+                            this.#_min(key, val[i1], seqVal, hasNumeric, hasArray, hasFile, i1);
                         }
                     }else{
-                        this.#_min(key, val, seqVal, hasNumeric, hasArray);
+                        this.#_min(key, val, seqVal, hasNumeric, hasArray, hasFile);
                     }
                     continue;
                 }
                 if(seqKey === 'max'){
                     if(hasArrayEach && Array.isArray(val)){
                         for(let i1 = 0; i1 < val.length; i1++){
-                            this.#_max(key, val[i1], seqVal, hasNumeric, false, i1);
+                            this.#_max(key, val[i1], seqVal, hasNumeric, hasArray, hasFile, i1);
                         }
                     }else{
-                        this.#_max(key, val, seqVal, hasNumeric, hasArray);
+                        this.#_max(key, val, seqVal, hasNumeric, hasArray, hasFile);
                     }
                     continue;
                 }
@@ -190,8 +244,8 @@ class VRequest {
 
         }
 
-        console.log(this._sequence);
-        console.log(this._errors);
+        // console.log(this._sequence);
+        // console.log(this._errors);
         return this._errors;
     }
     //private methods-------------------------------
@@ -206,6 +260,14 @@ class VRequest {
             this._errors = {[key]: [err]};
         }
     }
+    #_in(key, val, seqVal, index = null){
+        if(!seqVal.includes(val)){
+            this.#_pushErr(key, 'The ' + key + (index === null ? '' : '[' + index + ']') + ' value not in the range of values listed.');
+        }
+    }
+    #_file(key, val, seqVal, index = null){
+        this.#_pushErr(key, 'The file, the facto.');
+    }
     async #_unique(key, val, seqVal, index = null){
         let exists = await DB(seqVal.table).where(seqVal.column, val).when(seqVal.without, function (query) {
             query.where(seqVal.column, '<>', seqVal.without);
@@ -214,8 +276,18 @@ class VRequest {
             this.#_pushErr(key, 'The ' + key + (index === null ? '' : '[' + index + ']') + ' with this value ' + val + ' already exists.');
         }
     }
-    #_min(key, val, seqVal, hasNumeric, hasArray, index = null){
-        if(hasNumeric){
+    async #_exists(key, val, seqVal, index = null){
+        let exists = await DB(seqVal.table).where(seqVal.column, val).exists();
+        if(!exists){
+            this.#_pushErr(key, 'The ' + key + (index === null ? '' : '[' + index + ']') + ' has not a correct value.');
+        }
+    }
+    #_min(key, val, seqVal, hasNumeric, hasArray, hasFile, index = null){
+        if(hasFile){
+            if(val && typeof val === 'object' && 'size' in val && val.size < seqVal){
+                this.#_pushErr(key, 'The ' + key + (index === null ? '' : '[' + index + ']') + ' file size less then ' + seqVal + ' bytes.');
+            }
+        }else if(hasNumeric){
             if(val < seqVal){
                 this.#_pushErr(key, 'The ' + key + (index === null ? '' : '[' + index + ']') + ' value less then ' + seqVal + '.');
             }
@@ -229,8 +301,12 @@ class VRequest {
             }
         }
     }
-    #_max(key, val, seqVal, hasNumeric, hasArray, index = null){
-        if(hasNumeric){
+    #_max(key, val, seqVal, hasNumeric, hasArray, hasFile, index = null){
+        if(hasFile){
+            if(val && typeof val === 'object' && 'size' in val && val.size > seqVal){
+                this.#_pushErr(key, 'The ' + key + (index === null ? '' : '[' + index + ']') + ' file size greater then ' + seqVal + ' bytes.');
+            }
+        }else if(hasNumeric){
             if(val > seqVal){
                 this.#_pushErr(key, 'The ' + key + (index === null ? '' : '[' + index + ']') + ' value greater then ' + seqVal + '.');
             }
