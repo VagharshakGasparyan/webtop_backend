@@ -24,7 +24,7 @@ class TmpCommand {
             files: {
                 picture: [
                     {name: 'name1.png', data: 'qwerty', size: 1000000, mimetype: 'image/png'},
-                    {name: 'name2.png', data: 'qwerty', size: 350000, mimetype: 'image/png'},
+                    {name: 'name2.png', data: 'qwerty', size: 350000, mimetype: 'application/pdf'},
                     {name: 'name3.png', data: 'qwerty', size: 1000000, mimetype: 'image/png'},
                 ],
             }
@@ -37,6 +37,8 @@ class TmpCommand {
             .key('nmb').number()
             .key('category_id').exists('categories', 'id')
             .key('picture').array().max(2).arrayEach().file().max(500000)
+            // .mimetypes(['image/jpeg', 'image/png'])
+            .mimes(['.jpeg', '.pdf'])
             .key('in_do').in(['1', '2', '3', '7'])
             .validate()
         ;

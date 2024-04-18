@@ -1,6 +1,7 @@
 const Joi = require('joi');
 const {conf} = require("../config/app_config");
 const {DB} = require('./db');
+const {extFrom} = require("./mimeToExt");
 
 function validate(schema, req, res) {
     const schema_joi = Joi.object(schema);
@@ -113,6 +114,14 @@ class VRequest {
         this._sequence.push({file: 'file'});
         return this;
     }
+    mimetypes(arrMimeTypes){
+        this._sequence.push({mimetypes: arrMimeTypes});
+        return this;
+    }
+    mimes(arrMimes){
+        this._sequence.push({mimes: arrMimes});
+        return this;
+    }
     async validate(){
         let key, val, fileVal, err, hasArray = false, hasArrayEach = false, hasNumeric = false, hasFile = false;
         for(let i = 0; i < this._sequence.length; i++){
@@ -175,6 +184,26 @@ class VRequest {
                     // }else{
                     //     this.#_file(key, val, seqVal);
                     // }
+                    continue;
+                }
+                if(seqKey === 'mimetypes'){
+                    if(hasArrayEach && Array.isArray(val)){
+                        for(let i1 = 0; i1 < val.length; i1++){
+                            await this.#_mimetypes(key, val[i1], seqVal, i1);
+                        }
+                    }else{
+                        this.#_mimetypes(key, val, seqVal);
+                    }
+                    continue;
+                }
+                if(seqKey === 'mimes'){
+                    if(hasArrayEach && Array.isArray(val)){
+                        for(let i1 = 0; i1 < val.length; i1++){
+                            await this.#_mimes(key, val[i1], seqVal, i1);
+                        }
+                    }else{
+                        this.#_mimes(key, val, seqVal);
+                    }
                     continue;
                 }
                 if(seqKey === 'unique'){
@@ -267,6 +296,20 @@ class VRequest {
     }
     #_file(key, val, seqVal, index = null){
         this.#_pushErr(key, 'The file, the facto.');
+    }
+    #_mimetypes(key, val, seqVal, index = null){
+        if(val && typeof val === 'object' && 'mimetype' in val &&  !seqVal.includes(val.mimetype)){
+            this.#_pushErr(key, 'The ' + key + (index === null ? '' : '[' + index + ']') + ' file is not of type of ' + seqVal.join(', ') + '.');
+        }
+    }
+    #_mimes(key, val, seqVal, index = null){
+        if(val && typeof val === 'object' && 'mimetype' in val && 'name' in val){
+            let ext = extFrom(val.mimetype, val.name);
+            if(val && typeof val === 'object' && 'mimetype' in val &&  !seqVal.includes(ext)){
+                this.#_pushErr(key, 'The ' + key + (index === null ? '' : '[' + index + ']') + ' file is not of type of ' + seqVal.join(', ') + '.');
+            }
+        }
+
     }
     async #_unique(key, val, seqVal, index = null){
         let exists = await DB(seqVal.table).where(seqVal.column, val).when(seqVal.without, function (query) {
