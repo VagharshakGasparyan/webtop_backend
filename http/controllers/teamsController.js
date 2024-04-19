@@ -2,7 +2,7 @@ const {DB} = require("../../components/db");
 const bcrypt = require("bcrypt");
 const fs = require('node:fs');
 const moment = require("moment/moment");
-const {api_validate} = require("../../components/validate");
+const {api_validate, VRequest} = require("../../components/validate");
 const Joi = require("joi");
 const md5 = require("md5");
 const {generateString} = require("../../components/functions");
@@ -21,25 +21,25 @@ class TeamsController {
 
     async create(req, res, next)
     {
-        let valid_err = api_validate({
-            rank: Joi.string().min(2).max(512),
-            title: Joi.string().min(2).max(512),
-            description: Joi.string().min(2).max(512),
-        }, req, res);
-        // return res.send({tmp: 'ok'});
-        if (valid_err) {
+        let valid_err = await new VRequest(req, res)
+            .key('image').image().max(5000000)
+            .key('images').toArray().array().max(10).arrayEach().image().max(5000000)
+            .key('rank').min(2).max(512)
+            .key('title').min(2).max(512)
+            .key('description').min(2).max(512)
+            .validate();
+        if(valid_err){
             res.status(422);
             return res.send({errors: valid_err});
         }
+
         let locale = res.locals.$api_local;
-        let {first_name, last_name, rank, title, description, active} = req.body;
-        let {image, images} = req.files ?? {image: null, images: null};
+        let {first_name, last_name} = req.body;
         let newData = {first_name, last_name};
         let errors = [];
         try {
             controllersAssistant.filesCreate(
-                req, res, ['image'], ['images[]'], 'storage/uploads/teams',
-                ['.jpeg', '.jpg', '.png'], newData, errors
+                req, res, ['image'], ['images[]'], 'storage/uploads/teams', newData, errors
             );
             controllersAssistant.translateAblesCreate(req, res, ['first_name', 'last_name', 'rank', 'title', 'description'], newData, errors);
             if(errors.length){

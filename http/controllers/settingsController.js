@@ -40,7 +40,7 @@ class SettingsController {
         let errors = [];
         try {
             controllersAssistant.translateAblesCreate(req, res, ['description', 'title'], newData, errors);
-            controllersAssistant.filesCreate(req, res, ['file'], [], 'storage/uploads/settings', '*', newData, errors);
+            controllersAssistant.filesCreate(req, res, ['file'], [], 'storage/uploads/settings', newData, errors);
             if(errors.length){
                 res.status(422);
                 return res.send({errors: errors});

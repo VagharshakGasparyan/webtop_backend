@@ -82,6 +82,10 @@ class VRequest {
         this._sequence.push({required: 'required'});
         return this;
     }
+    toArray(){
+        this._sequence.push({toArray: 'toArray'});
+        return this;
+    }
     array(){
         this._sequence.push({array: 'array'});
         return this;
@@ -148,7 +152,6 @@ class VRequest {
                 let i1 = i + 1;
                 while (i1 < this._sequence.length && Object.keys(this._sequence[i1])[0] !== 'key'){
                     if(Object.keys(this._sequence[i1])[0] === 'file' || Object.keys(this._sequence[i1])[0] === 'image'){
-                        // hasFile = true;
                         val = fileVal;
                         break;
                     }
@@ -161,6 +164,12 @@ class VRequest {
                     this.#_pushErr(key, 'The ' + key + ' is required.');
                 }
             }else{
+                if(seqKey === 'toArray'){//make val array, if it not same
+                    if(!Array.isArray(val)){
+                        val = [val];
+                    }
+                    continue;
+                }
                 if(seqKey === 'array'){
                     hasArray = true;
                     if(!Array.isArray(val)){

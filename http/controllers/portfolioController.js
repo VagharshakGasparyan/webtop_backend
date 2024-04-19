@@ -54,7 +54,7 @@ class PortfolioController {
         try {
             controllersAssistant.filesCreate(
                 req, res, ['client_avatar', 'image', 'background'], ['gallery[]'], 'storage/uploads/portfolio',
-                ['.jpeg', '.jpg', '.png'], newData, errors
+                newData, errors
             );
             controllersAssistant.translateAblesCreate(req, res,
                 ['title', 'client_name', 'client_description', 'first_info_description', 'first_info_title', 'second_info_description', 'second_info_title'],

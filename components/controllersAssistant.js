@@ -58,7 +58,7 @@ class controllersAssistant {
         });
     }
 
-    static filesCreate(req, res, files, arrFiles, filesPath, allowedFilesExtensions, newData, errors) {
+    static filesCreate(req, res, files, arrFiles, filesPath, newData, errors) {
         for(let i = 0; i < files.length; i++){
             let file = files[i];
             try {
@@ -67,10 +67,6 @@ class controllersAssistant {
                     continue;
                 }
                 let ext = extFrom(reqFile.mimetype, reqFile.name);
-                if(Array.isArray(allowedFilesExtensions) && !allowedFilesExtensions.includes(ext.toLowerCase())){
-                    errors.push('The file ' + file + ' not a ' + allowedFilesExtensions.join(', ') + ' format.');
-                    continue;
-                }
                 let fileName = md5(Date.now()) + generateString(4) + ext;
                 let fullPath = __basedir + '/public/' + filesPath;
                 makeDirectoryIfNotExists(fullPath);
@@ -93,10 +89,6 @@ class controllersAssistant {
                 let reqFile = reqFiles[i];
                 try {
                     let ext = extFrom(reqFile.mimetype, reqFile.name);
-                    if(Array.isArray(allowedFilesExtensions) && !allowedFilesExtensions.includes(ext.toLowerCase())){
-                        errors.push('The file "' + dbArrFile + '[' + j + ']' + '" not a ' + allowedFilesExtensions.join(', ') + ' format.');
-                        continue;
-                    }
                     let fileName = md5(Date.now()) + generateString(4) + ext;
                     let fullPath = __basedir + '/public/' + filesPath;
                     makeDirectoryIfNotExists(fullPath);

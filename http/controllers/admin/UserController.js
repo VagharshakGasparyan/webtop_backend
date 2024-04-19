@@ -127,14 +127,10 @@ class UserController {
         }
 
         try {
-            controllersAssistant.filesCreate(
-                req, res, ['photo'], [], 'storage/uploads/users',
-                ['.jpeg', '.jpg', '.png'], newData, errors
-            );
+            controllersAssistant.filesCreate(req, res, ['photo'], [], 'storage/uploads/users',newData, []);
             let forId = await DB('users').create(newData);
             newData.id = forId.insertId;
         }catch (e) {
-            console.error(e);
             res.status(422);
             return res.send({errors: 'User not created.'});
         }
@@ -156,43 +152,34 @@ class UserController {
             res.status(422);
             return res.send({errors: 'No user id parameter.'});
         }
-        let valid_err = api_validate({
-            email: Joi.string().email(),
-            first_name: Joi.string().min(2).max(30),
-            last_name: Joi.string().min(2).max(30),
-            role: Joi.string().min(2).max(30),
-            old_password: Joi.string().min(6).max(30),
-            new_password: Joi.string().min(6).max(30),
-        }, req, res);
-        if (valid_err) {
+        user = await DB('users').find(user_id);
+        if(!user){
             res.status(422);
-            return res.send({errors: valid_err});
+            return res.send({errors: "User with this id " + user_id + " can not found."});
         }
-        let {email, first_name, last_name, role, new_password, old_password} = req.body;
+        let errors = await new VRequest(req, res)
+            .key('old_password').min(6).max(30)
+            .key('new_password').min(6).max(30)
+            .key('role').min(2).max(15)
+            .key('first_name').min(2).max(50)
+            .key('last_name').min(2).max(50)
+            .key('email').unique('users', 'email', user.email).email()
+            .key('photo').image().max(5000000)
+            .validate();
+        if(errors){
+            res.status(422);
+            return res.send({errors: errors});
+        }
+
+        let {new_password, old_password} = req.body;
         let newData = {};
         try {
-            user = await DB('users').find(user_id);
-            if(!user){
-                res.status(422);
-                return res.send({errors: "User with this id " + user_id + " can not found."});
-            }
-            if(email && email !== user.email){
-                let uniqueErr = await unique('users', 'email', email);
-                if(uniqueErr){
-                    res.status(422);
-                    return res.send({errors: {email: uniqueErr}});
+            ['email', 'first_name', 'last_name', 'role'].forEach((item)=>{
+                if(item in req.body){
+                    newData[item] = req.body[item];
                 }
-                newData.email = email;
-            }
-            if(first_name){
-                newData.first_name = first_name;
-            }
-            if(last_name){
-                newData.last_name = last_name;
-            }
-            if(role){
-                newData.role = role;
-            }
+            });
+
             if(new_password){
                 if(!old_password){
                     res.status(422);
@@ -205,25 +192,6 @@ class UserController {
                 newData.password = bcrypt.hashSync(new_password, 8);
             }
             controllersAssistant.filesUpdate(req, res, ['photo'], [], 'storage/uploads/users', user, newData, []);
-            // let userPhoto = req.files ? req.files.photo : null;
-            // if (userPhoto) {
-            //     let imageName = md5(Date.now()) + generateString(4);
-            //     let ext = extFrom(userPhoto.mimetype, userPhoto.name);
-            //     if(ext.toLowerCase() !== ".png" && ext.toLowerCase() !== ".jpg"){
-            //         res.status(422);
-            //         return res.send({errors: 'file not a jpg or png.'});
-            //     }
-            //
-            //     let uploaded = saveFileContentToPublic('storage/uploads/users', imageName + ext, userPhoto.data);
-            //     if (!uploaded) {
-            //         res.status(422);
-            //         return res.send({errors: 'Photo not uploaded.'});
-            //     }
-            //     if(user.photo){
-            //         fs.unlinkSync(__basedir + "/public/" + user.photo);
-            //     }
-            //     newData.photo = 'storage/uploads/users/' + imageName + ext;
-            // }
 
             if(Object.keys(newData).length > 0){
                 newData.updated_at = moment().format('yyyy-MM-DD HH:mm:ss');
