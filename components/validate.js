@@ -95,27 +95,27 @@ class VRequest {
         return this;
     }
     min(n){
-        this._sequence.push({min : n});
+        this._sequence.push({min: n});
         return this;
     }
     max(n){
-        this._sequence.push({max : n});
+        this._sequence.push({max: n});
         return this;
     }
     unique(table, column, without = null){
-        this._sequence.push({unique : {table, column, without}});
+        this._sequence.push({unique: {table, column, without}});
         return this;
     }
     exists(table, column){
-        this._sequence.push({exists : {table, column}});
+        this._sequence.push({exists: {table, column}});
         return this;
     }
     in(enumerationArray){
-        this._sequence.push({in : enumerationArray});
+        this._sequence.push({in: enumerationArray});
         return this;
     }
     email(){
-        this._sequence.push({email : 'email'});
+        this._sequence.push({email: 'email'});
         return this;
     }
     file(){
@@ -426,5 +426,19 @@ class VRequest {
     //----------------------------------------------
 }
 
+function requestValidation(req){
+    let _seq = [];
+    let vKeys = ['key', 'required'];
+    let obj = {key:'',required:''};
+    vKeys.forEach((vKey)=>{
+        obj[vKey] = function (){
+            _seq.push({[vKey]: [...arguments]});
+            console.log(_seq);
+            return obj;
+        };
+    })
+    return obj;
+}
 
-module.exports = {validate, api_validate, unique, VRequest};
+
+module.exports = {validate, api_validate, unique, VRequest, requestValidation};

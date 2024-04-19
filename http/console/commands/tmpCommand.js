@@ -4,7 +4,7 @@ const moment = require("moment/moment");
 const {nodeCommand} = require("../kernel");
 const path = require('node:path');
 const TeamsResource = require('../../resources/teamsResource');
-const {VRequest} = require('../../../components/validate');
+const {VRequest, requestValidation} = require('../../../components/validate');
 class TmpCommand {
     constructor(args = []) {
         this.args = args;
@@ -30,22 +30,26 @@ class TmpCommand {
                 ],
             }
         }
-        let errors = await new VRequest(req, 'res')
-            .key('user_id').unique('users', 'id', 5).min(1).max(7)
-            .key('levels').integer().min(0).max(100).required()
-            .key('zmbrdm').required()
-            .key('gallery').array().max(3).arrayEach().number().max(1000)
-            .key('nmb').number()
-            .key('category_id').exists('categories', 'id')
-            .key('picture').array().max(2).arrayEach().image()
-            // .max(500000)
-            // .mimetypes(['image/jpeg', 'image/png'])
-            // .mimes(['.png', '.pdf'])
-            .key('in_do').in(['1', '2', '3', '7'])
-            .key('email').email()
-            .validate()
-        ;
-        console.log(errors);
+        // let errors = await new VRequest(req, 'res')
+        //     .key('user_id').unique('users', 'id', 5).min(1).max(7)
+        //     .key('levels').integer().min(0).max(100).required()
+        //     .key('zmbrdm').required()
+        //     .key('gallery').array().max(3).arrayEach().number().max(1000)
+        //     .key('nmb').number()
+        //     .key('category_id').exists('categories', 'id')
+        //     .key('picture').array().max(2).arrayEach().image()
+        //     // .max(500000)
+        //     // .mimetypes(['image/jpeg', 'image/png'])
+        //     // .mimes(['.png', '.pdf'])
+        //     .key('in_do').in(['1', '2', '3', '7'])
+        //     .key('email').email()
+        //     .validate()
+        // ;
+        // console.log(errors);
+
+        let err = requestValidation(req).key(127).required(65, 'qwerty').key('second_key');
+
+
 /*
         req.files= {
             testFiles: {

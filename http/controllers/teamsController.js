@@ -23,7 +23,7 @@ class TeamsController {
     {
         let valid_err = await new VRequest(req, res)
             .key('image').image().max(5000000)
-            .key('images').toArray().array().max(10).arrayEach().image().max(5000000)
+            .key('images[]').toArray().array().max(10).arrayEach().image().max(5000000)
             .key('rank').min(2).max(512)
             .key('title').min(2).max(512)
             .key('description').min(2).max(512)
