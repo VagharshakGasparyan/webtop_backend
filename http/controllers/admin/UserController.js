@@ -1,4 +1,4 @@
-const {api_validate, unique} = require("../../../components/validate");
+const {api_validate, unique, VRequest} = require("../../../components/validate");
 const Joi = require("joi");
 const bcrypt = require("bcrypt");
 const {saveAndGetUserToken, apiLogoutUser, generateString} = require("../../../components/functions");
@@ -93,24 +93,19 @@ class UserController {
     }
 
     async create(req, res, next) {
-        let uniqueErr = await unique('users', 'email', req.body.email);
-        if(uniqueErr){
+        let errors = await new VRequest(req, res)
+            .key('password').min(6).max(30)
+            .key('role').min(2).max(15)
+            .key('first_name').required().min(2).max(50)
+            .key('last_name').required().min(2).max(50)
+            .key('email').required().unique('users', 'email').email()
+            .key('photo').image().max(5000000)
+            .validate();
+        if(errors){
             res.status(422);
-            return res.send({errors: {email: uniqueErr}});
+            return res.send({errors: errors});
         }
-        let valid_err = api_validate({
-            email: Joi.string().email().required(),
-            first_name: Joi.string().min(2).max(30).required(),
-            last_name: Joi.string().min(2).max(30).required(),
-            role: Joi.string().min(2).max(30),
-            password: Joi.string().min(6).max(30)
-        }, req, res);
-        // return res.send({tmp: 'ok'});
-        if (valid_err) {
-            res.status(422);
-            return res.send({errors: valid_err});
-        }
-        // return res.send({tmp: 'no valid error'});
+
         let message = null, generatedPassword = null;
         if (!req.body.role) {
             req.body.role = 'admin';
@@ -120,38 +115,24 @@ class UserController {
             message = 'User password generated automatically, it send to email.';
         }
 
-        let userPhoto = req.files ? req.files.photo : null;
-        let photo = null;
-        if (userPhoto) {
-            let imageName = md5(Date.now()) + generateString(4);
-            let ext = extFrom(userPhoto.mimetype, userPhoto.name);
-            if(ext.toLowerCase() !== ".png" && ext.toLowerCase() !== ".jpg"){
-                res.status(422);
-                return res.send({errors: 'file not a jpg or png.'});
-            }
-            // fs.copyFileSync(file.path, __basedir + '/public/images/qwerty.png');
-            let uploaded = saveFileContentToPublic('storage/uploads/users', imageName + ext, userPhoto.data);
-            if (!uploaded) {
-                res.status(422);
-                return res.send({errors: 'file not uploaded.'});
-            }
-            photo = 'storage/uploads/users/' + imageName + ext;
-        }
-        let newUserData = {
+        let newData = {
             first_name: req.body.first_name,
             last_name: req.body.last_name,
             email: req.body.email,
             email_verified_at: moment().format('yyyy-MM-DD HH:mm:ss'),
             role: req.body.role,
-            photo: photo,
             password: bcrypt.hashSync(req.body.password, 8),
             created_at: moment().format('yyyy-MM-DD HH:mm:ss'),
             updated_at: moment().format('yyyy-MM-DD HH:mm:ss'),
         }
 
         try {
-            let forId = await DB('users').create(newUserData);
-            newUserData.id = forId.insertId;
+            controllersAssistant.filesCreate(
+                req, res, ['photo'], [], 'storage/uploads/users',
+                ['.jpeg', '.jpg', '.png'], newData, errors
+            );
+            let forId = await DB('users').create(newData);
+            newData.id = forId.insertId;
         }catch (e) {
             console.error(e);
             res.status(422);
@@ -163,7 +144,7 @@ class UserController {
             'Hello, You are registered in WebTop, your password: ' + req.body.password
         );
         let locale = res.locals.$api_local;
-        let user = await new UsersResource(newUserData, locale);
+        let user = await new UsersResource(newData, locale);
 
         return res.send({data: {user: user, message: message, generatedPassword}, errors: {}});
     }

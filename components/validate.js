@@ -110,6 +110,10 @@ class VRequest {
         this._sequence.push({in : enumerationArray});
         return this;
     }
+    email(){
+        this._sequence.push({email : 'email'});
+        return this;
+    }
     file(){
         this._sequence.push({file: 'file'});
         return this;
@@ -175,6 +179,16 @@ class VRequest {
                         }
                     }else{
                         this.#_in(key, val, seqVal);
+                    }
+                    continue;
+                }
+                if(seqKey === 'email'){
+                    if(hasArrayEach && Array.isArray(val)){
+                        for(let i1 = 0; i1 < val.length; i1++){
+                            this.#_email(key, val[i1], i1);
+                        }
+                    }else{
+                        this.#_email(key, val);
                     }
                     continue;
                 }
@@ -308,6 +322,13 @@ class VRequest {
     #_in(key, val, seqVal, index = null){
         if(!seqVal.includes(val)){
             this.#_pushErr(key, 'The ' + key + (index === null ? '' : '[' + index + ']') + ' value not in the range of values listed.');
+        }
+    }
+    #_email(key, val, index = null){
+        if(!String(val).toLowerCase().match(
+                /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+            )){
+            this.#_pushErr(key, 'The ' + key + (index === null ? '' : '[' + index + ']') + ' value is not a email.');
         }
     }
     #_file(key, val, seqVal, index = null){

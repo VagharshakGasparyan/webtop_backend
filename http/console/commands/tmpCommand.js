@@ -20,6 +20,7 @@ class TmpCommand {
                 nmb: '125.785',
                 category_id: '10',
                 in_do: '10',
+                email: 'qwerty@gmail.com'
             },
             files: {
                 picture: [
@@ -41,6 +42,7 @@ class TmpCommand {
             // .mimetypes(['image/jpeg', 'image/png'])
             // .mimes(['.png', '.pdf'])
             .key('in_do').in(['1', '2', '3', '7'])
+            .key('email').email()
             .validate()
         ;
         console.log(errors);
