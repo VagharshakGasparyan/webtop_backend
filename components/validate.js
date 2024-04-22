@@ -82,6 +82,10 @@ class VRequest {
         this._sequence.push({required: 'required'});
         return this;
     }
+    requiredWith(anotherKey){
+        this._sequence.push({requiredWith: anotherKey});
+        return this;
+    }
     toArray(){
         this._sequence.push({toArray: 'toArray'});
         return this;
@@ -162,6 +166,12 @@ class VRequest {
             if(val === undefined){
                 if(seqKey === 'required'){
                     this.#_pushErr(key, 'The ' + key + ' is required.');
+                    continue;
+                }
+                if(seqKey === 'requiredWith'){
+                    if(seqVal in this._body){
+                        this.#_pushErr(key, 'The ' + key + ' is required with ' + seqVal + '.');
+                    }
                 }
             }else{
                 if(seqKey === 'toArray'){//make val array, if it not same

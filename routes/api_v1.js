@@ -125,6 +125,8 @@ router.post('/upload-file', async (req, res) => {
     let errors = await  new VRequest(req, res)
         .key('testFiles').array().max(3).arrayEach().file().mimes(['.png'])
         .key('testText').required().max(7)
+        .key('old_password').requiredWith('new_password').min(6).max(30)
+        .key('new_password').min(6).max(30)
         .validate();
     if(errors){
         res.status(422);
