@@ -66,6 +66,10 @@ class VRequest {
         this._sequence.push({'key' : reqKey});
         return this;
     }
+    custom(fn){
+        this._sequence.push({custom: fn});
+        return this;
+    }
     number(){
         this._sequence.push({number: 'number'});
         return this;
@@ -174,6 +178,13 @@ class VRequest {
                     }
                 }
             }else{
+                if(seqKey === 'custom'){
+                    let errFn = (err_message) => {
+                        this.#_pushErr(key, err_message);
+                    };
+                    await seqVal(key, val, errFn);
+                    continue;
+                }
                 if(seqKey === 'toArray'){//make val array, if it not same
                     if(!Array.isArray(val)){
                         val = [val];

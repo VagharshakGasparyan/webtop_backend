@@ -126,7 +126,14 @@ router.post('/upload-file', async (req, res) => {
         .key('testFiles').array().max(3).arrayEach().file().mimes(['.png'])
         .key('testText').required().max(7)
         .key('old_password').requiredWith('new_password').min(6).max(30)
-        .key('new_password').min(6).max(30)
+        .key('new_password').min(6).max(30).custom(async (key, val, err) => {
+            const user = await DB('users').first();
+            if(val.endsWith('erty')){
+                err('Custom error message1');
+                err('Custom error message2');
+                err(user.email);
+            }
+        })
         .validate();
     if(errors){
         res.status(422);
