@@ -19,7 +19,8 @@ npm i joi
 ```
 - Migrations
 ```
-node com migrate      <Migrate all.>
+node com migrate 
+<p style='color:red'>Migrate all.</p>
 node com migrate users sessions 20240202181225186-settings ...  <Migrate (all)users, (all)sessions (current settings)20240202181225186-settings ... by sequence.>
 node com make:migration table1 table2 ...  <Make a table1, table2 ... migration(s) skeleton file(s).>
 ```
