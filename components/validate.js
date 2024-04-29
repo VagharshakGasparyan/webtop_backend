@@ -176,6 +176,13 @@ class VRequest {
                     if(seqVal in this._body){
                         this.#_pushErr(key, 'The ' + key + ' is required with ' + seqVal + '.');
                     }
+                    continue;
+                }
+                if(seqKey === 'custom'){
+                    let errFn = (err_message) => {
+                        this.#_pushErr(key, err_message);
+                    };
+                    await seqVal(key, val, errFn);
                 }
             }else{
                 if(seqKey === 'custom'){
