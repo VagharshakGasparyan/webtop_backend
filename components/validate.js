@@ -200,6 +200,7 @@ class VRequest {
                 }
                 if(seqKey === 'arrayEach'){
                     hasArrayEach = true;
+                    hasArray = false;
                     continue;
                 }
                 if(seqKey === 'in'){
