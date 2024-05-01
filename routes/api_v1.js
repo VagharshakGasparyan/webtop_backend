@@ -126,7 +126,7 @@ router.post('/upload-file', async (req, res) => {
         // .key('testFiles').array().max(3).arrayEach().file().mimes(['.png'])
         // .key('testText').required().max(7)
         .key('old_password').requiredWith('new_password').min(6).max(30)
-        .key('new_password')
+        .key('new_password').required()
         // .min(6).max(30)
         .custom(async (key, val, err) => {
             if(val === undefined){
