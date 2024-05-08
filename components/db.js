@@ -11,7 +11,8 @@ function _val(value) {
     }else if(value === undefined){
         return '';
     }else if(typeof value === 'string'){
-        return "'" + value.replace(/'/ig, "\\'") + "'";
+        //newData.description = newData.description.replace(/\\r\\n/ig, '\\\\r\\\\n');
+        return "'" + value.replace(/\\/ig, '\\\\').replace(/'/ig, "\\'") + "'";
     }
     return "'" + value + "'";
 }

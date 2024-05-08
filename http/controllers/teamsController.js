@@ -79,7 +79,7 @@ class TeamsController {
 
     async update(req, res, next)
     {
-        // console.log(req.body);
+
         // return res.send({ok: 'ok.'});
         let errors = [];
         let {team_id} = req.params;
@@ -115,6 +115,9 @@ class TeamsController {
 
             let translatable = ['first_name', 'last_name', 'rank', 'title', 'description'];
             controllersAssistant.translateAblesUpdate(req, res, translatable, newData, team);
+            // console.log('newData.description=', newData.description);
+            // newData.description = newData.description.replace(/\\r\\n/ig, '\\\\r\\\\n');
+            // console.log('newData.description1=', newData.description);
             if(Object.keys(newData).length > 0){
                 newData.updated_at = moment().format('yyyy-MM-DD HH:mm:ss');
                 await DB('teams').where("id", team_id).update(newData);
